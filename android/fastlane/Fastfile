@@ -1,0 +1,25 @@
+platform :android do
+  desc "Build APK only"
+  lane :build_apk do
+    sh "flutter clean"
+    sh "flutter pub get"
+    sh "flutter build apk --release --no-tree-shake-icons"
+  end
+
+  desc "Distribute APK to Firebase"
+  lane :upload_to_firebase do
+    sh "firebase appdistribution:distribute E:/MAHU/mahu_home_services_app/build/app/outputs/flutter-apk/app-release.apk \
+      --app=1:775064187411:android:0c5b33fcef749a1fdf45e6 \
+      --release-notes=\"New build uploaded via Fastlane 🚀\" \
+      --groups=\"mahu_team\""
+  end
+
+  desc "Build and distribute to Firebase"
+  lane :firebase_distribution do
+    build_apk
+    upload_to_firebase
+  end
+end
+# bundle exec fastlane android firebase_distribution
+# bundle exec fastlane android build_only
+# bundle exec fastlane android upload_to_firebase

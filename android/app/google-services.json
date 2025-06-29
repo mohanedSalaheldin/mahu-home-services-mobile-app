@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "775064187411",
+    "project_id": "mahu-services",
+    "storage_bucket": "mahu-services.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:775064187411:android:0c5b33fcef749a1fdf45e6",
+        "android_client_info": {
+          "package_name": "com.example.mahu_home_services_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCq855yJ4vKI1hXmYGAdI9DMxXK78Zobp8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
