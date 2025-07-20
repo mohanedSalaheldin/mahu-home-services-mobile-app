@@ -5,32 +5,32 @@
     
     
       
-      <testcase classname="fastlane.lanes" name="0: Switch to android build_apk lane" time="0.0020395">
+      <testcase classname="fastlane.lanes" name="0: Switch to android build_apk lane" time="0.0020906">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="1: flutter clean" time="4.2247895">
+      <testcase classname="fastlane.lanes" name="1: flutter clean" time="4.1887323">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="2: flutter pub get" time="5.2188997">
+      <testcase classname="fastlane.lanes" name="2: flutter pub get" time="4.3450276">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="3: flutter build apk --release --no-tree-shake-icons" time="130.5486684">
+      <testcase classname="fastlane.lanes" name="3: flutter build apk --release --no-tree-shake-icons" time="186.7794615">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="4: Switch to android upload_to_firebase lane" time="0.0017995">
+      <testcase classname="fastlane.lanes" name="4: Switch to android upload_to_firebase lane" time="0.0019036">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="5: firebase appdistribution:distribute E:/MAHU/mahu_home_services_app/build/app/outputs/flutter-apk/app-release.apk       --app=1:775064187411:android:0c5b33fcef749a1fdf45e6       --release-notes=&quot;New build uploaded via Fastlane 🚀&quot;       --groups=&quot;mahu_team&quot;" time="81.4787037">
+      <testcase classname="fastlane.lanes" name="5: firebase appdistribution:distribute E:/MAHU/mahu_home_services_app/build/app/outputs/flutter-apk/app-release.apk       --app=1:775064187411:android:0c5b33fcef749a1fdf45e6       --release-notes=&quot;Authentication testing for the Client and Service Provider (July 17) includes verifying UI navigation, handling success/error messages, and ensuring token persistence for API usage.&quot;       --groups=&quot;mahu_team&quot;" time="90.9265715">
         
       </testcase>
     

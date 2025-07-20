@@ -7,15 +7,15 @@ extension ServiceTypeExtension on ServiceType {
   String get displayName {
     switch (this) {
       case ServiceType.oneTime:
-        return 'One-Time Cleaning';
+        return 'One-Time Charge';
       case ServiceType.recurring:
-        return 'Recurring Cleaning';
+        return 'Recurring Charge';
     }
   }
 }
 
 enum ServiceSubType {
-  standard,
+  normal,
   deep,
   postConstruction,
 }
@@ -27,8 +27,24 @@ extension ServiceSubTypeExtension on ServiceSubType {
         return 'Deep Cleaning';
       case ServiceSubType.postConstruction:
         return 'Post-Construction Cleaning';
-      case ServiceSubType.standard:
-        return 'Standard Cleaning';
+      case ServiceSubType.normal:
+        return 'Normal Cleaning';
+    }
+  }
+}
+
+enum RecurrencePattern {
+  monthly,
+  weekly,
+}
+
+extension RecurrencePatternExtension on RecurrencePattern {
+  String get displayName {
+    switch (this) {
+      case RecurrencePattern.monthly:
+        return 'Monthly';
+      case RecurrencePattern.weekly:
+        return 'Weekly';
     }
   }
 }

@@ -10,7 +10,7 @@ platform :android do
   lane :upload_to_firebase do
     sh "firebase appdistribution:distribute E:/MAHU/mahu_home_services_app/build/app/outputs/flutter-apk/app-release.apk \
       --app=1:775064187411:android:0c5b33fcef749a1fdf45e6 \
-      --release-notes=\"New build uploaded via Fastlane 🚀\" \
+      --release-notes=\"Authentication testing for the Client and Service Provider (July 17) includes verifying UI navigation, handling success/error messages, and ensuring token persistence for API usage.\" \
       --groups=\"mahu_team\""
   end
 

@@ -27,7 +27,7 @@ class ServiceCubit extends Cubit<ServiceState> {
   }
 
   ServiceSubType get serviceSubType {
-    return _serviceSubType ?? ServiceSubType.standard;
+    return _serviceSubType ?? ServiceSubType.normal;
   }
 
   PricingModel? _pricingModel;
