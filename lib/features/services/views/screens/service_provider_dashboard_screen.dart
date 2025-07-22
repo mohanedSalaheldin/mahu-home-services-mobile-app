@@ -1,16 +1,16 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:mahu_home_services_app/core/constants/app_const.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
 import 'package:mahu_home_services_app/core/utils/helpers/helping_functions.dart';
-import 'package:mahu_home_services_app/core/widgets/app_filed_label_text.dart';
 import 'package:mahu_home_services_app/features/services/views/screens/add_service_screen.dart';
+import 'package:mahu_home_services_app/features/services/views/screens/service_details_screen.dart';
+import '../../models/service_model.dart';
 
 class ServiceProviderDashboardScreen extends StatelessWidget {
   const ServiceProviderDashboardScreen({super.key});
-
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -21,96 +21,117 @@ class ServiceProviderDashboardScreen extends StatelessWidget {
         actions: [
           IconButton(
             onPressed: () {},
-            icon: const Icon(
-              Icons.settings_outlined,
-            ),
+            icon: const Icon(Icons.settings_outlined),
           ),
         ],
         elevation: 0,
       ),
       body: Padding(
         padding: EdgeInsets.symmetric(vertical: AppConst.appPadding.w),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: AppConst.appPadding.w),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Welcome back, Alex',
-                    style: TextStyle(
-                      fontSize: 24.sp,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  Gap(16.h),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      DashboardStatisticsCardWidget(
-                        figer: '150',
-                        label: 'Rating',
-                        width: 171.w,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: AppConst.appPadding.w),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Welcome back, Alex',
+                      style: TextStyle(
+                        fontSize: 24.sp,
+                        fontWeight: FontWeight.w700,
                       ),
-                      DashboardStatisticsCardWidget(
-                        figer: '150',
-                        label: 'Rating',
-                        width: 171.w,
-                      ),
-                    ],
-                  ),
-                  Gap(16.h),
-                  const DashboardStatisticsCardWidget(
-                    figer: '150',
-                    label: 'Rating',
-                    // width: 171.w,
-                  ),
-                  Gap(32.h),
-                  Text(
-                    'Upcoming Jobs',
-                    style: TextStyle(
-                      fontSize: 24.sp,
-                      fontWeight: FontWeight.w700,
                     ),
-                  ),
-                ],
+                    Gap(16.h),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        DashboardStatisticsCardWidget(
+                          figure: '4.8',
+                          label: 'Rating',
+                          width: 171.w,
+                        ),
+                        DashboardStatisticsCardWidget(
+                          figure: '25',
+                          label: 'Services',
+                          width: 171.w,
+                        ),
+                      ],
+                    ),
+                    Gap(16.h),
+                    DashboardStatisticsCardWidget(
+                      figure: '150',
+                      label: 'Completed Jobs',
+                    ),
+                    Gap(32.h),
+                    Text(
+                      'Your Services',
+                      style: TextStyle(
+                        fontSize: 24.sp,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    Gap(16.h),
+                  ],
+                ),
               ),
-            ),
-            Gap(16.h),
-            const UpcomingJobsCardWidget(
-              address: '123 Main St, Anytown',
-              serviceType: 'Cleaning',
-              time: '10:00 AM',
-            ),
-            const UpcomingJobsCardWidget(
-              address: '123 Main St, Anytown',
-              serviceType: 'Cleaning',
-              time: '10:00 AM',
-            ),
-            Padding(
-              padding: EdgeInsets.all(AppConst.appPadding.w),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  DashboardFilledButton(
-                    onPressed: () {
-                      navigateTo(context, const AddServiceScreen());
+              // Services List
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: 5, // Replace with your actual services count
+                itemBuilder: (context, index) {
+                  final service = Service(
+                    name: "Deep Cleaning Service",
+                    description: "Complete deep cleaning for apartments and villas",
+                    category: "cleaning",
+                    serviceType: "one-time",
+                    subType: "deep",
+                    basePrice: 250,
+                    duration: 240,
+                    pricingModel: "fixed",
+                    imgUrl: "https://example.com/images/deep-cleaning.jpg",
+                    availableAreas: ["Area 1", "Area 2", "Area 3"],
+                  );
+                  return ServiceListItem(
+                    service: service,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ServiceDetailsScreen(service: service),
+                        ),
+                      );
                     },
-                    txt: '+ New Service',
-                  ),
-                  DashboardFilledButton(
-                    onPressed: () {},
-                    txt: 'View Calendar',
-                    isFiiled: false,
-                  ),
-                ],
+                  );
+                },
               ),
-            ),
-          ],
+              Gap(16.h),
+              Padding(
+                padding: EdgeInsets.all(AppConst.appPadding.w),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    DashboardFilledButton(
+                      onPressed: () {
+                        navigateTo(context, const AddServiceScreen());
+                      },
+                      txt: '+ New Service',
+                    ),
+                    DashboardFilledButton(
+                      onPressed: () {},
+                      txt: 'View Calendar',
+                      isFilled: false,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -122,10 +143,10 @@ class DashboardFilledButton extends StatelessWidget {
     super.key,
     required this.txt,
     required this.onPressed,
-    this.isFiiled = true,
+    this.isFilled = true,
   });
   final String txt;
-  final bool isFiiled;
+  final bool isFilled;
   final void Function() onPressed;
 
   @override
@@ -135,10 +156,10 @@ class DashboardFilledButton extends StatelessWidget {
       width: 130.w,
       child: ElevatedButton(
         style: ButtonStyle(
-          padding: const WidgetStatePropertyAll(EdgeInsets.all(8)),
-          backgroundColor: WidgetStatePropertyAll(
-              isFiiled ? AppColors.blue : const Color(0xffE8EDF2)),
-          shape: WidgetStatePropertyAll(
+          padding: const MaterialStatePropertyAll(EdgeInsets.all(8)),
+          backgroundColor: MaterialStatePropertyAll(
+              isFilled ? AppColors.blue : const Color(0xffE8EDF2)),
+          shape: MaterialStatePropertyAll(
             RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
             ),
@@ -150,64 +171,9 @@ class DashboardFilledButton extends StatelessWidget {
           style: TextStyle(
             fontWeight: FontWeight.w700,
             fontSize: 14.sp,
-            color: isFiiled ? Colors.white : Colors.black,
+            color: isFilled ? Colors.white : Colors.black,
           ),
         ),
-      ),
-    );
-  }
-}
-
-class UpcomingJobsCardWidget extends StatelessWidget {
-  const UpcomingJobsCardWidget({
-    super.key,
-    required this.time,
-    required this.serviceType,
-    required this.address,
-  });
-  final String time;
-  final String serviceType;
-  final String address;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: AppColors.greyBack,
-      height: 72.h,
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-      child: Row(
-        children: [
-          Container(
-            width: 48.w,
-            height: 48.w,
-            decoration: const BoxDecoration(
-              color: Color(0xffE8EDF2),
-              borderRadius: BorderRadius.all(Radius.circular(8)),
-            ),
-            child: const Icon(Icons.home_outlined),
-          ),
-          Gap(16.h),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '$serviceType - $time',
-                style: TextStyle(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              Gap(2.h),
-              Text(
-                address,
-                style: TextStyle(
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w400,
-                    color: const Color(0xff4F7596)),
-              ),
-            ],
-          )
-        ],
       ),
     );
   }
@@ -218,11 +184,11 @@ class DashboardStatisticsCardWidget extends StatelessWidget {
     super.key,
     this.width,
     required this.label,
-    required this.figer,
+    required this.figure,
   });
   final double? width;
   final String label;
-  final String figer;
+  final String figure;
 
   @override
   Widget build(BuildContext context) {
@@ -247,7 +213,7 @@ class DashboardStatisticsCardWidget extends StatelessWidget {
           ),
           Gap(8.h),
           Text(
-            figer,
+            figure,
             style: TextStyle(
               fontSize: 24.sp,
               fontWeight: FontWeight.w700,
@@ -258,3 +224,100 @@ class DashboardStatisticsCardWidget extends StatelessWidget {
     );
   }
 }
+
+class ServiceListItem extends StatelessWidget {
+  final Service service;
+  final VoidCallback onTap;
+
+  const ServiceListItem({
+    super.key,
+    required this.service,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: EdgeInsets.symmetric(
+            horizontal: AppConst.appPadding.w, vertical: 8.h),
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.2),
+              spreadRadius: 1,
+              blurRadius: 5,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 80.w,
+              height: 80.w,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                image: DecorationImage(
+                  image: NetworkImage(service.imgUrl),
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+            Gap(16.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    service.name,
+                    style: TextStyle(
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Gap(4.h),
+                  Text(
+                    service.description,
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      color: Colors.grey,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Gap(8.h),
+                  Row(
+                    children: [
+                      Icon(Icons.star, color: Colors.amber, size: 16.sp),
+                      Gap(4.w),
+                      Text(
+                        '4.8 (125)',
+                        style: TextStyle(fontSize: 14.sp),
+                      ),
+                      const Spacer(),
+                      Text(
+                        '\$${service.basePrice.toStringAsFixed(2)}',
+                        style: TextStyle(
+                          fontSize: 18.sp,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.blue,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Service model is imported from ../../models/service_model.dart
