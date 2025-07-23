@@ -10,7 +10,7 @@ import '../../models/service_model.dart';
 
 class ServiceProviderDashboardScreen extends StatelessWidget {
   const ServiceProviderDashboardScreen({super.key});
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -34,7 +34,8 @@ class ServiceProviderDashboardScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: AppConst.appPadding.w),
+                padding:
+                    EdgeInsets.symmetric(horizontal: AppConst.appPadding.w),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -63,7 +64,7 @@ class ServiceProviderDashboardScreen extends StatelessWidget {
                       ],
                     ),
                     Gap(16.h),
-                    DashboardStatisticsCardWidget(
+                    const DashboardStatisticsCardWidget(
                       figure: '150',
                       label: 'Completed Jobs',
                     ),
@@ -87,14 +88,16 @@ class ServiceProviderDashboardScreen extends StatelessWidget {
                 itemBuilder: (context, index) {
                   final service = Service(
                     name: "Deep Cleaning Service",
-                    description: "Complete deep cleaning for apartments and villas",
+                    description:
+                        "Complete deep cleaning for apartments and villas",
                     category: "cleaning",
                     serviceType: "one-time",
                     subType: "deep",
                     basePrice: 250,
                     duration: 240,
                     pricingModel: "fixed",
-                    imgUrl: "https://example.com/images/deep-cleaning.jpg",
+                    imgUrl:
+                        "https://crewcare.co.nz/admin_assets/blog/deep-cleaning-in-winter-season.jpg",
                     availableAreas: ["Area 1", "Area 2", "Area 3"],
                   );
                   return ServiceListItem(
@@ -103,7 +106,8 @@ class ServiceProviderDashboardScreen extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => ServiceDetailsScreen(service: service),
+                          builder: (context) =>
+                              ServiceDetailsScreen(service: service),
                         ),
                       );
                     },
@@ -156,10 +160,10 @@ class DashboardFilledButton extends StatelessWidget {
       width: 130.w,
       child: ElevatedButton(
         style: ButtonStyle(
-          padding: const MaterialStatePropertyAll(EdgeInsets.all(8)),
-          backgroundColor: MaterialStatePropertyAll(
+          padding: const WidgetStatePropertyAll(EdgeInsets.all(8)),
+          backgroundColor: WidgetStatePropertyAll(
               isFilled ? AppColors.blue : const Color(0xffE8EDF2)),
-          shape: MaterialStatePropertyAll(
+          shape: WidgetStatePropertyAll(
             RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
             ),

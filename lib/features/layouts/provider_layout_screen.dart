@@ -4,7 +4,7 @@ import 'package:gap/gap.dart';
 import 'package:mahu_home_services_app/features/services/views/screens/service_provider_dashboard_screen.dart';
 import 'package:mahu_home_services_app/features/services/views/screens/service_provider_calender.dart';
 import 'package:mahu_home_services_app/features/services/views/screens/profile_screen.dart';
-import 'package:mahu_home_services_app/features/services/views/screens/service_provider_jops.dart';
+import 'package:mahu_home_services_app/features/services/views/screens/service_provider_jobs.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class ProviderLayoutScreen extends StatelessWidget {
