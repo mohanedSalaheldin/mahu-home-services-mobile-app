@@ -10,6 +10,7 @@ import 'package:mahu_home_services_app/features/landing/views/screens/choose_rul
 import 'package:mahu_home_services_app/features/landing/views/screens/landing_screen1.dart';
 import 'package:mahu_home_services_app/features/services/cubit/servises_cubit.dart';
 import 'package:mahu_home_services_app/features/services/views/screens/all_services_screen.dart';
+import 'package:mahu_home_services_app/features/services/views/screens/service_provider_dashboard_screen.dart';
 import 'package:mahu_home_services_app/features/user_booking/screens/customer_home_screen.dart';
 
 class MyApp extends StatelessWidget {
@@ -40,26 +41,26 @@ class MyApp extends StatelessWidget {
             colorScheme: ColorScheme.fromSeed(seedColor: AppColors.black),
             useMaterial3: true,
           ),
-          home: const ChooseRuleScreen(),
-          // home: FutureBuilder<Widget>(
-          //   future: getInitialScreen(),
-          //   builder: (context, snapshot) {
-          //     if (snapshot.connectionState == ConnectionState.waiting) {
-          //       // أثناء التحميل
-          //       return const Scaffold(
-          //         body: Center(child: CircularProgressIndicator()),
-          //       );
-          //     } else if (snapshot.hasError) {
-          //       // في حال حدوث خطأ
-          //       return const Scaffold(
-          //         body: Center(child: Text('حدث خطأ!')),
-          //       );
-          //     } else {
-          //       // عند اكتمال المستقبل
-          //       return snapshot.data!;
-          //     }
-          //   },
-          // ),
+          // home: const ChooseRuleScreen(),
+          home: FutureBuilder<Widget>(
+            future: getInitialScreen(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                // أثناء التحميل
+                return const Scaffold(
+                  body: Center(child: CircularProgressIndicator()),
+                );
+              } else if (snapshot.hasError) {
+                // في حال حدوث خطأ
+                return const Scaffold(
+                  body: Center(child: Text('حدث خطأ!')),
+                );
+              } else {
+                // عند اكتمال المستقبل
+                return snapshot.data!;
+              }
+            },
+          ),
         ),
       ),
     );
@@ -91,7 +92,7 @@ Future<Widget> getInitialScreen() async {
   if (userRole == 'client') {
     return const CustomerHomeScreen();
   } else if (userRole == 'provider') {
-    return const AllServicesScreen();
+    return const ServiceProviderDashboardScreen();
   }
 
   // fallback

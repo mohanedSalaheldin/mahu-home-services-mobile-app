@@ -1,8 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mahu_home_services_app/features/services/cubit/servises_state.dart';
 import 'package:mahu_home_services_app/features/services/models/service_model.dart';
-import 'package:mahu_home_services_app/features/services/models/service_type.dart';
 import 'package:mahu_home_services_app/features/services/services/manage_provider_services.dart';
 
 class ServiceCubit extends Cubit<ServiceState> {
@@ -25,6 +23,25 @@ class ServiceCubit extends Cubit<ServiceState> {
         _services.clear();
         _services.addAll(servicesList);
         emit(ServiceGetAllSuccessState());
+      },
+    );
+  }
+
+  void createService(ServiceModel service) {
+    emit(ServiceCreationSuccessState());
+
+    _manageProviderServices.addService(service).then(
+      (result) {
+        result.fold(
+          (failure) {
+            emit(ServiceCreationlFailedState());
+          },
+          (_) {
+            _services.add(service);
+            emit(ServiceCreationSuccessState());
+
+          },
+        );
       },
     );
   }

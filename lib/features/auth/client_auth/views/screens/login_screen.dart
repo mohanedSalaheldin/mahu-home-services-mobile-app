@@ -18,6 +18,8 @@ import 'package:mahu_home_services_app/features/auth/provider_auth/views/screens
 import 'package:mahu_home_services_app/features/landing/views/widgets/app_filled_button.dart';
 import 'package:mahu_home_services_app/features/landing/views/widgets/app_text_button.dart';
 import 'package:mahu_home_services_app/features/landing/views/widgets/have_or_not_an_account_row.dart';
+import 'package:mahu_home_services_app/features/services/views/screens/service_provider_dashboard_screen.dart';
+import 'package:mahu_home_services_app/features/user_booking/screens/customer_home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -48,7 +50,11 @@ class _LoginScreenState extends State<LoginScreen> {
       body: BlocConsumer<AuthCubit, AuthState>(
         listener: (context, state) {
           if (state is LoginSucessededState) {
-            navigateTo(context, const HomeTestScreen());
+            navigateTo(
+                context,
+                UserRoleCubit.get(context).state == UserRole.client
+                    ? const CustomerHomeScreen()
+                    : const ServiceProviderDashboardScreen());
           } else if (state is LoginFailedState) {
             showCustomSnackBar(
                 context: context,

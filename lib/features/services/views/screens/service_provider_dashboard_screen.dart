@@ -5,17 +5,37 @@ import 'package:gap/gap.dart';
 import 'package:mahu_home_services_app/core/constants/app_const.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
 import 'package:mahu_home_services_app/core/utils/helpers/helping_functions.dart';
+import 'package:mahu_home_services_app/features/layouts/provider_layout_screen.dart';
 import 'package:mahu_home_services_app/features/services/cubit/servises_cubit.dart';
 import 'package:mahu_home_services_app/features/services/cubit/servises_state.dart';
 import 'package:mahu_home_services_app/features/services/views/screens/add_service_screen.dart';
 import 'package:mahu_home_services_app/features/services/views/screens/service_details_screen.dart';
+import 'package:mahu_home_services_app/features/services/views/screens/service_provider_calender.dart';
 import '../../models/service_model.dart';
 
-class ServiceProviderDashboardScreen extends StatelessWidget {
+class ServiceProviderDashboardScreen extends StatefulWidget {
   const ServiceProviderDashboardScreen({super.key});
 
   @override
+  State<ServiceProviderDashboardScreen> createState() =>
+      _ServiceProviderDashboardScreenState();
+}
+
+class _ServiceProviderDashboardScreenState
+    extends State<ServiceProviderDashboardScreen> {
+  @override
+  initState() {
+    super.initState();
+    // Fetch services when the screen is initialized
+    var cubit = ServiceCubit.get(context);
+    if (cubit.services.isEmpty) {
+      cubit.fetchServices();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    var cubit = ServiceCubit.get(context);
     return Scaffold(
       appBar: AppBar(
         leading: const BackButton(),
@@ -29,88 +49,87 @@ class ServiceProviderDashboardScreen extends StatelessWidget {
         ],
         elevation: 0,
       ),
-      body: Padding(
-        padding: EdgeInsets.symmetric(vertical: AppConst.appPadding.w),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding:
-                    EdgeInsets.symmetric(horizontal: AppConst.appPadding.w),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Welcome back, Alex',
-                      style: TextStyle(
-                        fontSize: 24.sp,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    Gap(16.h),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      body: BlocConsumer<ServiceCubit, ServiceState>(
+        listener: (context, state) {
+          // TODO: implement listener
+        },
+        builder: (context, state) {
+          if (state is ServiceGetAllLoadingState) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          } else if (state is ServiceGetAllFailedState) {
+            return Center(
+              child: Text(
+                'Error: {state.error}',
+                style: TextStyle(fontSize: 16.sp, color: Colors.red),
+              ),
+            );
+          }
+          return Padding(
+            padding: EdgeInsets.symmetric(vertical: AppConst.appPadding.w),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: AppConst.appPadding.w),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        DashboardStatisticsCardWidget(
-                          figure: '4.8',
-                          label: 'Rating',
-                          width: 171.w,
+                        Text(
+                          'Welcome back, Alex',
+                          style: TextStyle(
+                            fontSize: 24.sp,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
-                        DashboardStatisticsCardWidget(
-                          figure: '25',
-                          label: 'Services',
-                          width: 171.w,
+                        Gap(16.h),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            DashboardStatisticsCardWidget(
+                              figure: '4.8',
+                              label: 'Rating',
+                              width: 171.w,
+                            ),
+                            DashboardStatisticsCardWidget(
+                              figure: '25',
+                              label: 'Services',
+                              width: 171.w,
+                            ),
+                          ],
                         ),
+                        Gap(16.h),
+                        const DashboardStatisticsCardWidget(
+                          figure: '150',
+                          label: 'Completed Jobs',
+                        ),
+                        Gap(32.h),
+                        Text(
+                          'Your Services',
+                          style: TextStyle(
+                            fontSize: 24.sp,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        Gap(16.h),
                       ],
                     ),
-                    Gap(16.h),
-                    const DashboardStatisticsCardWidget(
-                      figure: '150',
-                      label: 'Completed Jobs',
-                    ),
-                    Gap(32.h),
-                    Text(
-                      'Your Services',
-                      style: TextStyle(
-                        fontSize: 24.sp,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    Gap(16.h),
-                  ],
-                ),
-              ),
-              // Services List
-              BlocBuilder<ServiceCubit, ServiceState>(
-                
-                builder: (context, state) {
-                  return ListView.builder(
+                  ),
+                  // Services List
+                  ListView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    itemCount: 5, // Replace with your actual services count
+                    itemCount: cubit.services
+                        .length, // Replace with your actual services count
                     itemBuilder: (context, index) {
-                      final service = ServiceModel(
-                        id: '1',
-                        name: 'Deep Cleaning',
-                        description:
-                            'Comprehensive cleaning service for your home.',
-                        category: 'Cleaning',
-                        serviceType: 'Residential',
-                        subType: 'Deep Clean',
-                        basePrice: 150,
-                        pricingModel: 'Hourly',
-                        duration: 3,
-                        image:
-                            'https://realpristinesolutions.com/wp-content/uploads/2024/04/deep-clean.jpeg',
-                        active: true,
-                        provider: 'Mahu Home Services',
-                        isApproved: true,
-                        createdAt: DateTime.now(),
-                        v: 0,
-                      ); // Replace with your actual service data
+                      ServiceModel service = cubit.services[index];
+
+                      // Replace with your actual service data
                       return ServiceListItem(
                         service: service,
                         onTap: () {
@@ -124,32 +143,37 @@ class ServiceProviderDashboardScreen extends StatelessWidget {
                         },
                       );
                     },
-                  );
-                },
-              ),
-              Gap(16.h),
-              Padding(
-                padding: EdgeInsets.all(AppConst.appPadding.w),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    DashboardFilledButton(
-                      onPressed: () {
-                        navigateTo(context, const AddServiceScreen());
-                      },
-                      txt: '+ New Service',
+                  ),
+                  Gap(16.h),
+                  Padding(
+                    padding: EdgeInsets.all(AppConst.appPadding.w),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        DashboardFilledButton(
+                          onPressed: () {
+                            navigateTo(context, const AddServiceScreen());
+                          },
+                          txt: '+ New Service',
+                        ),
+                        DashboardFilledButton(
+                          onPressed: () {
+                            NavigationCubit.get(context).changeTab(2);
+
+                            // navigateTo(
+                            //     context, const ServiceProviderBookingsScreen());
+                          },
+                          txt: 'View Calendar',
+                          isFilled: false,
+                        ),
+                      ],
                     ),
-                    DashboardFilledButton(
-                      onPressed: () {},
-                      txt: 'View Calendar',
-                      isFilled: false,
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }

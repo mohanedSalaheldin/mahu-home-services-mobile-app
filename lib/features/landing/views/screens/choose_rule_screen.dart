@@ -35,7 +35,10 @@ class _ChooseRuleScreenState extends State<ChooseRuleScreen> {
                   fontWeight: FontWeight.bold,
                   color: AppColors.primary,
                 ),
-              ).animate().fadeIn(delay: 100.ms).slide(begin: const Offset(0, -0.1)),
+              )
+                  .animate()
+                  .fadeIn(delay: 100.ms)
+                  .slide(begin: const Offset(0, -0.1)),
               Text(
                 'Select your role to continue',
                 style: TextStyle(
@@ -57,7 +60,9 @@ class _ChooseRuleScreenState extends State<ChooseRuleScreen> {
                         description: 'Book and manage cleaning services',
                         icon: Icons.person_outline,
                         isSelected: role == UserRole.client,
-                        onTap: () => context.read<UserRoleCubit>().setUserRole(UserRole.client),
+                        onTap: () => context
+                            .read<UserRoleCubit>()
+                            .setUserRole(UserRole.client),
                         color: Colors.blue,
                         delay: 300.ms,
                       ),
@@ -69,8 +74,10 @@ class _ChooseRuleScreenState extends State<ChooseRuleScreen> {
                         title: 'Service Provider',
                         description: 'Offer and manage your cleaning services',
                         icon: Icons.work_outline,
-                        isSelected: role == UserRole.serviceProvider,
-                        onTap: () => context.read<UserRoleCubit>().setUserRole(UserRole.serviceProvider),
+                        isSelected: role == UserRole.provider,
+                        onTap: () => context
+                            .read<UserRoleCubit>()
+                            .setUserRole(UserRole.provider),
                         color: Colors.orange,
                         delay: 400.ms,
                       ),
@@ -101,7 +108,8 @@ class _ChooseRuleScreenState extends State<ChooseRuleScreen> {
                         onPressed: role != null
                             ? () {
                                 if (role == UserRole.client) {
-                                  navigateTo(context, const CustomerHomeScreen());
+                                  navigateTo(
+                                      context, const CustomerHomeScreen());
                                 } else {
                                   navigateTo(context, ProviderLayoutScreen());
                                 }

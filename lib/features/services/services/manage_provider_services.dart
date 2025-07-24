@@ -34,27 +34,77 @@ class ManageProviderServices {
 
       return Right(onSuccess != null ? onSuccess(data) : unit as T);
     } on DioException catch (e) {
-      print(e.toString());
+      print('⚠️ DioException Caught');
+      print('Status code: ${e.response?.statusCode}');
+      print('Response body: ${e.response?.data}');
+      print('Headers: ${e.response?.headers}');
+      print('Request data: ${e.requestOptions.data}');
+      print('Full error: $e');
+
       final code = e.response?.statusCode;
       if (code != null &&
           knownFailures != null &&
           knownFailures.containsKey(code)) {
         return Left(knownFailures[code]!);
       }
-      print(e.toString());
-
-      return Left(ServerFailure());
-    } catch (_) {
-      print(_.toString());
 
       return Left(ServerFailure());
     }
   }
 
   // Example method to add a service
-  void addService(String serviceName) {
-    // Logic to add a service
-    print('Service $serviceName added.');
+  Future<Either<Failure, Unit>> addService(ServiceModel service) {
+    String token = CacheHelper.getString('token') ?? '';
+    print('--------------------');
+    print(
+        'Adding service with token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ODIzOTkzOWVkMWEyNzZjNzRjMjM4MiIsImlhdCI6MTc1MzM2NjYwMCwiZXhwIjoxNzU1OTU4NjAwfQ.BdYJYVs2p7qeMywo7EZCdvPCOeqmIiPDG-QIm1XTreE');
+    print('--------------------');
+    return _handleRequest<Unit>(
+      request: () => _dio.post(
+        '/services',
+        data: {
+          "name": service.name,
+          "description": service.description,
+          "category": service.category,
+          "serviceType": service.serviceType,
+          "subType": service.subType,
+          "basePrice": service.basePrice, // per hour
+          "pricingModel": service.pricingModel, // hourly or fixed
+          "duration": service.duration, // minimum 1 hour
+          "image": service.image,
+          "active": true,
+          "isApproved": true
+        },
+        // data: {
+        //   "name": "Air Conditioner Installation",
+        //   "description":
+        //       "Professional air conditioner installation with warranty and expert technicians.",
+        //   "category": "electrical",
+        //   "serviceType": "one-time",
+        //   "subType": "normal",
+        //   "basePrice": 250,
+        //   "pricingModel": "fixed",
+        //   "duration": 120,
+        //   "image":
+        //       "https://images.unsplash.com/photo-1615873968403-89d77c6b0a35?auto=format&fit=crop&w=800&q=80",
+        //   "active": true,
+        //   "isApproved": true
+        // },
+        options: Options(
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+        ),
+      ),
+      onSuccess: (data) {
+        print('Service added successfully: $data');
+        return unit; // Return unit if no specific data is expected
+      },
+      knownFailures: {
+        500: ServerFailure(),
+      },
+    );
   }
 
   // Example method to update a service
@@ -80,7 +130,7 @@ class ManageProviderServices {
             'Authorization': 'Bearer $token',
           })),
       onSuccess: (data) {
-        return (data as List)
+        return (data['data'] as List)
             .map((service) => ServiceModel.fromJson(service))
             .toList();
       },

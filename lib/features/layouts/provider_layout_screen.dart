@@ -154,6 +154,7 @@ class _NavBarItem extends StatelessWidget {
 // navigation_cubit.dart (same as before)
 class NavigationCubit extends Cubit<int> {
   NavigationCubit() : super(0);
+  static NavigationCubit get(context) => BlocProvider.of(context);
 
   void changeTab(int index) => emit(index);
 }
