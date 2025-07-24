@@ -5,6 +5,7 @@ enum UserRole { client, serviceProvider }
 
 class UserRoleCubit extends Cubit<UserRole?> {
   UserRoleCubit() : super(null);
+  static UserRoleCubit get(context) => BlocProvider.of(context);
 
   void setUserRole(UserRole role) {
     emit(role);

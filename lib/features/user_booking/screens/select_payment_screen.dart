@@ -1,4 +1,3 @@
-import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -11,7 +10,6 @@ import 'package:mahu_home_services_app/features/user_booking/screens/add_payment
 import 'package:mahu_home_services_app/features/user_booking/screens/review_booking_summary_screen.dart';
 import 'package:mahu_home_services_app/features/user_booking/screens/select_address_screen.dart';
 import 'package:mahu_home_services_app/features/user_booking/widgets/home_section_label_text.dart';
-import 'package:mahu_home_services_app/features/user_booking/widgets/select_room_count_list_tile_widget.dart';
 
 class SelectPaymentMethodScreen extends StatelessWidget {
   const SelectPaymentMethodScreen({super.key});

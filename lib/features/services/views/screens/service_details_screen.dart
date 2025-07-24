@@ -5,7 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import '../../models/service_model.dart';
 class ServiceDetailsScreen extends StatelessWidget {
-  final Service service;
+  final ServiceModel service;
 
   const ServiceDetailsScreen({super.key, required this.service});
 
@@ -30,7 +30,7 @@ class ServiceDetailsScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12.r),
                 image: DecorationImage(
-                  image: NetworkImage(service.imgUrl),
+                  image: NetworkImage(service.image),
                   fit: BoxFit.cover,
                 ),
               ),
@@ -109,25 +109,25 @@ class ServiceDetailsScreen extends StatelessWidget {
           ),
         ),
         Gap(8.h),
-        if (service.availableAreas.isEmpty)
-          Text(
-            'No specific areas specified',
-            style: TextStyle(
-              fontSize: 16.sp,
-              color: Colors.grey.shade600,
-            ),
-          ),
-        if (service.availableAreas.isNotEmpty)
-          Wrap(
-            spacing: 8.w,
-            runSpacing: 8.h,
-            children: service.availableAreas
-                .map((area) => Chip(
-                      label: Text(area),
-                      backgroundColor: Colors.blue.shade50,
-                    ))
-                .toList(),
-          ),
+        // if (service.availableAreas.isEmpty)
+        //   Text(
+        //     'No specific areas specified',
+        //     style: TextStyle(
+        //       fontSize: 16.sp,
+        //       color: Colors.grey.shade600,
+        //     ),
+        //   ),
+        // if (service.availableAreas.isNotEmpty)
+        //   Wrap(
+        //     spacing: 8.w,
+        //     runSpacing: 8.h,
+        //     children: service.availableAreas
+        //         .map((area) => Chip(
+        //               label: Text(area),
+        //               backgroundColor: Colors.blue.shade50,
+        //             ))
+        //         .toList(),
+        //   ),
       ],
     );
   }

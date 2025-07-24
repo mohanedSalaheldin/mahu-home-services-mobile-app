@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:mahu_home_services_app/core/constants/app_const.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
 import 'package:mahu_home_services_app/core/utils/helpers/helping_functions.dart';
+import 'package:mahu_home_services_app/features/services/cubit/servises_cubit.dart';
+import 'package:mahu_home_services_app/features/services/cubit/servises_state.dart';
 import 'package:mahu_home_services_app/features/services/views/screens/add_service_screen.dart';
 import 'package:mahu_home_services_app/features/services/views/screens/service_details_screen.dart';
 import '../../models/service_model.dart';
@@ -81,34 +84,44 @@ class ServiceProviderDashboardScreen extends StatelessWidget {
                 ),
               ),
               // Services List
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: 5, // Replace with your actual services count
-                itemBuilder: (context, index) {
-                  final service = Service(
-                    name: "Deep Cleaning Service",
-                    description:
-                        "Complete deep cleaning for apartments and villas",
-                    category: "cleaning",
-                    serviceType: "one-time",
-                    subType: "deep",
-                    basePrice: 250,
-                    duration: 240,
-                    pricingModel: "fixed",
-                    imgUrl:
-                        "https://crewcare.co.nz/admin_assets/blog/deep-cleaning-in-winter-season.jpg",
-                    availableAreas: ["Area 1", "Area 2", "Area 3"],
-                  );
-                  return ServiceListItem(
-                    service: service,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              ServiceDetailsScreen(service: service),
-                        ),
+              BlocBuilder<ServiceCubit, ServiceState>(
+                
+                builder: (context, state) {
+                  return ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: 5, // Replace with your actual services count
+                    itemBuilder: (context, index) {
+                      final service = ServiceModel(
+                        id: '1',
+                        name: 'Deep Cleaning',
+                        description:
+                            'Comprehensive cleaning service for your home.',
+                        category: 'Cleaning',
+                        serviceType: 'Residential',
+                        subType: 'Deep Clean',
+                        basePrice: 150,
+                        pricingModel: 'Hourly',
+                        duration: 3,
+                        image:
+                            'https://realpristinesolutions.com/wp-content/uploads/2024/04/deep-clean.jpeg',
+                        active: true,
+                        provider: 'Mahu Home Services',
+                        isApproved: true,
+                        createdAt: DateTime.now(),
+                        v: 0,
+                      ); // Replace with your actual service data
+                      return ServiceListItem(
+                        service: service,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  ServiceDetailsScreen(service: service),
+                            ),
+                          );
+                        },
                       );
                     },
                   );
@@ -230,7 +243,7 @@ class DashboardStatisticsCardWidget extends StatelessWidget {
 }
 
 class ServiceListItem extends StatelessWidget {
-  final Service service;
+  final ServiceModel service;
   final VoidCallback onTap;
 
   const ServiceListItem({
@@ -267,7 +280,7 @@ class ServiceListItem extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
                 image: DecorationImage(
-                  image: NetworkImage(service.imgUrl),
+                  image: NetworkImage(service.image),
                   fit: BoxFit.cover,
                 ),
               ),

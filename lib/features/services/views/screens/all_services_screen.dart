@@ -40,7 +40,7 @@ class ServicesCard extends StatelessWidget {
     super.key,
     required this.service,
   });
-  final Service service;
+  final ServiceModel service;
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +57,7 @@ class ServicesCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Image.network(
-              service.imgUrl,
+              service.image,
               height: 180,
               width: double.infinity,
               fit: BoxFit.cover,
@@ -86,8 +86,8 @@ class ServicesCard extends StatelessWidget {
                         Icons.location_on_outlined,
                       ),
                       const Gap(5),
-                      Text(
-                        '${service.availableAreas[0]}, ${service.availableAreas[1]}...',
+                      const Text(
+                        'Location: ',
                         // style: ,
                       ),
                       const Spacer(),
@@ -115,41 +115,56 @@ class ServicesCard extends StatelessWidget {
 const sharedImageUrl =
     'https://realpristinesolutions.com/wp-content/uploads/2024/04/deep-clean.jpeg';
 
-List<Service> services = [
-  Service(
+List<ServiceModel> services = [
+  ServiceModel(
+    id: '1',
     name: 'Deep Cleaning',
-    description: 'Thorough cleaning service',
-    category: 'cleaning',
-    serviceType: 'one-time',
-    subType: 'deep',
-    basePrice: 150.0,
-    duration: 240,
-    pricingModel: 'fixed',
-    imgUrl: sharedImageUrl,
-    availableAreas: ['Cairo', 'Giza', 'Alexandria'],
+    description: 'Comprehensive cleaning service for your home.',
+    category: 'Cleaning',
+    serviceType: 'Residential',
+    subType: 'Deep Clean',
+    basePrice: 150,
+    pricingModel: 'Hourly',
+    duration: 3,
+    image: sharedImageUrl,
+    active: true,
+    provider: 'Mahu Home Services',
+    isApproved: true,
+    createdAt: DateTime.now(),
+    v: 0,
   ),
-  Service(
-    name: 'Regular Cleaning',
-    description: 'Weekly cleaning for your home',
-    category: 'cleaning',
-    serviceType: 'recurring',
-    subType: 'regular',
-    basePrice: 100.0,
-    duration: 120,
-    pricingModel: 'fixed',
-    imgUrl: sharedImageUrl,
-    availableAreas: ['Cairo', '6th October'],
+  ServiceModel(
+    id: '2',
+    name: 'Gardening',
+    description: 'Professional gardening services for your yard.',
+    category: 'Gardening',
+    serviceType: 'Residential',
+    subType: 'Maintenance',
+    basePrice: 100,
+    pricingModel: 'Flat Rate',
+    duration: 2,
+    image: sharedImageUrl,
+    active: true,
+    provider: 'Mahu Home Services',
+    isApproved: true,
+    createdAt: DateTime.now(),
+    v: 0,
   ),
-  Service(
-    name: 'Window Washing',
-    description: 'Sparkling clean windows guaranteed',
-    category: 'cleaning',
-    serviceType: 'one-time',
-    subType: 'windows',
-    basePrice: 80.0,
-    duration: 90,
-    pricingModel: 'fixed',
-    imgUrl: sharedImageUrl,
-    availableAreas: ['Alexandria', 'Mansoura'],
+  ServiceModel(
+    id: '3',
+    name: 'Plumbing',
+    description: 'Expert plumbing services for all your needs.',
+    category: 'Plumbing',
+    serviceType: 'Residential',
+    subType: 'Repair',
+    basePrice: 80,
+    pricingModel: 'Hourly',
+    duration: 1,
+    image: sharedImageUrl,
+    active: true,
+    provider: 'Mahu Home Services',
+    isApproved: true,
+    createdAt: DateTime.now(),
+    v: 0,
   ),
 ];

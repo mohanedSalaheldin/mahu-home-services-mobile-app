@@ -3,20 +3,17 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:mahu_home_services_app/core/constants/app_const.dart';
-import 'package:mahu_home_services_app/core/constants/colors.dart';
 import 'package:mahu_home_services_app/core/utils/helpers/form_validation_method.dart';
 import 'package:mahu_home_services_app/core/utils/helpers/helping_functions.dart';
 import 'package:mahu_home_services_app/features/auth/client_auth/cubit/auth_cubit.dart';
 import 'package:mahu_home_services_app/features/auth/client_auth/cubit/auth_state.dart';
 import 'package:mahu_home_services_app/features/auth/client_auth/views/screens/login_screen.dart';
 import 'package:mahu_home_services_app/features/auth/client_auth/views/screens/verify_account_screen.dart';
-import 'package:mahu_home_services_app/features/auth/client_auth/views/widgets/app_back_button.dart';
 import 'package:mahu_home_services_app/features/auth/client_auth/views/widgets/custom_snack_bar.dart';
 import 'package:mahu_home_services_app/features/auth/client_auth/views/widgets/custom_text_field.dart';
 import 'package:mahu_home_services_app/features/auth/client_auth/views/widgets/phone_text_field.dart';
 import 'package:mahu_home_services_app/features/auth/client_auth/views/widgets/terms_checkbox.dart';
 import 'package:mahu_home_services_app/features/landing/views/widgets/app_filled_button.dart';
-import 'package:mahu_home_services_app/features/landing/views/widgets/app_text_button.dart';
 import 'package:mahu_home_services_app/features/landing/views/widgets/have_or_not_an_account_row.dart';
 
 class ClientRegisterScreen extends StatefulWidget {

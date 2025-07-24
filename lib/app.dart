@@ -5,15 +5,11 @@ import 'package:mahu_home_services_app/core/constants/colors.dart';
 import 'package:mahu_home_services_app/core/models/user_type_enum.dart';
 import 'package:mahu_home_services_app/core/utils/helpers/cache_helper.dart';
 import 'package:mahu_home_services_app/features/auth/client_auth/cubit/auth_cubit.dart';
-import 'package:mahu_home_services_app/features/auth/client_auth/views/screens/home_test.dart';
 import 'package:mahu_home_services_app/features/auth/client_auth/views/screens/login_screen.dart';
 import 'package:mahu_home_services_app/features/landing/views/screens/choose_rule_screen.dart';
 import 'package:mahu_home_services_app/features/landing/views/screens/landing_screen1.dart';
 import 'package:mahu_home_services_app/features/services/cubit/servises_cubit.dart';
 import 'package:mahu_home_services_app/features/services/views/screens/all_services_screen.dart';
-import 'package:mahu_home_services_app/features/services/views/screens/service_provider_dashboard_screen.dart';
-import 'package:mahu_home_services_app/features/user_booking/screens/booking_form_screen.dart';
-import 'package:mahu_home_services_app/features/user_booking/screens/select_rooms_screen.dart';
 import 'package:mahu_home_services_app/features/user_booking/screens/customer_home_screen.dart';
 
 class MyApp extends StatelessWidget {
@@ -70,34 +66,34 @@ class MyApp extends StatelessWidget {
   }
 }
 
-// Future<Widget> getInitialScreen() async {
-//   final bool? isFirstTime = CacheHelper.getBool('first_time');
-//   final String? userRole =
-//       CacheHelper.getString('user_role'); // client أو provider
-//   final String? token = CacheHelper.getString('token');
+Future<Widget> getInitialScreen() async {
+  final bool? isFirstTime = CacheHelper.getBool('first_time');
+  final String? userRole =
+      CacheHelper.getString('user_role'); // client أو provider
+  final String? token = CacheHelper.getString('token');
 
-//   // الحالة 1: أول مرة يفتح التطبيق
-//   if (isFirstTime == null || isFirstTime == true) {
-//     return const LandingScreen1();
-//   }
+  // الحالة 1: أول مرة يفتح التطبيق
+  if (isFirstTime == null || isFirstTime == true) {
+    return const LandingScreen1();
+  }
 
-//   // الحالة 2: ما اختار دور لسه
-//   if (userRole == null || userRole.isEmpty) {
-//     return const ChooseRuleScreen();
-//   }
+  // الحالة 2: ما اختار دور لسه
+  if (userRole == null || userRole.isEmpty) {
+    return const ChooseRuleScreen();
+  }
 
-//   // الحالة 3: اختار دور لكن ما عمل تسجيل دخول
-//   if (token == null || token.isEmpty) {
-//     return const LoginScreen();
-//   }
+  // الحالة 3: اختار دور لكن ما عمل تسجيل دخول
+  if (token == null || token.isEmpty) {
+    return const LoginScreen();
+  }
 
-//   // الحالة 4: اختار دور وسجّل دخول
-//   if (userRole == 'client') {
-//     return const UserHomeScreen();
-//   } else if (userRole == 'provider') {
-//     return const AllServicesScreen();
-//   }
+  // الحالة 4: اختار دور وسجّل دخول
+  if (userRole == 'client') {
+    return const CustomerHomeScreen();
+  } else if (userRole == 'provider') {
+    return const AllServicesScreen();
+  }
 
-//   // fallback
-//   return const ChooseRuleScreen();
-// }
+  // fallback
+  return const ChooseRuleScreen();
+}

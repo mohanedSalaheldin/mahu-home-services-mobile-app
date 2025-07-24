@@ -63,25 +63,25 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
       subType: 'weekly',
     ),
     models.CleaningService(
-      id: '3',
-      name: 'Move-In/Move-Out',
-      description: 'Complete cleaning for new or vacated homes',
-      category: 'cleaning',
-      price: 249.99,
-      duration: 6,
-      rating: 4.9,
-      reviews: 156,
-      imageUrl: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750',
-      isFavorite: false,
-      subServices: [
-        'Wall washing',
-        'Appliance cleaning',
-        'Inside cabinets',
-        'Baseboard cleaning'
-      ],
-      serviceType: 'one-time',
-      subType: "normal"
-    ),
+        id: '3',
+        name: 'Move-In/Move-Out',
+        description: 'Complete cleaning for new or vacated homes',
+        category: 'cleaning',
+        price: 249.99,
+        duration: 6,
+        rating: 4.9,
+        reviews: 156,
+        imageUrl:
+            'https://images.unsplash.com/photo-1512917774080-9991f1c4c750',
+        isFavorite: false,
+        subServices: [
+          'Wall washing',
+          'Appliance cleaning',
+          'Inside cabinets',
+          'Baseboard cleaning'
+        ],
+        serviceType: 'one-time',
+        subType: "normal"),
   ];
 
   @override
@@ -121,24 +121,23 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
         leading: Padding(
           padding: EdgeInsets.only(left: 16.w),
           child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              Text(
-                'MAHU Cleaning',
-                style: TextStyle(
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.primary,
-                ),
+              Image.asset(
+                'assets/imgs/logo.png',
+                // width: 20.w,
+                height: 40.w,
+                fit: BoxFit.contain,
               ),
             ],
           ),
         ),
         actions: [
           IconButton(
-            icon: Badge(
+            icon: const Badge(
               backgroundColor: AppColors.primary,
-              label: const Text('3'),
-              child: const Icon(Icons.notifications_outlined),
+              label: Text('3'),
+              child: Icon(Icons.notifications_outlined),
             ),
             onPressed: () {},
           ),
@@ -156,7 +155,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
               _buildSearchBar()
                   .animate()
                   .fadeIn(delay: 100.ms)
-                  .slide(begin: Offset(0, 0.1)),
+                  .slide(begin: const Offset(0, 0.1)),
               Gap(24.h),
 
               // Special Offers Banner
@@ -167,21 +166,21 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
               _buildServiceCategories()
                   .animate()
                   .fadeIn(delay: 200.ms)
-                  .slide(begin: Offset(0, 0.1)),
+                  .slide(begin: const Offset(0, 0.1)),
               Gap(24.h),
 
               // Popular Services
               _buildPopularServices()
                   .animate()
                   .fadeIn(delay: 300.ms)
-                  .slide(begin: Offset(0, 0.1)),
+                  .slide(begin: const Offset(0, 0.1)),
               Gap(24.h),
 
               // Recommended Services
               _buildRecommendedServices()
                   .animate()
                   .fadeIn(delay: 400.ms)
-                  .slide(begin: Offset(0, 0.1)),
+                  .slide(begin: const Offset(0, 0.1)),
               Gap(24.h),
             ],
           ),
@@ -720,7 +719,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                           '${service.rating} (${service.reviews})',
                           style: TextStyle(fontSize: 12.sp),
                         ),
-                        Spacer(),
+                        const Spacer(),
                         Text(
                           '\$${service.price}',
                           style: TextStyle(
