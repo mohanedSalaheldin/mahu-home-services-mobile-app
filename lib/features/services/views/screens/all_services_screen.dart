@@ -3,7 +3,6 @@ import 'package:gap/gap.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
 import 'package:mahu_home_services_app/core/utils/helpers/helping_functions.dart';
 import 'package:mahu_home_services_app/features/services/views/screens/add_service_screen.dart';
-
 import '../../models/service_model.dart';
 
 class AllServicesScreen extends StatelessWidget {
@@ -132,6 +131,11 @@ List<ServiceModel> services = [
     isApproved: true,
     createdAt: DateTime.now(),
     v: 0,
+    availableDays: ['Monday', 'Wednesday', 'Friday'],
+    availableSlots: [
+      TimeSlot(startTime: '09:00', endTime: '12:00'),
+      TimeSlot(startTime: '13:00', endTime: '16:00'),
+    ],
   ),
   ServiceModel(
     id: '2',
@@ -148,7 +152,13 @@ List<ServiceModel> services = [
     provider: 'Mahu Home Services',
     isApproved: true,
     createdAt: DateTime.now(),
+    availableSlots: [
+      TimeSlot(startTime: '10:00', endTime: '12:00'),
+      TimeSlot(startTime: '14:00', endTime: '16:00'),
+    ],
     v: 0,
+    availableDays: ['Tuesday', 'Thursday'],
+    // removed duplicate availableSlots string list
   ),
   ServiceModel(
     id: '3',
@@ -162,9 +172,15 @@ List<ServiceModel> services = [
     duration: 1,
     image: sharedImageUrl,
     active: true,
+    availableSlots: [
+      TimeSlot(startTime: '08:00', endTime: '10:00'),
+      TimeSlot(startTime: '15:00', endTime: '17:00'),
+    ],
     provider: 'Mahu Home Services',
     isApproved: true,
     createdAt: DateTime.now(),
     v: 0,
+    availableDays: ['Saturday', 'Sunday'],
+    // removed duplicate availableSlots string list
   ),
 ];

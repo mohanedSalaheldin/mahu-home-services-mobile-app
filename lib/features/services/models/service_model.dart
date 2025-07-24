@@ -5,14 +5,16 @@ class ServiceModel {
   final String category;
   final String serviceType;
   final String subType;
-  final int basePrice;
+  final double basePrice;
   final String pricingModel;
-  final int duration;
+  final int duration; // in minutes
   final String image;
   final bool active;
   final String provider;
   final bool isApproved;
   final DateTime createdAt;
+  final List<String> availableDays;
+  final List<TimeSlot> availableSlots;
   final int v;
 
   ServiceModel({
@@ -30,6 +32,8 @@ class ServiceModel {
     required this.provider,
     required this.isApproved,
     required this.createdAt,
+    required this.availableDays,
+    required this.availableSlots,
     required this.v,
   });
 
@@ -38,17 +42,21 @@ class ServiceModel {
       id: json['_id'] ?? '',
       name: json['name'] ?? '',
       description: json['description'] ?? '',
-      category: json['category'] ?? '',
-      serviceType: json['serviceType'] ?? '',
-      subType: json['subType'] ?? '',
-      basePrice: json['basePrice'] ?? 0,
-      pricingModel: json['pricingModel'] ?? '',
-      duration: json['duration'] ?? 0,
+      category: json['category'] ?? 'cleaning',
+      serviceType: json['serviceType'] ?? 'one-time',
+      subType: json['subType'] ?? 'normal',
+      basePrice: (json['basePrice'] ?? 0).toDouble(),
+      pricingModel: json['pricingModel'] ?? 'fixed',
+      duration: json['duration'] ?? 60,
       image: json['image'] ?? '',
-      active: json['active'] ?? false,
-      provider: json['provider'] ?? '',
+      active: json['active'] ?? true,
+      provider: json['provider'] is Map ? json['provider']['_id'] ?? '' : json['provider'] ?? '',
       isApproved: json['isApproved'] ?? false,
       createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
+      availableDays: List<String>.from(json['availableDays'] ?? []),
+      availableSlots: (json['availableSlots'] as List<dynamic>?)
+          ?.map((slot) => TimeSlot.fromJson(slot))
+          .toList() ?? [],
       v: json['__v'] ?? 0,
     );
   }
@@ -69,7 +77,33 @@ class ServiceModel {
       'provider': provider,
       'isApproved': isApproved,
       'createdAt': createdAt.toIso8601String(),
+      'availableDays': availableDays,
+      'availableSlots': availableSlots.map((slot) => slot.toJson()).toList(),
       '__v': v,
+    };
+  }
+}
+
+class TimeSlot {
+  final String startTime;
+  final String endTime;
+
+  TimeSlot({
+    required this.startTime,
+    required this.endTime,
+  });
+
+  factory TimeSlot.fromJson(Map<String, dynamic> json) {
+    return TimeSlot(
+      startTime: json['startTime'] ?? '',
+      endTime: json['endTime'] ?? '',
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'startTime': startTime,
+      'endTime': endTime,
     };
   }
 }
