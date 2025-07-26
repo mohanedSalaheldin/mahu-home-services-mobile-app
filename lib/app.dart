@@ -42,26 +42,26 @@ class MyApp extends StatelessWidget {
             colorScheme: ColorScheme.fromSeed(seedColor: AppColors.black),
             useMaterial3: true,
           ),
-          home: const UploadTestScreen(),
-          // home: FutureBuilder<Widget>(
-          //   future: getInitialScreen(),
-          //   builder: (context, snapshot) {
-          //     if (snapshot.connectionState == ConnectionState.waiting) {
-          //       // أثناء التحميل
-          //       return const Scaffold(
-          //         body: Center(child: CircularProgressIndicator()),
-          //       );
-          //     } else if (snapshot.hasError) {
-          //       // في حال حدوث خطأ
-          //       return const Scaffold(
-          //         body: Center(child: Text('حدث خطأ!')),
-          //       );
-          //     } else {
-          //       // عند اكتمال المستقبل
-          //       return snapshot.data!;
-          //     }
-          //   },
-          // ),
+          // home: const UploadTestScreen(),
+          home: FutureBuilder<Widget>(
+            future: getInitialScreen(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                // أثناء التحميل
+                return const Scaffold(
+                  body: Center(child: CircularProgressIndicator()),
+                );
+              } else if (snapshot.hasError) {
+                // في حال حدوث خطأ
+                return const Scaffold(
+                  body: Center(child: Text('حدث خطأ!')),
+                );
+              } else {
+                // عند اكتمال المستقبل
+                return snapshot.data!;
+              }
+            },
+          ),
         ),
       ),
     );
