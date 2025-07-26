@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
 import 'package:mahu_home_services_app/core/models/user_type_enum.dart';
 import 'package:mahu_home_services_app/core/utils/helpers/cache_helper.dart';
+import 'package:mahu_home_services_app/core/utils/helpers/upload_media_helper.dart';
 import 'package:mahu_home_services_app/features/auth/client_auth/cubit/auth_cubit.dart';
 import 'package:mahu_home_services_app/features/auth/client_auth/views/screens/login_screen.dart';
 import 'package:mahu_home_services_app/features/landing/views/screens/choose_rule_screen.dart';
@@ -41,26 +42,26 @@ class MyApp extends StatelessWidget {
             colorScheme: ColorScheme.fromSeed(seedColor: AppColors.black),
             useMaterial3: true,
           ),
-          // home: const ChooseRuleScreen(),
-          home: FutureBuilder<Widget>(
-            future: getInitialScreen(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                // أثناء التحميل
-                return const Scaffold(
-                  body: Center(child: CircularProgressIndicator()),
-                );
-              } else if (snapshot.hasError) {
-                // في حال حدوث خطأ
-                return const Scaffold(
-                  body: Center(child: Text('حدث خطأ!')),
-                );
-              } else {
-                // عند اكتمال المستقبل
-                return snapshot.data!;
-              }
-            },
-          ),
+          home: const UploadTestScreen(),
+          // home: FutureBuilder<Widget>(
+          //   future: getInitialScreen(),
+          //   builder: (context, snapshot) {
+          //     if (snapshot.connectionState == ConnectionState.waiting) {
+          //       // أثناء التحميل
+          //       return const Scaffold(
+          //         body: Center(child: CircularProgressIndicator()),
+          //       );
+          //     } else if (snapshot.hasError) {
+          //       // في حال حدوث خطأ
+          //       return const Scaffold(
+          //         body: Center(child: Text('حدث خطأ!')),
+          //       );
+          //     } else {
+          //       // عند اكتمال المستقبل
+          //       return snapshot.data!;
+          //     }
+          //   },
+          // ),
         ),
       ),
     );
