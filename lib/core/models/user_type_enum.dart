@@ -1,10 +1,10 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-enum UserRole { client, provider }
+enum UserRole { client, provider, unknown }
 
-class UserRoleCubit extends Cubit<UserRole?> {
-  UserRoleCubit() : super(null);
+class UserRoleCubit extends Cubit<UserRole> {
+  UserRoleCubit() : super(UserRole.unknown);
   static UserRoleCubit get(context) => BlocProvider.of(context);
 
   void setUserRole(UserRole role) {
@@ -15,7 +15,9 @@ class UserRoleCubit extends Cubit<UserRole?> {
   Future<void> loadUserRole() async {
     final prefs = await SharedPreferences.getInstance();
     final roleStr = prefs.getString('user_role');
-    if (roleStr != null) {
+    if (roleStr == null) {
+      emit(UserRole.unknown);
+    } else {
       emit(UserRole.values.firstWhere((e) => e.name == roleStr));
     }
   }

@@ -52,7 +52,7 @@ class _LoginScreenState extends State<LoginScreen> {
           if (state is LoginSucessededState) {
             navigateTo(
                 context,
-                UserRoleCubit.get(context).state == UserRole.client
+                UserRoleCubit.get(context).state.name == UserRole.client.name
                     ? const CustomerHomeScreen()
                     : const ServiceProviderDashboardScreen());
           } else if (state is LoginFailedState) {

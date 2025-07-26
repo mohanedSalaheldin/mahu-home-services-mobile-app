@@ -6,7 +6,10 @@ import 'package:gap/gap.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
 import 'package:mahu_home_services_app/core/models/user_type_enum.dart';
 import 'package:mahu_home_services_app/core/utils/helpers/helping_functions.dart';
+import 'package:mahu_home_services_app/features/auth/client_auth/views/screens/client_register_screen.dart';
+import 'package:mahu_home_services_app/features/auth/provider_auth/views/screens/provider_register_screen.dart';
 import 'package:mahu_home_services_app/features/layouts/provider_layout_screen.dart';
+import 'package:mahu_home_services_app/features/services/views/screens/service_provider_dashboard_screen.dart';
 import 'package:mahu_home_services_app/features/user_booking/screens/customer_home_screen.dart';
 
 class ChooseRuleScreen extends StatefulWidget {
@@ -107,12 +110,14 @@ class _ChooseRuleScreenState extends State<ChooseRuleScreen> {
                         ),
                         onPressed: role != null
                             ? () {
-                                if (role == UserRole.client) {
-                                  navigateTo(
-                                      context, const CustomerHomeScreen());
-                                } else {
-                                  navigateTo(context, ProviderLayoutScreen());
-                                }
+                                Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          role == UserRole.client
+                                              ? const ClientRegisterScreen()
+                                              : const ProviderRegisterScreen(),
+                                    ));
                               }
                             : null,
                         child: Text(

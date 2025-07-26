@@ -91,16 +91,16 @@ class LandingScren2 extends StatelessWidget {
                   text: 'Let\'s Get Started',
                 ),
                 // const Spacer(),
-                HaveOrNotAnAccountRow(
-                  questionTxt: 'Already have an account ?',
-                  buttonTxt: 'Login',
-                  onPresseButton: () async {
-                    await CacheHelper.saveBool('first_time', false);
-                    if (context.mounted) {
-                      navigateTo(context, const LoginScreen());
-                    }
-                  },
-                ),
+                // HaveOrNotAnAccountRow(
+                //   questionTxt: 'Already have an account ?',
+                //   buttonTxt: 'Login',
+                //   onPresseButton: () async {
+                //     await CacheHelper.saveBool('first_time', false);
+                //     if (context.mounted) {
+                //       navigateTo(context, const LoginScreen());
+                //     }
+                //   },
+                // ),
               ],
             ),
           )
