@@ -1,9 +1,12 @@
+import 'dart:io';
+
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:mahu_home_services_app/core/constants/app_const.dart';
 import 'package:mahu_home_services_app/core/errors/failures.dart';
 import 'package:mahu_home_services_app/core/network_info.dart';
 import 'package:mahu_home_services_app/core/utils/helpers/cache_helper.dart';
+import 'package:mahu_home_services_app/core/utils/helpers/upload_media_helper.dart';
 import 'package:mahu_home_services_app/features/services/models/service_model.dart';
 
 class ManageProviderServices {
@@ -53,12 +56,14 @@ class ManageProviderServices {
   }
 
   // Example method to add a service
-  Future<Either<Failure, Unit>> addService(ServiceModel service) {
+  Future<Either<Failure, Unit>> addService(ServiceModel service) async {
     String token = CacheHelper.getString('token') ?? '';
     print('--------------------');
     print(
         'Adding service with token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ODIzOTkzOWVkMWEyNzZjNzRjMjM4MiIsImlhdCI6MTc1MzM2NjYwMCwiZXhwIjoxNzU1OTU4NjAwfQ.BdYJYVs2p7qeMywo7EZCdvPCOeqmIiPDG-QIm1XTreE');
     print('--------------------');
+    String imageUrl =
+        await UploadMediaHelper.uploadImage(File(service.image)) ?? '';
     return _handleRequest<Unit>(
       request: () => _dio.post(
         '/services',
@@ -71,7 +76,7 @@ class ManageProviderServices {
           "basePrice": service.basePrice, // per hour
           "pricingModel": service.pricingModel, // hourly or fixed
           "duration": service.duration, // minimum 1 hour
-          "image": service.image,
+          "image": imageUrl,
           "active": true,
           "isApproved": true
         },
@@ -137,4 +142,5 @@ class ManageProviderServices {
       knownFailures: {},
     );
   }
+  
 }

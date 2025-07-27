@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:image_picker/image_picker.dart';
@@ -5,6 +7,7 @@ import 'package:mahu_home_services_app/core/constants/app_const.dart';
 import 'package:mahu_home_services_app/core/errors/failures.dart';
 import 'package:mahu_home_services_app/core/models/use_model.dart';
 import 'package:mahu_home_services_app/core/network_info.dart';
+import 'package:mahu_home_services_app/core/utils/helpers/upload_media_helper.dart';
 
 class AuthServices {
   final NetworkInfo _networkInfo = NetworkInfoImpl();
@@ -78,32 +81,26 @@ class AuthServices {
     required String password,
     required String firstName,
     required String lastName,
-    required XFile? avatarPath,
+    required String avatarPath,
     required String businessName,
-  }) {
+  }) async {
+    String imageUrl =
+        await UploadMediaHelper.uploadImage(File(avatarPath)) ?? '';
+
     return _handleRequest<UserModel>(
       request: () async {
-        MultipartFile? avatarFile;
-        if (avatarPath != null) {
-          avatarFile = await MultipartFile.fromFile(
-            avatarPath.path,
-            filename: '${firstName + phone}_avatar.jpg',
-          );
-        }
-
         return _dio.post(
           '/auth/register',
-          // options: Options(
-          //   contentType: 'multipart/form-data',
-          // ),
+          options: Options(
+            contentType: 'multipart/form-data',
+          ),
           data: {
             "email": email,
             "phone": phone,
             "password": password,
             "firstName": firstName,
             "lastName": lastName,
-            "avatar":
-                'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTU3HFVnkYFJ_OIogo__Qv58bmhwRqZJcQhOA&s',
+            "avatar": imageUrl,
             "role": "provider",
             "businessName": businessName,
             "businessRegistration": "REG123456",
@@ -125,10 +122,13 @@ class AuthServices {
     required String password,
   }) {
     return _handleRequest<String>(
-      request: () => _dio.post('/auth/login', data: {
-        "email": email,
-        "password": password,
-      }),
+      request: () => _dio.post(
+        '/auth/login',
+        data: {
+          "email": email,
+          "password": password,
+        },
+      ),
       onSuccess: (data) => data['token'],
       knownFailures: {
         401: LoginInvalidCredentialsFailure(),

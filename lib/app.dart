@@ -33,7 +33,7 @@ class MyApp extends StatelessWidget {
           ),
         ],
         child: MaterialApp(
-          title: 'MAHU Service Booking Platform',
+          title: 'MAHU Booking Platform',
           debugShowCheckedModeBanner: false,
           theme: ThemeData(
             fontFamily: 'Poppins',

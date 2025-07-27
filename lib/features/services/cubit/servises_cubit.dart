@@ -1,12 +1,33 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mahu_home_services_app/features/services/cubit/servises_state.dart';
 import 'package:mahu_home_services_app/features/services/models/service_model.dart';
+import 'package:mahu_home_services_app/features/services/models/user_base_profile_model.dart';
 import 'package:mahu_home_services_app/features/services/services/manage_provider_services.dart';
+import 'package:mahu_home_services_app/features/services/services/profile_services.dart';
 
 class ServiceCubit extends Cubit<ServiceState> {
   ServiceCubit() : super(ServiceInitial());
   final ManageProviderServices _manageProviderServices =
       ManageProviderServices();
+  final ProfileServices _profileServices = ProfileServices();
+
+  UserBaseProfileModel _profile = UserBaseProfileModel(
+    firstName: '',
+    lastName: '',
+    avatar: '',
+  );
+  UserBaseProfileModel get profile => _profile;
+
+  void fetchProfile() async {
+    emit(ServiceGetProfileLoadingState());
+    final profile = await _profileServices.getProfile();
+    profile.fold((failure) {
+      emit(ServiceGetProfileFailedState());
+    }, (profile) {
+      _profile = profile;
+      emit(ServiceGetProfileSuccessState());
+    });
+  }
 
   static ServiceCubit get(context) => BlocProvider.of(context);
   final List<ServiceModel> _services = [];
@@ -39,7 +60,6 @@ class ServiceCubit extends Cubit<ServiceState> {
           (_) {
             _services.add(service);
             emit(ServiceCreationSuccessState());
-
           },
         );
       },

@@ -13,3 +13,9 @@ final class ServiceCreationSuccessState extends ServiceState {}
 final class ServiceCreationlFailedState extends ServiceState {}
 
 final class ServiceGCreationLoadingState extends ServiceState {}
+
+final class ServiceGetProfileSuccessState extends ServiceState {}
+
+final class ServiceGetProfileFailedState extends ServiceState {}
+
+final class ServiceGetProfileLoadingState extends ServiceState {}

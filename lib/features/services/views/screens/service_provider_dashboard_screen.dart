@@ -31,6 +31,9 @@ class _ServiceProviderDashboardScreenState
     if (cubit.services.isEmpty) {
       cubit.fetchServices();
     }
+    if (cubit.profile.firstName.isEmpty) {
+      cubit.fetchProfile();
+    }
   }
 
   @override
@@ -38,7 +41,7 @@ class _ServiceProviderDashboardScreenState
     var cubit = ServiceCubit.get(context);
     return Scaffold(
       appBar: AppBar(
-        leading: const BackButton(),
+        // leading: const BackButton(),
         title: const Text("Dashboard"),
         centerTitle: false,
         actions: [
@@ -54,11 +57,13 @@ class _ServiceProviderDashboardScreenState
           // TODO: implement listener
         },
         builder: (context, state) {
-          if (state is ServiceGetAllLoadingState) {
+          if (state is ServiceGetAllLoadingState ||
+              state is ServiceGetProfileLoadingState) {
             return const Center(
               child: CircularProgressIndicator(),
             );
-          } else if (state is ServiceGetAllFailedState) {
+          } else if (state is ServiceGetAllFailedState ||
+              state is ServiceGetProfileFailedState) {
             return Center(
               child: Text(
                 'Error: {state.error}',
@@ -81,7 +86,7 @@ class _ServiceProviderDashboardScreenState
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Welcome back, Alex',
+                          'Welcome back, ${cubit.profile.firstName}',
                           style: TextStyle(
                             fontSize: 24.sp,
                             fontWeight: FontWeight.w700,

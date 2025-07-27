@@ -54,7 +54,7 @@ class AuthCubit extends Cubit<AuthState> {
     required String password,
     required String firstName,
     required String lastName,
-    required XFile? avatarPath,
+    required String avatarPath,
     required String businessName,
   }) async {
     emit(RegisterLoadingState());

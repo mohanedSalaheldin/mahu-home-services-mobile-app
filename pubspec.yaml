@@ -1,9 +1,9 @@
 name: mahu_home_services_app
-description: "MAHU Service Booking Platform"
+description: "MAHU Booking Platform"
 
 publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
-version: 1.0.9+9
+version: 1.0.10+10
 
 environment:
   sdk: ^3.5.4
@@ -24,7 +24,6 @@ dependencies:
   flutter_screenutil: ^5.9.3
   font_awesome_flutter: ^10.8.0
   gap: ^3.0.1
-  halofoil: ^0.0.1
   image_picker: ^1.1.2
   pinput: ^5.0.1
   readmore: ^2.0.0
@@ -36,6 +35,12 @@ dev_dependencies:
   flutter_lints: ^4.0.0
   flutter_test:
     sdk: flutter
+  flutter_launcher_icons: ^0.13.1
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/imgs/ic_launcher.png"
 
 flutter:
   uses-material-design: true

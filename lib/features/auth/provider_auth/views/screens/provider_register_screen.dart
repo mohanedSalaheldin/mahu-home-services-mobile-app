@@ -222,7 +222,7 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
                             lastName: lNameController.text,
                             password: passwordController.text,
                             phone: countryCode + phoneController.text,
-                            avatarPath: _selectedImage,
+                            avatarPath: _selectedImage?.path ?? '',
                             businessName: businessNameController.text,
                           );
                           print("Form is valid");
