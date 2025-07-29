@@ -133,8 +133,8 @@ List<ServiceModel> services = [
     v: 0,
     availableDays: ['Monday', 'Wednesday', 'Friday'],
     availableSlots: [
-      TimeSlot(startTime: '09:00', endTime: '12:00'),
-      TimeSlot(startTime: '13:00', endTime: '16:00'),
+      TimeSlot(startTime: '09:00', endTime: '12:00', id: '1'),
+      TimeSlot(startTime: '13:00', endTime: '16:00', id: '2'),
     ],
   ),
   ServiceModel(
@@ -153,8 +153,8 @@ List<ServiceModel> services = [
     isApproved: true,
     createdAt: DateTime.now(),
     availableSlots: [
-      TimeSlot(startTime: '10:00', endTime: '12:00'),
-      TimeSlot(startTime: '14:00', endTime: '16:00'),
+      TimeSlot(startTime: '10:00', endTime: '12:00', id: '1'),
+      TimeSlot(startTime: '14:00', endTime: '16:00', id: '2'),
     ],
     v: 0,
     availableDays: ['Tuesday', 'Thursday'],
@@ -173,8 +173,8 @@ List<ServiceModel> services = [
     image: sharedImageUrl,
     active: true,
     availableSlots: [
-      TimeSlot(startTime: '08:00', endTime: '10:00'),
-      TimeSlot(startTime: '15:00', endTime: '17:00'),
+      TimeSlot(startTime: '08:00', endTime: '10:00', id: '1'),
+      TimeSlot(startTime: '15:00', endTime: '17:00', id: '2'),
     ],
     provider: 'Mahu Home Services',
     isApproved: true,

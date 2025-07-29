@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
+import 'package:mahu_home_services_app/features/landing/views/screens/choose_rule_screen.dart';
 import 'package:mahu_home_services_app/features/user_booking/screens/service_category_screen.dart';
 import 'package:mahu_home_services_app/features/user_booking/screens/service_details_screen.dart';
 import 'package:mahu_home_services_app/core/models/cleaning_service.dart'
@@ -116,6 +117,15 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => const ChooseRuleScreen()));
+        },
+        child: const Icon(Icons.logout_outlined),
+      ),
       appBar: AppBar(
         leadingWidth: 150.w,
         leading: Padding(
@@ -676,7 +686,6 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [

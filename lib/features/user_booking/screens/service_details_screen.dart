@@ -3,6 +3,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:mahu_home_services_app/core/utils/helpers/helping_functions.dart';
+import 'package:mahu_home_services_app/features/user_booking/screens/booking_form_screen.dart';
 import 'package:readmore/readmore.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:mahu_home_services_app/core/models/cleaning_service.dart';
@@ -20,7 +22,10 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
   bool _isFavorite = false;
   final PageController _imageController = PageController();
   final List<String> _availableDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
-  final List<String> _availableTimes = ['9:00 AM - 12:00 PM', '2:00 PM - 6:00 PM'];
+  final List<String> _availableTimes = [
+    '9:00 AM - 12:00 PM',
+    '2:00 PM - 6:00 PM'
+  ];
 
   @override
   void initState() {
@@ -41,8 +46,10 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
               controller: _imageController,
               children: [
                 _buildServiceImage(widget.service.imageUrl),
-                _buildServiceImage('https://images.unsplash.com/photo-1600585152220-90363fe7e115'),
-                _buildServiceImage('https://images.unsplash.com/photo-1584622650111-993a426fbf0a'),
+                _buildServiceImage(
+                    'https://images.unsplash.com/photo-1600585152220-90363fe7e115'),
+                _buildServiceImage(
+                    'https://images.unsplash.com/photo-1584622650111-993a426fbf0a'),
               ],
             ),
           ),
@@ -104,7 +111,8 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
               return Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(24)),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.1),
@@ -187,7 +195,8 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                               ),
                             ),
                             Container(
-                              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 12.w, vertical: 6.h),
                               decoration: BoxDecoration(
                                 color: widget.service.serviceType == 'Recurring'
                                     ? Colors.blue.withOpacity(0.1)
@@ -198,9 +207,10 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                                 widget.service.serviceType,
                                 style: TextStyle(
                                   fontSize: 12.sp,
-                                  color: widget.service.serviceType == 'Recurring'
-                                      ? Colors.blue
-                                      : Colors.orange,
+                                  color:
+                                      widget.service.serviceType == 'Recurring'
+                                          ? Colors.blue
+                                          : Colors.orange,
                                 ),
                               ),
                             ),
@@ -217,11 +227,13 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                               style: TextStyle(fontSize: 14.sp),
                             ),
                             Gap(16.w),
-                            Icon(Icons.access_time, size: 16.sp, color: Colors.grey),
+                            Icon(Icons.access_time,
+                                size: 16.sp, color: Colors.grey),
                             Gap(4.w),
                             Text(
                               '${widget.service.duration} hours',
-                              style: TextStyle(fontSize: 14.sp, color: Colors.grey),
+                              style: TextStyle(
+                                  fontSize: 14.sp, color: Colors.grey),
                             ),
                           ],
                         ),
@@ -239,7 +251,8 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                             children: [
                               Row(
                                 children: [
-                                  Icon(Icons.calendar_today, size: 20.sp, color: AppColors.primary),
+                                  Icon(Icons.calendar_today,
+                                      size: 20.sp, color: AppColors.primary),
                                   Gap(8.w),
                                   Text(
                                     'Available Time',
@@ -265,7 +278,8 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                                 children: _availableDays
                                     .map((day) => Chip(
                                           label: Text(day),
-                                          backgroundColor: AppColors.primary.withOpacity(0.1),
+                                          backgroundColor: AppColors.primary
+                                              .withOpacity(0.1),
                                           labelStyle: TextStyle(
                                             color: AppColors.primary,
                                             fontSize: 12.sp,
@@ -289,11 +303,14 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                                           padding: EdgeInsets.only(bottom: 8.h),
                                           child: Row(
                                             children: [
-                                              Icon(Icons.access_time, size: 16.sp, color: Colors.grey),
+                                              Icon(Icons.access_time,
+                                                  size: 16.sp,
+                                                  color: Colors.grey),
                                               Gap(8.w),
                                               Text(
                                                 time,
-                                                style: TextStyle(fontSize: 14.sp),
+                                                style:
+                                                    TextStyle(fontSize: 14.sp),
                                               ),
                                             ],
                                           ),
@@ -340,13 +357,16 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                                 child: ElevatedButton(
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: AppColors.primary,
-                                    padding: EdgeInsets.symmetric(vertical: 14.h),
+                                    padding:
+                                        EdgeInsets.symmetric(vertical: 14.h),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                   ),
                                   onPressed: () {
                                     // Navigate to booking
+                                    navigateTo(
+                                        context, const BookingFormScreen());
                                   },
                                   child: Text(
                                     'Book Now',
@@ -460,7 +480,8 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                           rating: 4.5,
                           comment:
                               'The cleaning team was extremely professional and thorough. My apartment has never looked better!',
-                          imageUrl: 'https://randomuser.me/api/portraits/women/44.jpg',
+                          imageUrl:
+                              'https://randomuser.me/api/portraits/women/44.jpg',
                         ),
                         Gap(16.h),
                         _buildReviewCard(
@@ -469,7 +490,8 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                           rating: 5.0,
                           comment:
                               'Excellent service! They arrived on time and did an amazing job with the deep cleaning.',
-                          imageUrl: 'https://randomuser.me/api/portraits/men/32.jpg',
+                          imageUrl:
+                              'https://randomuser.me/api/portraits/men/32.jpg',
                         ),
                         Gap(40.h),
                       ],

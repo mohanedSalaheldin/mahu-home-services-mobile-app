@@ -32,7 +32,7 @@ class _ServiceProviderDashboardScreenState
       cubit.fetchServices();
     }
     if (cubit.profile.firstName.isEmpty) {
-      cubit.fetchProfile();
+      cubit.fetchDashboardData();
     }
   }
 
@@ -57,13 +57,12 @@ class _ServiceProviderDashboardScreenState
           // TODO: implement listener
         },
         builder: (context, state) {
-          if (state is ServiceGetAllLoadingState ||
-              state is ServiceGetProfileLoadingState) {
+          if (state is ServiceGetAllLoadingState || state is DashboardLoading) {
             return const Center(
               child: CircularProgressIndicator(),
             );
           } else if (state is ServiceGetAllFailedState ||
-              state is ServiceGetProfileFailedState) {
+              state is DashboardError) {
             return Center(
               child: Text(
                 'Error: {state.error}',
@@ -97,20 +96,22 @@ class _ServiceProviderDashboardScreenState
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             DashboardStatisticsCardWidget(
-                              figure: '4.8',
+                              figure: cubit.performanceModel.averageRating
+                                  .toString(),
                               label: 'Rating',
                               width: 171.w,
                             ),
                             DashboardStatisticsCardWidget(
-                              figure: '25',
+                              figure: cubit.performanceModel.completionRate
+                                  .toString(),
                               label: 'Services',
                               width: 171.w,
                             ),
                           ],
                         ),
                         Gap(16.h),
-                        const DashboardStatisticsCardWidget(
-                          figure: '150',
+                        DashboardStatisticsCardWidget(
+                          figure: cubit.performanceModel.completed.toString(),
                           label: 'Completed Jobs',
                         ),
                         Gap(32.h),

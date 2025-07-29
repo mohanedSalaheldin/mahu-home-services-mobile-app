@@ -18,6 +18,7 @@ import 'package:mahu_home_services_app/features/auth/provider_auth/views/screens
 import 'package:mahu_home_services_app/features/landing/views/widgets/app_filled_button.dart';
 import 'package:mahu_home_services_app/features/landing/views/widgets/app_text_button.dart';
 import 'package:mahu_home_services_app/features/landing/views/widgets/have_or_not_an_account_row.dart';
+import 'package:mahu_home_services_app/features/layouts/provider_layout_screen.dart';
 import 'package:mahu_home_services_app/features/services/views/screens/service_provider_dashboard_screen.dart';
 import 'package:mahu_home_services_app/features/user_booking/screens/customer_home_screen.dart';
 
@@ -54,7 +55,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 context,
                 UserRoleCubit.get(context).state.name == UserRole.client.name
                     ? const CustomerHomeScreen()
-                    : const ServiceProviderDashboardScreen());
+                    : ProviderLayoutScreen());
           } else if (state is LoginFailedState) {
             showCustomSnackBar(
                 context: context,

@@ -6,10 +6,12 @@ import 'package:image_picker/image_picker.dart';
 import 'package:mahu_home_services_app/core/constants/app_const.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
 import 'package:mahu_home_services_app/core/widgets/app_filed_label_text.dart';
+import 'package:mahu_home_services_app/features/auth/client_auth/views/widgets/custom_snack_bar.dart';
 import 'package:mahu_home_services_app/features/auth/client_auth/views/widgets/custom_text_field.dart';
 import 'package:mahu_home_services_app/features/services/cubit/servises_cubit.dart';
 import 'package:mahu_home_services_app/features/services/cubit/servises_state.dart';
 import 'package:mahu_home_services_app/features/services/models/service_model.dart';
+import 'package:mahu_home_services_app/features/services/views/screens/service_provider_dashboard_screen.dart';
 import 'package:mahu_home_services_app/features/services/views/widgets/bool_radio_group.dart';
 import 'package:mahu_home_services_app/features/services/views/widgets/custom_dropdown.dart';
 import 'package:mahu_home_services_app/features/services/views/widgets/image_picker_container.dart';
@@ -29,7 +31,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _basePriceController = TextEditingController();
   final TextEditingController _durationController = TextEditingController();
-  
+
   XFile? _selectedImage;
   final ImagePicker _picker = ImagePicker();
 
@@ -37,21 +39,27 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
   bool _isServiceTypeRecurring = false;
   String _serviceSubType = 'normal';
   bool _isActiveImmediately = true;
-  
+
   final List<String> _selectedDays = [];
   final List<Map<String, String>> _timeSlots = [];
 
   // Explanations for service types and pricing models
   final Map<String, String> _serviceTypeExplanations = {
-    'one-time': 'One-time service is performed once and completed. Ideal for specific cleaning needs like move-in/move-out cleaning.',
-    'recurring': 'Recurring service repeats at regular intervals. Perfect for regular maintenance like weekly or monthly cleaning.',
+    'one-time':
+        'One-time service is performed once and completed. Ideal for specific cleaning needs like move-in/move-out cleaning.',
+    'recurring':
+        'Recurring service repeats at regular intervals. Perfect for regular maintenance like weekly or monthly cleaning.',
   };
 
   final Map<String, String> _subTypeExplanations = {
-    'normal': 'Standard cleaning covering basic tasks like dusting, vacuuming, and surface wiping.',
-    'deep': 'Thorough cleaning including hard-to-reach areas, grout cleaning, and detailed attention to all surfaces.',
-    'weekly': 'Regular weekly maintenance cleaning to keep your space consistently clean.',
-    'monthly': 'Comprehensive monthly cleaning with deeper attention to detail than weekly service.',
+    'normal':
+        'Standard cleaning covering basic tasks like dusting, vacuuming, and surface wiping.',
+    'deep':
+        'Thorough cleaning including hard-to-reach areas, grout cleaning, and detailed attention to all surfaces.',
+    'weekly':
+        'Regular weekly maintenance cleaning to keep your space consistently clean.',
+    'monthly':
+        'Comprehensive monthly cleaning with deeper attention to detail than weekly service.',
   };
 
   final Map<String, String> _pricingModelExamples = {
@@ -100,7 +108,10 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
       body: BlocConsumer<ServiceCubit, ServiceState>(
         listener: (context, state) {
           if (state is ServiceCreationSuccessState) {
-            Navigator.pop(context);
+            showCustomSnackBar(
+                context: context,
+                message: 'Added Successfully',
+                type: SnackBarType.success);
           }
         },
         builder: (context, state) {
@@ -119,7 +130,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                       // : 'Service Image (Recommended: 800x600px)',
                     ),
                     Gap(16.h),
-                    
+
                     // Service Name
                     CustomTextField(
                       label: 'Service Name',
@@ -133,7 +144,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                       },
                     ),
                     Gap(16.h),
-                    
+
                     // Description
                     const AppFieledLabelText(label: 'Description'),
                     TextFormField(
@@ -164,63 +175,76 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                       },
                     ),
                     Gap(16.h),
-                    
+
                     // Service Type Section
                     _buildSectionHeader('Service Type'),
                     ToggleButtonGroup(
                       leftLabel: "Recurring",
                       rightLabel: "One Time",
                       isLeftSelected: _isServiceTypeRecurring,
-                      onChanged: (value) => setState(() => _isServiceTypeRecurring = value),
+                      onChanged: (value) =>
+                          setState(() => _isServiceTypeRecurring = value),
                     ),
-                    _buildInfoText(_serviceTypeExplanations[_isServiceTypeRecurring ? 'recurring' : 'one-time']!),
+                    _buildInfoText(_serviceTypeExplanations[
+                        _isServiceTypeRecurring ? 'recurring' : 'one-time']!),
                     Gap(16.h),
-                    
+
                     // Cleaning Sub-Type
                     CustomDropdown<String>(
                       label: "Cleaning Type",
                       items: (_isServiceTypeRecurring
-                          ? ['normal', 'deep', 'weekly', 'monthly']
-                          : ['normal', 'deep'])
+                              ? ['normal', 'deep', 'weekly', 'monthly']
+                              : ['normal', 'deep'])
                           .map((item) => DropdownMenuItem<String>(
                                 value: item,
                                 child: Text(
                                   (() {
                                     switch (item) {
-                                      case 'normal': return 'Standard Cleaning';
-                                      case 'deep': return 'Deep Cleaning';
-                                      case 'weekly': return 'Weekly Cleaning';
-                                      case 'monthly': return 'Monthly Cleaning';
-                                      default: return item;
+                                      case 'normal':
+                                        return 'Standard Cleaning';
+                                      case 'deep':
+                                        return 'Deep Cleaning';
+                                      case 'weekly':
+                                        return 'Weekly Cleaning';
+                                      case 'monthly':
+                                        return 'Monthly Cleaning';
+                                      default:
+                                        return item;
                                     }
                                   })(),
                                 ),
                               ))
                           .toList(),
                       value: _serviceSubType,
-                      onChanged: (val) => setState(() => _serviceSubType = val ?? _serviceSubType),
+                      onChanged: (val) => setState(
+                          () => _serviceSubType = val ?? _serviceSubType),
                     ),
                     _buildInfoText(_subTypeExplanations[_serviceSubType]!),
                     Gap(16.h),
-                    
+
                     // Pricing Model
                     _buildSectionHeader('Pricing Model'),
                     ToggleButtonGroup(
                       leftLabel: "Hourly",
                       rightLabel: "Fixed",
                       isLeftSelected: _isPricingModelHourly,
-                      onChanged: (value) => setState(() => _isPricingModelHourly = value),
+                      onChanged: (value) =>
+                          setState(() => _isPricingModelHourly = value),
                     ),
-                    _buildInfoText(_pricingModelExamples[_isPricingModelHourly ? 'hourly' : 'fixed']!),
+                    _buildInfoText(_pricingModelExamples[
+                        _isPricingModelHourly ? 'hourly' : 'fixed']!),
                     Gap(16.h),
-                    
+
                     // Price Input
                     TextFormField(
                       controller: _basePriceController,
                       keyboardType: TextInputType.number,
                       decoration: InputDecoration(
-                        labelText: _isPricingModelHourly ? 'Hourly Rate (\$/hour)' : 'Fixed Price (\$)',
-                        hintText: _isPricingModelHourly ? 'e.g., 40' : 'e.g., 150',
+                        labelText: _isPricingModelHourly
+                            ? 'Hourly Rate (\$/hour)'
+                            : 'Fixed Price (\$)',
+                        hintText:
+                            _isPricingModelHourly ? 'e.g., 40' : 'e.g., 150',
                         suffixText: _isPricingModelHourly ? '/hour' : null,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -237,7 +261,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                       },
                     ),
                     Gap(16.h),
-                    
+
                     // Duration
                     TextFormField(
                       controller: _durationController,
@@ -260,19 +284,31 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                       },
                     ),
                     Gap(16.h),
-                    
+
                     // Availability Section
                     _buildSectionHeader('Availability'),
-                    
+
                     // Available Days
                     const AppFieledLabelText(label: 'Available Days'),
                     Wrap(
                       spacing: 8.w,
-                      children: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+                      children: [
+                        'monday',
+                        'tuesday',
+                        'wednesday',
+                        'thursday',
+                        'friday',
+                        'saturday',
+                        'sunday'
+                      ]
                           .map((day) => FilterChip(
-                                label: Text(day.substring(0, 1).toUpperCase() + day.substring(1),
+                                label: Text(
+                                  day.substring(0, 1).toUpperCase() +
+                                      day.substring(1),
                                   style: TextStyle(
-                                    color: _selectedDays.contains(day) ? Colors.white : Colors.black,
+                                    color: _selectedDays.contains(day)
+                                        ? Colors.white
+                                        : Colors.black,
                                   ),
                                 ),
                                 selected: _selectedDays.contains(day),
@@ -294,7 +330,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                         ),
                       ),
                     Gap(16.h),
-                    
+
                     // Time Slots
                     const AppFieledLabelText(label: 'Available Time Slots'),
                     TimeSlotSelector(
@@ -314,16 +350,18 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                         ),
                       ),
                     Gap(16.h),
-                    
+
                     // Active Immediately
                     BoolRadioGroup(
-                      label: 'Activate Service Immediately',
+                      label: 'Activate Immediately',
                       value: _isActiveImmediately,
-                      onChanged: (val) => setState(() => _isActiveImmediately = val),
+                      onChanged: (val) =>
+                          setState(() => _isActiveImmediately = val),
                     ),
-                    _buildInfoText('If disabled, the service will need admin approval before becoming visible to clients.'),
+                    _buildInfoText(
+                        'If disabled, the service will need admin approval before becoming visible to clients.'),
                     Gap(24.h),
-                    
+
                     // Submit Button
                     SizedBox(
                       width: double.infinity,
@@ -339,38 +377,55 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                           if (_formKey.currentState!.validate()) {
                             if (_selectedDays.isEmpty) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Please select at least one available day')),
+                                const SnackBar(
+                                    content: Text(
+                                        'Please select at least one available day')),
                               );
                               return;
                             }
                             if (_timeSlots.isEmpty) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Please add at least one time slot')),
+                                const SnackBar(
+                                    content: Text(
+                                        'Please add at least one time slot')),
                               );
                               return;
                             }
-                            
+
                             // Create service model
                             final service = ServiceModel(
                               id: '',
                               name: _serviceNameController.text,
                               description: _descriptionController.text,
                               category: 'cleaning',
-                              serviceType: _isServiceTypeRecurring ? 'recurring' : 'one-time',
+                              serviceType: _isServiceTypeRecurring
+                                  ? 'recurring'
+                                  : 'one-time',
                               subType: _serviceSubType,
-                              basePrice: double.parse(_basePriceController.text),
-                              pricingModel: _isPricingModelHourly ? 'hourly' : 'fixed',
+                              basePrice:
+                                  double.parse(_basePriceController.text),
+                              pricingModel:
+                                  _isPricingModelHourly ? 'hourly' : 'fixed',
                               duration: int.parse(_durationController.text),
                               image: _selectedImage?.path ?? '',
                               active: _isActiveImmediately,
-                              provider: 'current_user_id', // Replace with actual user ID
+                              provider:
+                                  'current_user_id', // Replace with actual user ID
                               isApproved: _isActiveImmediately,
                               createdAt: DateTime.now(),
                               availableDays: _selectedDays,
-                              availableSlots: _timeSlots.map((slot) => TimeSlot(startTime: slot['startTime']!, endTime: slot['endTime']!)).toList(),
+                              availableSlots: _timeSlots
+                                  .map(
+                                    (slot) => TimeSlot(
+                                      id: '1',
+                                      startTime: slot['startTime']!,
+                                      endTime: slot['endTime']!,
+                                    ),
+                                  )
+                                  .toList(),
                               v: 1,
                             );
-                            
+
                             // Call cubit to create service
                             ServiceCubit.get(context).createService(service);
                           }

@@ -14,8 +14,8 @@ final class ServiceCreationlFailedState extends ServiceState {}
 
 final class ServiceGCreationLoadingState extends ServiceState {}
 
-final class ServiceGetProfileSuccessState extends ServiceState {}
+class DashboardLoading extends ServiceState {}
 
-final class ServiceGetProfileFailedState extends ServiceState {}
+class DashboardSuccess extends ServiceState {}
 
-final class ServiceGetProfileLoadingState extends ServiceState {}
+class DashboardError extends ServiceState {}

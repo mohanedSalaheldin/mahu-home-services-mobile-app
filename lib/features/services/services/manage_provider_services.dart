@@ -7,6 +7,7 @@ import 'package:mahu_home_services_app/core/errors/failures.dart';
 import 'package:mahu_home_services_app/core/network_info.dart';
 import 'package:mahu_home_services_app/core/utils/helpers/cache_helper.dart';
 import 'package:mahu_home_services_app/core/utils/helpers/upload_media_helper.dart';
+import 'package:mahu_home_services_app/features/services/models/provider_performance.dart';
 import 'package:mahu_home_services_app/features/services/models/service_model.dart';
 
 class ManageProviderServices {
@@ -59,8 +60,6 @@ class ManageProviderServices {
   Future<Either<Failure, Unit>> addService(ServiceModel service) async {
     String token = CacheHelper.getString('token') ?? '';
     print('--------------------');
-    print(
-        'Adding service with token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ODIzOTkzOWVkMWEyNzZjNzRjMjM4MiIsImlhdCI6MTc1MzM2NjYwMCwiZXhwIjoxNzU1OTU4NjAwfQ.BdYJYVs2p7qeMywo7EZCdvPCOeqmIiPDG-QIm1XTreE');
     print('--------------------');
     String imageUrl =
         await UploadMediaHelper.uploadImage(File(service.image)) ?? '';
@@ -78,7 +77,14 @@ class ManageProviderServices {
           "duration": service.duration, // minimum 1 hour
           "image": imageUrl,
           "active": true,
-          "isApproved": true
+          "isApproved": true,
+          "availableDays": service.availableDays,
+          "availableSlots": service.availableSlots
+              .map((slot) => {
+                    "startTime": slot.startTime,
+                    "endTime": slot.endTime,
+                  })
+              .toList(),
         },
         // data: {
         //   "name": "Air Conditioner Installation",
@@ -128,7 +134,7 @@ class ManageProviderServices {
   Future<Either<Failure, List<ServiceModel>>> getAllServices() {
     String token = CacheHelper.getString('token') ?? '';
     return _handleRequest<List<ServiceModel>>(
-      request: () => _dio.get('/services',
+      request: () => _dio.get('/services/mine',
           data: {},
           options: Options(headers: {
             'Content-Type': 'application/json',
@@ -142,5 +148,20 @@ class ManageProviderServices {
       knownFailures: {},
     );
   }
-  
+
+  Future<Either<Failure, ProviderPerformanceModel>> getProviderPerformance() {
+    String token = CacheHelper.getString('token') ?? '';
+    return _handleRequest<ProviderPerformanceModel>(
+      request: () => _dio.get('/providers/me/performance',
+          data: {},
+          options: Options(headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $token',
+          })),
+      onSuccess: (data) {
+        return ProviderPerformanceModel.fromJson(data['data']);
+      },
+      knownFailures: {},
+    );
+  }
 }

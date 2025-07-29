@@ -50,13 +50,17 @@ class ServiceModel {
       duration: json['duration'] ?? 60,
       image: json['image'] ?? '',
       active: json['active'] ?? true,
-      provider: json['provider'] is Map ? json['provider']['_id'] ?? '' : json['provider'] ?? '',
+      provider: json['provider'] is Map
+          ? json['provider']['_id'] ?? ''
+          : json['provider'] ?? '',
       isApproved: json['isApproved'] ?? false,
-      createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
+      createdAt:
+          DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
       availableDays: List<String>.from(json['availableDays'] ?? []),
       availableSlots: (json['availableSlots'] as List<dynamic>?)
-          ?.map((slot) => TimeSlot.fromJson(slot))
-          .toList() ?? [],
+              ?.map((slot) => TimeSlot.fromJson(slot))
+              .toList() ??
+          [],
       v: json['__v'] ?? 0,
     );
   }
@@ -85,16 +89,19 @@ class ServiceModel {
 }
 
 class TimeSlot {
+  final String id;
   final String startTime;
   final String endTime;
 
   TimeSlot({
+    required this.id,
     required this.startTime,
     required this.endTime,
   });
 
   factory TimeSlot.fromJson(Map<String, dynamic> json) {
     return TimeSlot(
+      id: json['_id'] ?? '',
       startTime: json['startTime'] ?? '',
       endTime: json['endTime'] ?? '',
     );
@@ -102,6 +109,7 @@ class TimeSlot {
 
   Map<String, dynamic> toJson() {
     return {
+      '_id': id,
       'startTime': startTime,
       'endTime': endTime,
     };
