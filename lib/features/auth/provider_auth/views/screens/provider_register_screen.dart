@@ -10,6 +10,7 @@ import 'package:mahu_home_services_app/core/utils/helpers/helping_functions.dart
 import 'package:mahu_home_services_app/core/widgets/app_filed_label_text.dart';
 import 'package:mahu_home_services_app/features/auth/client_auth/cubit/auth_cubit.dart';
 import 'package:mahu_home_services_app/features/auth/client_auth/cubit/auth_state.dart';
+import 'package:mahu_home_services_app/features/auth/client_auth/views/screens/client_register_screen.dart';
 import 'package:mahu_home_services_app/features/auth/client_auth/views/screens/login_screen.dart';
 import 'package:mahu_home_services_app/features/auth/client_auth/views/screens/verify_account_screen.dart';
 import 'package:mahu_home_services_app/features/auth/client_auth/views/widgets/app_back_button.dart';
@@ -40,6 +41,7 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
   final _formKey = GlobalKey<FormState>();
   bool agreedToTerms = false;
   bool showTermsError = false;
+  OtpChannel _otpChannel = OtpChannel.phone;
 
   XFile? _selectedImage;
   final ImagePicker _picker = ImagePicker();
@@ -73,7 +75,7 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
       body: BlocConsumer<AuthCubit, AuthState>(
         listener: (context, state) {
           if (state is RegisterSucessededState) {
-            navigateTo(context, const VerifyAccountScreen());
+            navigateTo(context,  VerifyAccountScreen(otpChannel: _otpChannel,));
           } else if (state is RegisterFailedState) {
             showCustomSnackBar(
                 context: context,
@@ -175,6 +177,44 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
                       selectedImage: _selectedImage,
                     ),
                     Gap(5.h),
+                    Gap(10.h),
+                    // NEW: OTP channel section
+                    Text(
+                      'Receive OTP via',
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    Gap(6.h),
+
+// WhatsApp option
+                    RadioListTile<OtpChannel>(
+                      contentPadding: EdgeInsets.zero,
+                      value: OtpChannel.phone,
+                      fillColor: const WidgetStatePropertyAll(AppColors.blue),
+                      groupValue: _otpChannel,
+                      onChanged: (v) => setState(() => _otpChannel = v!),
+                      title: const Text('Phone (WhatsApp)'),
+                      subtitle: const Text('Send OTP to your WhatsApp number'),
+                      secondary: const Icon(Icons.message),
+                      dense: true,
+                    ),
+
+// Email option
+                    RadioListTile<OtpChannel>(
+                      contentPadding: EdgeInsets.zero,
+                      value: OtpChannel.email,
+                      fillColor: const WidgetStatePropertyAll(AppColors.blue),
+                      groupValue: _otpChannel,
+                      onChanged: (v) => setState(() => _otpChannel = v!),
+                      title: const Text('Email'),
+                      subtitle: const Text('Send OTP to your email address'),
+                      secondary: const Icon(Icons.email),
+                      dense: true,
+                    ),
+
+                    Gap(10.h),
                     Row(
                       children: [
                         Checkbox(
@@ -224,6 +264,7 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
                             phone: countryCode + phoneController.text,
                             avatarPath: _selectedImage?.path ?? '',
                             businessName: businessNameController.text,
+                            otpMethod: _otpChannel.name,
                           );
                           print("Form is valid");
                         }

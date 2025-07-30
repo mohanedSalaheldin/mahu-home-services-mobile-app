@@ -6,6 +6,7 @@ import 'package:mahu_home_services_app/core/constants/app_const.dart';
 import 'package:mahu_home_services_app/core/utils/helpers/helping_functions.dart';
 import 'package:mahu_home_services_app/features/auth/client_auth/cubit/auth_cubit.dart';
 import 'package:mahu_home_services_app/features/auth/client_auth/cubit/auth_state.dart';
+import 'package:mahu_home_services_app/features/auth/client_auth/views/screens/client_register_screen.dart';
 import 'package:mahu_home_services_app/features/auth/client_auth/views/screens/login_screen.dart';
 import 'package:mahu_home_services_app/features/auth/client_auth/views/widgets/custom_snack_bar.dart';
 import 'package:mahu_home_services_app/features/auth/client_auth/views/widgets/o_t_p_form_filed.dart';
@@ -13,7 +14,8 @@ import 'package:mahu_home_services_app/features/landing/views/widgets/app_filled
 import 'package:mahu_home_services_app/features/landing/views/widgets/have_or_not_an_account_row.dart';
 
 class VerifyAccountScreen extends StatefulWidget {
-  const VerifyAccountScreen({super.key});
+  const VerifyAccountScreen({super.key, required this.otpChannel});
+  final OtpChannel otpChannel;
 
   @override
   State<VerifyAccountScreen> createState() => _VerifyAccountScreenState();
@@ -96,8 +98,10 @@ class _VerifyAccountScreenState extends State<VerifyAccountScreen> {
                     AppFilledButton(
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
-                          AuthCubit.get(context)
-                              .verify(otp: otpController.text);
+                          AuthCubit.get(context).verify(
+                            channal: widget.otpChannel,
+                            otp: otpController.text,
+                          );
                           print("Form is valid");
                         } else {
                           // Invalid, show errors

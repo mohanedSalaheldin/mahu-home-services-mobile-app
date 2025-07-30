@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
+import 'package:mahu_home_services_app/features/services/cubit/servises_cubit.dart';
+import 'package:mahu_home_services_app/features/services/cubit/servises_state.dart';
+import 'package:mahu_home_services_app/features/services/models/booking_model.dart';
 
 class ServiceProviderJobsScreen extends StatefulWidget {
   const ServiceProviderJobsScreen({super.key});
@@ -76,32 +80,78 @@ class _ServiceProviderBookingsScreenState
 
   @override
   Widget build(BuildContext context) {
+    // context.read<ServicekCubit>().fetchMyBookings();
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Bookings'),
         actions: [_buildFilterButton()],
       ),
-      body: Column(
-        children: [
-          // Date selector
-          _buildDateSelector(),
+      body: BlocConsumer<ServiceCubit, ServiceState>(
+        listener: (context, state) {
+          // TODO: implement listener
+        },
+        builder: (context, state) {
+          if (state is GetMyBookingsLoadingState) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          } else if (state is GetMyBookingsFailedState) {
+            return Center(
+              child: Text(
+                'Error: {state.error}',
+                style: TextStyle(fontSize: 16.sp, color: Colors.red),
+              ),
+            );
+          }
+          var cubit = ServiceCubit.get(context);
+          List<BookingModel> myBookings = cubit.myBooking;
+          return Column(
+            children: [
+              // Date selector
+              // _buildDateSelector(),
 
-          // Stats overview
-          _buildStatsOverview(),
+              // Stats overview
+              _buildStatsOverview(),
 
-          // Bookings list
-          Expanded(
-            child: _filteredBookings.isEmpty
-                ? _buildEmptyState()
-                : ListView.separated(
-                    padding: EdgeInsets.all(16.w),
-                    itemCount: _filteredBookings.length,
-                    separatorBuilder: (_, __) => Gap(16.h),
-                    itemBuilder: (_, index) =>
-                        _buildBookingCard(_filteredBookings[index]),
-                  ),
-          ),
-        ],
+              // Bookings list
+              Expanded(
+                child: _filteredBookings.isEmpty
+                    ? _buildEmptyState()
+                    : ListView.separated(
+                        padding: EdgeInsets.all(16.w),
+                        itemCount: _filteredBookings.length,
+                        separatorBuilder: (_, __) => Gap(16.h),
+                        itemBuilder: (_, index) {
+                          BookingModel bookingModel = myBookings[index];
+
+                          return _buildBookingCard(
+                            Booking(
+                              id: bookingModel.id,
+
+                              serviceName: bookingModel.service.name,
+                              serviceType: bookingModel.service.serviceType,
+                              clientName:
+                                  " ${bookingModel.user.profile.firstName}  ${bookingModel.user.profile.lastName}",
+                              clientImage: bookingModel.user.profile.avatar ??
+                                  "https://img.freepik.com/premium-psd/3d-avatar-illustration-pro-gamer-isolated-transparent-background_846458-28.jpg?semt=ais_hybrid&w=740&q=80",
+                              rating: 0.0,
+                              reviews: 0,
+                              address: 'null',
+                              date: bookingModel.createdAt,
+                              startTime:
+                                  bookingModel.schedule.startDate.toString(),
+                              endTime: bookingModel.schedule.endDate.toString(),
+                              status: BookingStatus.upcoming,
+                              paymentStatus: PaymentStatus.pending,
+                              amount: bookingModel.price,
+                            ),
+                          );
+                        },
+                      ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -215,7 +265,7 @@ class _ServiceProviderBookingsScreenState
     );
   }
 
-  Widget _buildBookingCard(Booking booking) {
+  Widget  _buildBookingCard(Booking booking) {
     return Card(
       elevation: 1,
       shape: RoundedRectangleBorder(
@@ -357,10 +407,10 @@ class _ServiceProviderBookingsScreenState
                   Expanded(
                     child: OutlinedButton.icon(
                       icon: Icon(Icons.message, size: 16.sp),
-                      label: Text('Message'),
+                      label: const Text('Message'),
                       style: OutlinedButton.styleFrom(
                         padding: EdgeInsets.symmetric(vertical: 12.h),
-                        side: BorderSide(color: Colors.blue),
+                        side: const BorderSide(color: Colors.blue),
                       ),
                       onPressed: () => _contactClient(booking),
                     ),
@@ -375,7 +425,7 @@ class _ServiceProviderBookingsScreenState
                       onPressed: () => _handlePrimaryAction(booking),
                       child: Text(
                         _getActionButtonText(booking.status),
-                        style: TextStyle(color: Colors.white),
+                        style: const TextStyle(color: Colors.white),
                       ),
                     ),
                   ),
@@ -446,7 +496,6 @@ class _ServiceProviderBookingsScreenState
     );
   }
 
-
   // Helper methods
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
@@ -478,7 +527,7 @@ class _ServiceProviderBookingsScreenState
 
   IconData _getServiceIcon(String serviceType) {
     if (serviceType.contains('recurring')) return Icons.cleaning_services;
-    if (serviceType.contains('one-time'))return Icons.cleaning_services;
+    if (serviceType.contains('one-time')) return Icons.cleaning_services;
     return Icons.home_repair_service;
   }
 

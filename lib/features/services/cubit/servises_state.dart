@@ -19,3 +19,10 @@ class DashboardLoading extends ServiceState {}
 class DashboardSuccess extends ServiceState {}
 
 class DashboardError extends ServiceState {}
+
+
+final class GetMyBookingsuccessState extends ServiceState {}
+
+final class GetMyBookingsFailedState extends ServiceState {}
+
+final class GetMyBookingsLoadingState extends ServiceState {}

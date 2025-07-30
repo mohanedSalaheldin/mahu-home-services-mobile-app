@@ -127,29 +127,31 @@ class _ServiceProviderDashboardScreenState
                     ),
                   ),
                   // Services List
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: cubit.services
-                        .length, // Replace with your actual services count
-                    itemBuilder: (context, index) {
-                      ServiceModel service = cubit.services[index];
+                  cubit.services.isEmpty
+                      ? const Center(child: Text('No Services Added Yet'))
+                      : ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: cubit.services
+                              .length, // Replace with your actual services count
+                          itemBuilder: (context, index) {
+                            ServiceModel service = cubit.services[index];
 
-                      // Replace with your actual service data
-                      return ServiceListItem(
-                        service: service,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  ServiceDetailsScreen(service: service),
-                            ),
-                          );
-                        },
-                      );
-                    },
-                  ),
+                            // Replace with your actual service data
+                            return ServiceListItem(
+                              service: service,
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        ServiceDetailsScreen(service: service),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        ),
                   Gap(16.h),
                   Padding(
                     padding: EdgeInsets.all(AppConst.appPadding.w),
@@ -367,4 +369,3 @@ class ServiceListItem extends StatelessWidget {
   }
 }
 
-// Service model is imported from ../../models/service_model.dart

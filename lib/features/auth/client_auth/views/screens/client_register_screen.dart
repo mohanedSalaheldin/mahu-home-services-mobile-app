@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:mahu_home_services_app/core/constants/app_const.dart';
+import 'package:mahu_home_services_app/core/constants/colors.dart';
 import 'package:mahu_home_services_app/core/utils/helpers/form_validation_method.dart';
 import 'package:mahu_home_services_app/core/utils/helpers/helping_functions.dart';
 import 'package:mahu_home_services_app/features/auth/client_auth/cubit/auth_cubit.dart';
@@ -15,6 +16,7 @@ import 'package:mahu_home_services_app/features/auth/client_auth/views/widgets/p
 import 'package:mahu_home_services_app/features/auth/client_auth/views/widgets/terms_checkbox.dart';
 import 'package:mahu_home_services_app/features/landing/views/widgets/app_filled_button.dart';
 import 'package:mahu_home_services_app/features/landing/views/widgets/have_or_not_an_account_row.dart';
+import 'package:mahu_home_services_app/features/services/views/widgets/bool_radio_group.dart';
 
 class ClientRegisterScreen extends StatefulWidget {
   const ClientRegisterScreen({super.key});
@@ -34,6 +36,8 @@ class _ClientRegisterScreenState extends State<ClientRegisterScreen> {
   final _formKey = GlobalKey<FormState>();
   bool agreedToTerms = false;
   bool showTermsError = false;
+  OtpChannel _otpChannel = OtpChannel.phone;
+
   @override
   void dispose() {
     emailController.dispose();
@@ -55,7 +59,11 @@ class _ClientRegisterScreenState extends State<ClientRegisterScreen> {
       body: BlocConsumer<AuthCubit, AuthState>(
         listener: (context, state) {
           if (state is RegisterSucessededState) {
-            navigateTo(context, const VerifyAccountScreen());
+            navigateTo(
+                context,
+                VerifyAccountScreen(
+                  otpChannel: _otpChannel,
+                ));
           } else if (state is RegisterFailedState) {
             showCustomSnackBar(
                 context: context,
@@ -136,7 +144,44 @@ class _ClientRegisterScreenState extends State<ClientRegisterScreen> {
                               value, passwordController),
                       lines: 1,
                     ),
-                    Gap(5.h),
+                    Gap(10.h),
+                    // NEW: OTP channel section
+                    Text(
+                      'Receive OTP via',
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    Gap(6.h),
+
+// WhatsApp option
+                    RadioListTile<OtpChannel>(
+                      contentPadding: EdgeInsets.zero,
+                      value: OtpChannel.phone,
+                      fillColor: const WidgetStatePropertyAll(AppColors.blue),
+                      groupValue: _otpChannel,
+                      onChanged: (v) => setState(() => _otpChannel = v!),
+                      title: const Text('Phone (WhatsApp)'),
+                      subtitle: const Text('Send OTP to your WhatsApp number'),
+                      secondary: const Icon(Icons.message),
+                      dense: true,
+                    ),
+
+// Email option
+                    RadioListTile<OtpChannel>(
+                      contentPadding: EdgeInsets.zero,
+                      value: OtpChannel.email,
+                      fillColor: const WidgetStatePropertyAll(AppColors.blue),
+                      groupValue: _otpChannel,
+                      onChanged: (v) => setState(() => _otpChannel = v!),
+                      title: const Text('Email'),
+                      subtitle: const Text('Send OTP to your email address'),
+                      secondary: const Icon(Icons.email),
+                      dense: true,
+                    ),
+
+                    Gap(10.h),
                     TermsCheckbox(
                       value: agreedToTerms,
                       onChanged: (value) {
@@ -149,6 +194,7 @@ class _ClientRegisterScreenState extends State<ClientRegisterScreen> {
                         // Show terms or navigate to terms screen
                       },
                     ),
+
                     Gap(5.h),
                     AppFilledButton(
                       onPressed: () {
@@ -165,12 +211,12 @@ class _ClientRegisterScreenState extends State<ClientRegisterScreen> {
                             return;
                           }
                           AuthCubit.get(context).registerAsClient(
-                            email: emailController.text,
-                            firstName: fNameController.text,
-                            lastName: lNameController.text,
-                            password: passwordController.text,
-                            phone: countryCode + phoneController.text,
-                          );
+                              email: emailController.text,
+                              firstName: fNameController.text,
+                              lastName: lNameController.text,
+                              password: passwordController.text,
+                              phone: countryCode + phoneController.text,
+                              otpMethod: _otpChannel.name);
                           print("Form is valid");
                         }
                       },
@@ -213,3 +259,5 @@ class _ClientRegisterScreenState extends State<ClientRegisterScreen> {
     );
   }
 }
+
+enum OtpChannel { phone, email }

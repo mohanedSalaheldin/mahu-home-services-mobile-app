@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
+import 'package:mahu_home_services_app/app.dart';
+import 'package:mahu_home_services_app/features/landing/views/screens/choose_rule_screen.dart';
+import 'package:mahu_home_services_app/features/services/cubit/servises_cubit.dart';
+import 'package:mahu_home_services_app/features/services/models/provider_performance.dart';
+import 'package:mahu_home_services_app/features/services/models/user_base_profile_model.dart';
 
 class ProfileScreen extends StatelessWidget {
   final bool hasProfilePicture;
@@ -42,27 +48,26 @@ class ProfileScreen extends StatelessWidget {
               // Header Section
               _buildHeaderSection(context),
               Gap(24.h),
-              
+
               // Stats Section
-              _buildStatsSection(),
+              _buildStatsSection(context),
               Gap(24.h),
-              
+
               // Response Time Section
               _buildResponseTimeSection(),
               Gap(24.h),
-              
+
               // Subscription Section
               _buildSubscriptionSection(),
               Gap(24.h),
-              
+
               // Settings Section
               _buildSettingsSection(context),
               Gap(32.h),
-              
+
               // Upgrade Button
               _buildUpgradeButton(),
               Gap(40.h),
-              
             ],
           ),
         ),
@@ -71,6 +76,10 @@ class ProfileScreen extends StatelessWidget {
   }
 
   Widget _buildHeaderSection(BuildContext context) {
+    var cubit = context.read<ServiceCubit>();
+    UserBaseProfileModel user = cubit.profile;
+    ProviderPerformanceModel performance = cubit.performanceModel;
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -81,9 +90,9 @@ class ProfileScreen extends StatelessWidget {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: Colors.grey.shade200,
-            image: hasProfilePicture && profileImageUrl != null
+            image: user.avatar != ''
                 ? DecorationImage(
-                    image: NetworkImage(profileImageUrl!),
+                    image: NetworkImage(user.avatar),
                     fit: BoxFit.cover,
                   )
                 : null,
@@ -97,14 +106,14 @@ class ProfileScreen extends StatelessWidget {
               : null,
         ),
         Gap(16.w),
-        
+
         // Company Info
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                companyName,
+                '${user.firstName} ${user.lastName}',
                 style: TextStyle(
                   fontSize: 22.sp,
                   fontWeight: FontWeight.bold,
@@ -128,7 +137,7 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   Gap(4.w),
                   Text(
-                    '$rating - $reviewCount reviews',
+                    '${performance.averageRating} reviews',
                     style: TextStyle(
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w500,
@@ -143,7 +152,11 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatsSection() {
+  Widget _buildStatsSection(BuildContext context) {
+    var cubit = context.read<ServiceCubit>();
+    UserBaseProfileModel user = cubit.profile;
+    ProviderPerformanceModel performance = cubit.performanceModel;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -158,9 +171,9 @@ class ProfileScreen extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            _buildStatItem('Completed', completedJobs.toString()),
-            _buildStatItem('Total Earnings', '\$${totalEarnings.toStringAsFixed(2)}'),
-            _buildStatItem('Jobs', completedJobs.toString()),
+            _buildStatItem('Completed', performance.totalBookings.toString()),
+            _buildStatItem('Total Earnings', '\$${performance.cancelled}'),
+            _buildStatItem('Jobs', performance.completed.toString()),
           ],
         ),
       ],
@@ -327,7 +340,6 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-
   void _showLogoutConfirmation(BuildContext context) {
     showDialog(
       context: context,
@@ -342,8 +354,11 @@ class ProfileScreen extends StatelessWidget {
           TextButton(
             onPressed: () {
               // Handle logout logic
-              Navigator.pop(context);
-              // Navigate to login screen
+              Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ChooseRuleScreen(),
+                  ));
             },
             child: const Text(
               'Log Out',

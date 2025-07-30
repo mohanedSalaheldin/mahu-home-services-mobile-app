@@ -6,6 +6,7 @@ import 'package:mahu_home_services_app/core/models/use_model.dart';
 import 'package:mahu_home_services_app/features/auth/client_auth/services/auth_services.dart';
 import 'package:mahu_home_services_app/features/auth/client_auth/cubit/auth_state.dart';
 import 'package:mahu_home_services_app/core/utils/helpers/cache_helper.dart';
+import 'package:mahu_home_services_app/features/auth/client_auth/views/screens/client_register_screen.dart';
 
 class AuthCubit extends Cubit<AuthState> {
   AuthCubit() : super(AuthInitial());
@@ -28,6 +29,7 @@ class AuthCubit extends Cubit<AuthState> {
     required String password,
     required String firstName,
     required String lastName,
+    required String otpMethod,
   }) async {
     emit(RegisterLoadingState());
     Either<Failure, UserModel> res = await _authServices.registerAsClient(
@@ -36,6 +38,7 @@ class AuthCubit extends Cubit<AuthState> {
       password: password,
       firstName: firstName,
       lastName: lastName,
+      otpMethod: otpMethod,
     );
     res.fold(
       (failure) {
@@ -56,6 +59,7 @@ class AuthCubit extends Cubit<AuthState> {
     required String lastName,
     required String avatarPath,
     required String businessName,
+    required String otpMethod,
   }) async {
     emit(RegisterLoadingState());
     Either<Failure, UserModel> res = await _authServices.registerAsProvider(
@@ -66,6 +70,7 @@ class AuthCubit extends Cubit<AuthState> {
       lastName: lastName,
       avatarPath: avatarPath,
       businessName: businessName,
+      otpMethod: otpMethod,
     );
     res.fold(
       (failure) {
@@ -145,10 +150,14 @@ class AuthCubit extends Cubit<AuthState> {
 
   void verify({
     required String otp,
+    required OtpChannel channal,
   }) async {
     emit(VerifyEmailLoadingState());
-    Either<Failure, Unit> res = await _authServices.verifyEmail(
-      email: registerResponceUser.email,
+    Either<Failure, Unit> res = await _authServices.verify(
+      channal: channal,
+      value: channal == OtpChannel.email
+          ? registerResponceUser.email
+          : registerResponceUser.phone,
       otp: otp,
     );
     res.fold(

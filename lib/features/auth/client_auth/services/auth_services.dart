@@ -8,6 +8,7 @@ import 'package:mahu_home_services_app/core/errors/failures.dart';
 import 'package:mahu_home_services_app/core/models/use_model.dart';
 import 'package:mahu_home_services_app/core/network_info.dart';
 import 'package:mahu_home_services_app/core/utils/helpers/upload_media_helper.dart';
+import 'package:mahu_home_services_app/features/auth/client_auth/views/screens/client_register_screen.dart';
 
 class AuthServices {
   final NetworkInfo _networkInfo = NetworkInfoImpl();
@@ -55,6 +56,7 @@ class AuthServices {
     required String password,
     required String firstName,
     required String lastName,
+    required String otpMethod,
   }) {
     return _handleRequest<UserModel>(
       request: () => _dio.post('/auth/register', data: {
@@ -64,7 +66,7 @@ class AuthServices {
         "firstName": firstName,
         "lastName": lastName,
         "role": "user",
-        "verificationType": "email"
+        "verificationType": otpMethod
       }),
       onSuccess: (data) {
         return UserModel.fromJson(data['user']);
@@ -83,6 +85,7 @@ class AuthServices {
     required String lastName,
     required String avatarPath,
     required String businessName,
+    required String otpMethod,
   }) async {
     String imageUrl =
         await UploadMediaHelper.uploadImage(File(avatarPath)) ?? '';
@@ -104,7 +107,7 @@ class AuthServices {
             "role": "provider",
             "businessName": businessName,
             "businessRegistration": "REG123456",
-            "verificationType": "email",
+            "verificationType": otpMethod,
           },
         );
       },
@@ -179,13 +182,14 @@ class AuthServices {
     );
   }
 
-  Future<Either<Failure, Unit>> verifyEmail({
-    required String email,
+  Future<Either<Failure, Unit>> verify({
+    required OtpChannel channal,
+    required String value,
     required String otp,
   }) {
     return _handleRequest<Unit>(
       request: () => _dio.post('/auth/verify-email', data: {
-        "email": email,
+        channal.name: value,
         "otp": otp,
       }),
       onSuccess: (_) => unit,

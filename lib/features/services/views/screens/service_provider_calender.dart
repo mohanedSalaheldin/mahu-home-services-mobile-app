@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
 import 'package:mahu_home_services_app/core/constants/app_const.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
-import 'package:mahu_home_services_app/features/services/views/screens/booking_details_screen.dart' as booking_details;
+import 'package:mahu_home_services_app/features/services/cubit/servises_cubit.dart';
+import 'package:mahu_home_services_app/features/services/cubit/servises_state.dart';
+import 'package:mahu_home_services_app/features/services/views/screens/booking_details_screen.dart'
+    as booking_details;
 
 class ServiceProviderBookingsScreen extends StatefulWidget {
   const ServiceProviderBookingsScreen({super.key});
@@ -98,34 +102,54 @@ class _ServiceProviderBookingsScreenState
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // Calendar Section
-          _buildCalendarHeader(),
-          _buildCalendar(),
+      body: BlocConsumer<ServiceCubit, ServiceState>(
+        listener: (context, state) {
+          // TODO: implement listener
+        },
+        builder: (context, state) {
+          // if (state is GetMyBookingsLoadingState) {
+          //   return const Center(
+          //     child: CircularProgressIndicator(),
+          //   );
+          // } else if (state is GetMyBookingsFailedState ) {
+          //   return Center(
+          //     child: Text(
+          //       'Error: {state.error}',
+          //       style: TextStyle(fontSize: 16.sp, color: Colors.red),
+          //     ),
+          //   );
+          // }
+          return Column(
+            children: [
+              // Calendar Section
+              _buildCalendarHeader(),
+              _buildCalendar(),
 
-          // Filter and Stats Bar
-          _buildStatsBar(),
+              // Filter and Stats Bar
+              _buildStatsBar(),
 
-          // Booking Details Section
-          Expanded(
-            child: _selectedDayBookings.isNotEmpty
-                ? ListView.builder(
-                    padding: EdgeInsets.all(AppConst.appPadding.w),
-                    itemCount: _selectedDayBookings.length,
-                    itemBuilder: (context, index) =>
-                        _buildBookingCard(context, _selectedDayBookings[index]),
-                  )
-                : _buildNoBookingsUI(),
-          ),
-        ],
+              // Booking Details Section
+              Expanded(
+                child: _selectedDayBookings.isNotEmpty
+                    ? ListView.builder(
+                        padding: EdgeInsets.all(AppConst.appPadding.w),
+                        itemCount: _selectedDayBookings.length,
+                        itemBuilder: (context, index) => _buildBookingCard(
+                            context, _selectedDayBookings[index]),
+                      )
+                    : _buildNoBookingsUI(),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
 
   Widget _buildStatsBar() {
     final upcomingCount = _bookings.where((b) => b.status == 'Upcoming').length;
-    final completedCount = _bookings.where((b) => b.status == 'Completed').length;
+    final completedCount =
+        _bookings.where((b) => b.status == 'Completed').length;
 
     return Container(
       padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
@@ -337,12 +361,12 @@ class _ServiceProviderBookingsScreenState
                     child: OutlinedButton(
                       style: OutlinedButton.styleFrom(
                         padding: EdgeInsets.symmetric(vertical: 12.h),
-                        side: BorderSide(color: AppColors.blue),
+                        side: const BorderSide(color: AppColors.blue),
                       ),
                       onPressed: () {
                         // Handle message
                       },
-                      child: Text(
+                      child: const Text(
                         "Message",
                         style: TextStyle(color: AppColors.blue),
                       ),
@@ -360,7 +384,8 @@ class _ServiceProviderBookingsScreenState
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => booking_details.BookingDetailsScreen(
+                              builder: (context) =>
+                                  booking_details.BookingDetailsScreen(
                                 booking: booking_details.Booking(
                                   serviceName: booking.serviceName,
                                   clientName: booking.clientName,
@@ -441,8 +466,10 @@ class _ServiceProviderBookingsScreenState
   }
 
   Widget _buildCalendar() {
-    final firstDayOfMonth = DateTime(_selectedDate.year, _selectedDate.month, 1);
-    final lastDayOfMonth = DateTime(_selectedDate.year, _selectedDate.month + 1, 0);
+    final firstDayOfMonth =
+        DateTime(_selectedDate.year, _selectedDate.month, 1);
+    final lastDayOfMonth =
+        DateTime(_selectedDate.year, _selectedDate.month + 1, 0);
     final daysInMonth = lastDayOfMonth.day;
     final startingWeekday = firstDayOfMonth.weekday;
 
@@ -464,7 +491,8 @@ class _ServiceProviderBookingsScreenState
             itemCount: 42,
             itemBuilder: (context, index) {
               final dayOffset = index - startingWeekday + 1;
-              final day = dayOffset > 0 && dayOffset <= daysInMonth ? dayOffset : null;
+              final day =
+                  dayOffset > 0 && dayOffset <= daysInMonth ? dayOffset : null;
               final date = day != null
                   ? DateTime(_selectedDate.year, _selectedDate.month, day)
                   : null;
@@ -505,7 +533,8 @@ class _ServiceProviderBookingsScreenState
                                   : isToday
                                       ? AppColors.blue
                                       : Colors.black,
-                          fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
+                          fontWeight:
+                              isToday ? FontWeight.bold : FontWeight.normal,
                         ),
                       ),
                       if (hasBooking)
@@ -610,7 +639,8 @@ class _ServiceProviderBookingsScreenState
 
   void _changeMonth(int delta) {
     setState(() {
-      _selectedDate = DateTime(_selectedDate.year, _selectedDate.month + delta, 1);
+      _selectedDate =
+          DateTime(_selectedDate.year, _selectedDate.month + delta, 1);
       _updateSelectedDayBookings(_selectedDate);
     });
   }
