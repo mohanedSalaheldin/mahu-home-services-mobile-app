@@ -10,7 +10,6 @@ import 'package:mahu_home_services_app/core/utils/helpers/helping_functions.dart
 import 'package:mahu_home_services_app/features/auth/client_auth/cubit/auth_cubit.dart';
 import 'package:mahu_home_services_app/features/auth/client_auth/cubit/auth_state.dart';
 import 'package:mahu_home_services_app/features/auth/client_auth/views/screens/forgot_password_screen.dart';
-import 'package:mahu_home_services_app/features/auth/client_auth/views/screens/home_test.dart';
 import 'package:mahu_home_services_app/features/auth/client_auth/views/screens/client_register_screen.dart';
 import 'package:mahu_home_services_app/features/auth/client_auth/views/widgets/custom_snack_bar.dart';
 import 'package:mahu_home_services_app/features/auth/client_auth/views/widgets/custom_text_field.dart';
@@ -18,9 +17,8 @@ import 'package:mahu_home_services_app/features/auth/provider_auth/views/screens
 import 'package:mahu_home_services_app/features/landing/views/widgets/app_filled_button.dart';
 import 'package:mahu_home_services_app/features/landing/views/widgets/app_text_button.dart';
 import 'package:mahu_home_services_app/features/landing/views/widgets/have_or_not_an_account_row.dart';
+import 'package:mahu_home_services_app/features/layouts/client_layout_screen.dart';
 import 'package:mahu_home_services_app/features/layouts/provider_layout_screen.dart';
-import 'package:mahu_home_services_app/features/services/views/screens/service_provider_dashboard_screen.dart';
-import 'package:mahu_home_services_app/features/user_booking/screens/customer_home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -51,16 +49,21 @@ class _LoginScreenState extends State<LoginScreen> {
       body: BlocConsumer<AuthCubit, AuthState>(
         listener: (context, state) {
           if (state is LoginSucessededState) {
-            navigateTo(
-                context,
-                UserRoleCubit.get(context).state.name == UserRole.client.name
-                    ? const CustomerHomeScreen()
-                    : ProviderLayoutScreen());
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => UserRoleCubit.get(context).state.name ==
+                        UserRole.client.name
+                    ? CustomerLayoutScreen()
+                    : ProviderLayoutScreen(),
+              ),
+            );
           } else if (state is LoginFailedState) {
             showCustomSnackBar(
-                context: context,
-                message: state.failure.msg,
-                type: SnackBarType.failure);
+              context: context,
+              message: state.failure.msg,
+              type: SnackBarType.failure,
+            );
           }
         },
         builder: (context, state) {
@@ -103,9 +106,11 @@ class _LoginScreenState extends State<LoginScreen> {
                               const BorderSide(width: 1, color: AppColors.blue),
                           value: passwordRemember,
                           onChanged: (value) {
-                            setState(() {
-                              passwordRemember = value ?? false;
-                            });
+                            setState(
+                              () {
+                                passwordRemember = value ?? false;
+                              },
+                            );
                           },
                         ),
                         Text(
@@ -131,7 +136,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
                           AuthCubit.get(context).login(
-                            email: emailOrPhoneController.text,
+                            emailOrPhone: emailOrPhoneController.text,
                             password: passwordController.text,
                           );
                         }

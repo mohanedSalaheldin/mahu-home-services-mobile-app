@@ -7,14 +7,15 @@ import 'package:mahu_home_services_app/features/services/views/screens/service_p
 import 'package:mahu_home_services_app/features/services/views/screens/profile_screen.dart';
 import 'package:mahu_home_services_app/features/services/views/screens/service_provider_jobs.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:mahu_home_services_app/features/user_booking/screens/customer_home_screen.dart';
 
-class ProviderLayoutScreen extends StatelessWidget {
-  ProviderLayoutScreen({super.key});
+class CustomerLayoutScreen extends StatelessWidget {
+  CustomerLayoutScreen({super.key});
 
   final List<Widget> screens = [
-    const ServiceProviderDashboardScreen(),
-    const ServiceProviderJobsScreen(),
-    const ServiceProviderBookingsScreen(),
+    const CustomerHomeScreen(),
+    const CustomerHomeScreen(),
+    const CustomerHomeScreen(),
     const ProfileScreen(
       hasProfilePicture: false,
       companyName: "Clean Sweep Co.",
@@ -32,15 +33,15 @@ class ProviderLayoutScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => ProviderNavigationCubit(),
-      child: BlocBuilder<ProviderNavigationCubit, int>(
+      create: (_) => ClientNavigationCubit(),
+      child: BlocBuilder<ClientNavigationCubit, int>(
         builder: (context, currentIndex) {
           return Scaffold(
             body: screens[currentIndex],
             bottomNavigationBar: _CustomBottomNavBar(
               currentIndex: currentIndex,
               onTap: (index) =>
-                  context.read<ProviderNavigationCubit>().changeTab(index),
+                  context.read<ClientNavigationCubit>().changeTab(index),
             ),
           );
         },
@@ -157,9 +158,9 @@ class _NavBarItem extends StatelessWidget {
 }
 
 // navigation_cubit.dart (same as before)
-class ProviderNavigationCubit extends Cubit<int> {
-  ProviderNavigationCubit() : super(0);
-  static ProviderNavigationCubit get(context) => BlocProvider.of(context);
+class ClientNavigationCubit extends Cubit<int> {
+  ClientNavigationCubit() : super(0);
+  static ClientNavigationCubit get(context) => BlocProvider.of(context);
 
   void changeTab(int index) => emit(index);
 }

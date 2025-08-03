@@ -7,6 +7,13 @@ import 'package:mahu_home_services_app/features/user_booking/screens/service_cat
 import 'package:mahu_home_services_app/features/user_booking/screens/service_details_screen.dart';
 import 'package:mahu_home_services_app/core/models/cleaning_service.dart'
     as models;
+import 'package:mahu_home_services_app/features/user_booking/widgets/categories_widget.dart';
+import 'package:mahu_home_services_app/features/user_booking/widgets/favorite_button.dart';
+import 'package:mahu_home_services_app/features/user_booking/widgets/popular_services_widget.dart';
+import 'package:mahu_home_services_app/features/user_booking/widgets/recommended_services_widget.dart';
+import 'package:mahu_home_services_app/features/user_booking/widgets/search_bar_widget.dart';
+import 'package:mahu_home_services_app/features/user_booking/widgets/service_card.dart';
+import 'package:mahu_home_services_app/features/user_booking/widgets/service_list_tile.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -88,8 +95,6 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
   @override
   void initState() {
     super.initState();
-    // Auto-scroll banners
-    _bannerController.addListener(() {});
     _autoScrollBanners();
   }
 
@@ -97,16 +102,13 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
     Future.delayed(const Duration(seconds: 5), () {
       if (_bannerController.hasClients) {
         if (_bannerController.page == 2) {
-          _bannerController.animateToPage(
-            0,
-            duration: const Duration(milliseconds: 500),
-            curve: Curves.easeInOut,
-          );
+          _bannerController.animateToPage(0,
+              duration: const Duration(milliseconds: 500),
+              curve: Curves.easeInOut);
         } else {
           _bannerController.nextPage(
-            duration: const Duration(milliseconds: 500),
-            curve: Curves.easeInOut,
-          );
+              duration: const Duration(milliseconds: 500),
+              curve: Curves.easeInOut);
         }
         _autoScrollBanners();
       }
@@ -131,14 +133,9 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
         leading: Padding(
           padding: EdgeInsets.only(left: 16.w),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              Image.asset(
-                'assets/imgs/logo.png',
-                // width: 20.w,
-                height: 40.w,
-                fit: BoxFit.contain,
-              ),
+              Image.asset('assets/imgs/logo.png',
+                  height: 40.w, fit: BoxFit.contain),
             ],
           ),
         ),
@@ -161,590 +158,46 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Search Bar
-              _buildSearchBar()
+              SearchBarWidget(controller: _searchController)
                   .animate()
                   .fadeIn(delay: 100.ms)
                   .slide(begin: const Offset(0, 0.1)),
               Gap(24.h),
-
-              // Special Offers Banner
-              _buildSpecialOffersBanner(),
-              Gap(16.h),
-
-              // Categories
-              _buildServiceCategories()
+              SpecialOffersBanner(controller: _bannerController).animate(),
+              Gap(24.h),
+              CategoriesWidget(onTap: (label) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ServiceCategoryScreen(
+                        categoryName: label, services: _services),
+                  ),
+                );
+              })
                   .animate()
                   .fadeIn(delay: 200.ms)
                   .slide(begin: const Offset(0, 0.1)),
               Gap(24.h),
-
-              // Popular Services
-              _buildPopularServices()
+              PopularServicesWidget(
+                      services: _services,
+                      onToggleFavorite: (s) {
+                        setState(() => s.isFavorite = !s.isFavorite);
+                      })
                   .animate()
                   .fadeIn(delay: 300.ms)
                   .slide(begin: const Offset(0, 0.1)),
               Gap(24.h),
-
-              // Recommended Services
-              _buildRecommendedServices()
+              RecommendedServicesWidget(
+                      services: _services,
+                      onToggleFavorite: (s) {
+                        setState(() => s.isFavorite = !s.isFavorite);
+                      })
                   .animate()
                   .fadeIn(delay: 400.ms)
                   .slide(begin: const Offset(0, 0.1)),
               Gap(24.h),
             ],
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSearchBar() {
-    return Container(
-      height: 50.h,
-      decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
-      child: TextField(
-        controller: _searchController,
-        decoration: InputDecoration(
-          prefixIcon: Icon(Icons.search, color: Colors.grey.shade600),
-          hintText: 'Search cleaning services...',
-          hintStyle: TextStyle(color: Colors.grey.shade600),
-          border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(vertical: 15.h),
-        ),
-        style: TextStyle(fontSize: 14.sp),
-      ),
-    );
-  }
-
-  Widget _buildSpecialOffersBanner() {
-    final banners = [
-      'https://images.unsplash.com/photo-1556911220-bff31c812dba',
-      'https://images.unsplash.com/photo-1583847268964-b28dc8f51f92',
-      'https://images.unsplash.com/photo-1512917774080-9991f1c4c750',
-    ];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Special Offers',
-          style: TextStyle(
-            fontSize: 18.sp,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        Gap(12.h),
-        SizedBox(
-          height: 150.h,
-          child: PageView.builder(
-            controller: _bannerController,
-            itemCount: banners.length,
-            itemBuilder: (context, index) {
-              return Container(
-                margin: EdgeInsets.only(right: 8.w),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 10,
-                      offset: const Offset(0, 5),
-                    ),
-                  ],
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      CachedNetworkImage(
-                        imageUrl: banners[index],
-                        fit: BoxFit.cover,
-                        placeholder: (context, url) =>
-                            Container(color: Colors.grey.shade200),
-                        errorWidget: (context, url, error) =>
-                            const Icon(Icons.error),
-                      ),
-                      Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.bottomCenter,
-                            end: Alignment.topCenter,
-                            colors: [
-                              Colors.black.withOpacity(0.7),
-                              Colors.transparent,
-                            ],
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        left: 16.w,
-                        bottom: 16.h,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Spring Cleaning Special',
-                              style: TextStyle(
-                                fontSize: 16.sp,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                            Text(
-                              '20% OFF all services this week',
-                              style: TextStyle(
-                                fontSize: 12.sp,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-        Gap(8.h),
-        Center(
-          child: SmoothPageIndicator(
-            controller: _bannerController,
-            count: banners.length,
-            effect: WormEffect(
-              activeDotColor: AppColors.primary,
-              dotColor: Colors.grey.shade300,
-              dotWidth: 10.w,
-              dotHeight: 10.w,
-              spacing: 6.w,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildServiceCategories() {
-    final categories = [
-      {'icon': Icons.cleaning_services, 'label': 'Deep Clean'},
-      {'icon': Icons.repeat, 'label': 'Recurring'},
-      {'icon': Icons.event, 'label': 'One-Time'},
-      {'icon': Icons.air, 'label': 'Normal'},
-      {'icon': Icons.window, 'label': 'Windows'},
-    ];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Categories',
-          style: TextStyle(
-            fontSize: 18.sp,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        Gap(12.h),
-        SizedBox(
-          height: 100.h,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: categories.length,
-            separatorBuilder: (_, __) => Gap(12.w),
-            itemBuilder: (context, index) {
-              return InkWell(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ServiceCategoryScreen(
-                        categoryName: categories[index]['label'] as String,
-                        services: _services, // Pass your services list
-                      ),
-                    ),
-                  );
-                },
-                borderRadius: BorderRadius.circular(12),
-                child: Container(
-                  width: 80.w,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        width: 40.w,
-                        height: 40.w,
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.1),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          categories[index]['icon'] as IconData,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                      Gap(8.h),
-                      Text(
-                        categories[index]['label'] as String,
-                        style: TextStyle(
-                          fontSize: 12.sp,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPopularServices() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Popular Services',
-              style: TextStyle(
-                fontSize: 18.sp,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            TextButton(
-              onPressed: () {},
-              child: Text(
-                'View All',
-                style: TextStyle(
-                  fontSize: 12.sp,
-                  color: AppColors.primary,
-                ),
-              ),
-            ),
-          ],
-        ),
-        Gap(12.h),
-        SizedBox(
-          height: 220.h,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: _services.length,
-            separatorBuilder: (_, __) => Gap(16.w),
-            itemBuilder: (context, index) {
-              final service = _services[index];
-              return _buildServiceCard(service);
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildRecommendedServices() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Recommended For You',
-              style: TextStyle(
-                fontSize: 18.sp,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            TextButton(
-              onPressed: () {},
-              child: Text(
-                'View All',
-                style: TextStyle(
-                  fontSize: 12.sp,
-                  color: AppColors.primary,
-                ),
-              ),
-            ),
-          ],
-        ),
-        Gap(12.h),
-        Column(
-          children: _services
-              .map((service) => Padding(
-                    padding: EdgeInsets.only(bottom: 16.h),
-                    child: _buildServiceListTile(service),
-                  ))
-              .toList(),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildServiceCard(models.CleaningService service) {
-    return InkWell(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ServiceDetailsScreen(service: service),
-          ),
-        );
-      },
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        width: 160.w,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 5),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Service Image
-            ClipRRect(
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(12)),
-              child: Stack(
-                children: [
-                  CachedNetworkImage(
-                    height: 120.h,
-                    width: double.infinity,
-                    imageUrl: service.imageUrl,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) =>
-                        Container(color: Colors.grey.shade200),
-                    errorWidget: (context, url, error) =>
-                        const Icon(Icons.error),
-                  ),
-                  Positioned(
-                    top: 8.w,
-                    right: 8.w,
-                    child: FavoriteButton(
-                      isFavorite: service.isFavorite,
-                      onPressed: () {
-                        setState(() {
-                          service.isFavorite = !service.isFavorite;
-                        });
-                      },
-                    ),
-                  ),
-                  Positioned(
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    child: Container(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.bottomCenter,
-                          end: Alignment.topCenter,
-                          colors: [
-                            Colors.black.withOpacity(0.7),
-                            Colors.transparent,
-                          ],
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(Icons.star, color: Colors.amber, size: 14.sp),
-                          Gap(4.w),
-                          Text(
-                            '${service.rating} (${service.reviews})',
-                            style: TextStyle(
-                              fontSize: 12.sp,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // Service Info
-            Padding(
-              padding: EdgeInsets.all(8.w),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    service.name,
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  Gap(4.h),
-                  Text(
-                    '${service.duration} hrs • \$${service.price}',
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
-                  Gap(8.h),
-                  Container(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                    decoration: BoxDecoration(
-                      color: service.serviceType == 'Recurring'
-                          ? Colors.blue.withOpacity(0.1)
-                          : Colors.orange.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      service.serviceType,
-                      style: TextStyle(
-                        fontSize: 10.sp,
-                        color: service.serviceType == 'Recurring'
-                            ? Colors.blue
-                            : Colors.orange,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildServiceListTile(models.CleaningService service) {
-    return InkWell(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ServiceDetailsScreen(service: service),
-          ),
-        );
-      },
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 5),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            ClipRRect(
-              borderRadius: const BorderRadius.horizontal(
-                left: Radius.circular(12),
-              ),
-              child: CachedNetworkImage(
-                width: 100.w,
-                height: 100.h,
-                imageUrl: service.imageUrl,
-                fit: BoxFit.cover,
-                placeholder: (context, url) =>
-                    Container(color: Colors.grey.shade200),
-                errorWidget: (context, url, error) => const Icon(Icons.error),
-              ),
-            ),
-            Expanded(
-              child: Padding(
-                padding: EdgeInsets.all(12.w),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            service.name,
-                            style: TextStyle(
-                              fontSize: 14.sp,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        FavoriteButton(
-                          isFavorite: service.isFavorite,
-                          onPressed: () {
-                            setState(() {
-                              service.isFavorite = !service.isFavorite;
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                    Gap(4.h),
-                    Text(
-                      service.description,
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        color: Colors.grey.shade600,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    Gap(8.h),
-                    Row(
-                      children: [
-                        Icon(Icons.star, color: Colors.amber, size: 14.sp),
-                        Gap(4.w),
-                        Text(
-                          '${service.rating} (${service.reviews})',
-                          style: TextStyle(fontSize: 12.sp),
-                        ),
-                        const Spacer(),
-                        Text(
-                          '\$${service.price}',
-                          style: TextStyle(
-                            fontSize: 14.sp,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.primary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
         ),
       ),
     );
@@ -758,33 +211,75 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
   }
 }
 
-class FavoriteButton extends StatelessWidget {
-  final bool isFavorite;
-  final VoidCallback onPressed;
-
-  const FavoriteButton({
-    super.key,
-    required this.isFavorite,
-    required this.onPressed,
-  });
+class SpecialOffersBanner extends StatelessWidget {
+  final PageController controller;
+  const SpecialOffersBanner({super.key, required this.controller});
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onPressed,
-      child: Container(
-        width: 28.w,
-        height: 28.w,
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.9),
-          shape: BoxShape.circle,
-        ),
-        child: Icon(
-          isFavorite ? Icons.favorite : Icons.favorite_border,
-          color: isFavorite ? Colors.red : Colors.grey,
-          size: 16.sp,
-        ),
+    final banners = [
+      CachedNetworkImage(
+        imageUrl: 'https://images.unsplash.com/photo-1556911220-bff31c812dba',
+        fit: BoxFit.cover,
+        placeholder: (_, __) => Container(color: Colors.grey.shade200),
       ),
+      CachedNetworkImage(
+        imageUrl:
+            'https://images.unsplash.com/photo-1583847268964-b28dc8f51f92',
+        fit: BoxFit.cover,
+        placeholder: (_, __) => Container(color: Colors.grey.shade200),
+      ),
+      CachedNetworkImage(
+        imageUrl:
+            'https://images.unsplash.com/photo-1512917774080-9991f1c4c750',
+        fit: BoxFit.cover,
+        placeholder: (_, __) => Container(color: Colors.grey.shade200),
+      ),
+    ];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Special Offers',
+            style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold)),
+        Gap(12.h),
+        SizedBox(
+          height: 150.h,
+          child: PageView.builder(
+            controller: controller,
+            itemCount: banners.length,
+            itemBuilder: (_, i) => Container(
+              margin: EdgeInsets.only(right: 8.w),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                      color: Colors.black.withOpacity(.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, 5)),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: banners[i],
+              ),
+            ),
+          ),
+        ),
+        Gap(8.h),
+        Center(
+          child: SmoothPageIndicator(
+            controller: controller,
+            count: banners.length,
+            effect: WormEffect(
+              activeDotColor: AppColors.primary,
+              dotColor: Colors.grey.shade300,
+              dotWidth: 10.w,
+              dotHeight: 10.w,
+              spacing: 6.w,
+            ),
+          ),
+        )
+      ],
     );
   }
 }

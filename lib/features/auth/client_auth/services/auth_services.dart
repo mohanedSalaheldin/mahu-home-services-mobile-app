@@ -92,23 +92,25 @@ class AuthServices {
 
     return _handleRequest<UserModel>(
       request: () async {
+        var data = {
+          "email": email,
+          "phone": phone,
+          "password": password,
+          "firstName": firstName,
+          "lastName": lastName,
+          "avatar": imageUrl,
+          "role": "provider",
+          "businessName": businessName,
+          "businessRegistration": "REG123456",
+          "verificationType": otpMethod,
+        };
+        print(data);
         return _dio.post(
           '/auth/register',
           options: Options(
             contentType: 'multipart/form-data',
           ),
-          data: {
-            "email": email,
-            "phone": phone,
-            "password": password,
-            "firstName": firstName,
-            "lastName": lastName,
-            "avatar": imageUrl,
-            "role": "provider",
-            "businessName": businessName,
-            "businessRegistration": "REG123456",
-            "verificationType": otpMethod,
-          },
+          data: data,
         );
       },
       onSuccess: (data) {
@@ -121,17 +123,21 @@ class AuthServices {
   }
 
   Future<Either<Failure, String>> login({
-    required String email,
+    required String emailOrPhone,
     required String password,
   }) {
     return _handleRequest<String>(
-      request: () => _dio.post(
-        '/auth/login',
-        data: {
-          "email": email,
+      request: () {
+        var data2 = {
+          'emailOrPhone': emailOrPhone,
           "password": password,
-        },
-      ),
+        };
+        print(data2);
+        return _dio.post(
+          '/auth/login',
+          data: data2,
+        );
+      },
       onSuccess: (data) => data['token'],
       knownFailures: {
         401: LoginInvalidCredentialsFailure(),
@@ -172,7 +178,7 @@ class AuthServices {
   Future<Either<Failure, Unit>> resendOTP({required String email}) {
     return _handleRequest<Unit>(
       request: () => _dio.post('/auth/resend-otp', data: {
-        "email": email,
+        'emailOrPhone': email,
         "type": "email",
       }),
       onSuccess: (_) => unit,

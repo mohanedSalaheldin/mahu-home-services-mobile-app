@@ -139,7 +139,7 @@ class ManageProviderServices {
           options: Options(headers: {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer $token',
-          })),
+          },),),
       onSuccess: (data) {
         return (data['data'] as List)
             .map((service) => ServiceModel.fromJson(service))

@@ -4,15 +4,13 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
 import 'package:mahu_home_services_app/core/models/user_type_enum.dart';
 import 'package:mahu_home_services_app/core/utils/helpers/cache_helper.dart';
-import 'package:mahu_home_services_app/core/utils/helpers/upload_media_helper.dart';
 import 'package:mahu_home_services_app/features/auth/client_auth/cubit/auth_cubit.dart';
 import 'package:mahu_home_services_app/features/auth/client_auth/views/screens/login_screen.dart';
 import 'package:mahu_home_services_app/features/landing/views/screens/choose_rule_screen.dart';
 import 'package:mahu_home_services_app/features/landing/views/screens/landing_screen1.dart';
+import 'package:mahu_home_services_app/features/layouts/client_layout_screen.dart';
 import 'package:mahu_home_services_app/features/layouts/provider_layout_screen.dart';
 import 'package:mahu_home_services_app/features/services/cubit/servises_cubit.dart';
-import 'package:mahu_home_services_app/features/services/views/screens/service_provider_dashboard_screen.dart';
-import 'package:mahu_home_services_app/features/user_booking/screens/customer_home_screen.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -91,7 +89,7 @@ Future<Widget> getInitialScreen() async {
 
   // الحالة 4: اختار دور وسجّل دخول
   if (userRole == 'client') {
-    return const CustomerHomeScreen();
+    return CustomerLayoutScreen();
   } else if (userRole == 'provider') {
     return ProviderLayoutScreen();
   }

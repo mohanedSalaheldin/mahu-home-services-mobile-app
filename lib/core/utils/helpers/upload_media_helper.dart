@@ -16,7 +16,7 @@ class UploadMediaHelper {
     final Dio dio = Dio();
 
     // Set Authorization header
-    dio.options.headers['Authorization'] = 'Bearer $token';
+    // dio.options.headers['Authorization'] = 'Bearer $token';
 
     // Create FormData with image file
     FormData formData = FormData.fromMap({

@@ -65,7 +65,10 @@ class _VerifyAccountScreenState extends State<VerifyAccountScreen> {
               child: CircularProgressIndicator(),
             );
           }
-
+          var authCubit = AuthCubit.get(context);
+          String idThanSendOTPTo = widget.otpChannel == OtpChannel.phone
+              ? authCubit.registerResponceUser.phone
+              : authCubit.registerResponceUser.email;
           return SafeArea(
             child: Padding(
               padding: EdgeInsets.all(AppConst.appPadding.w),
@@ -74,7 +77,7 @@ class _VerifyAccountScreenState extends State<VerifyAccountScreen> {
                 child: Column(
                   children: [
                     Text(
-                      'We have sent verification \n code to ${AuthCubit.get(context).registerResponceUser.email}',
+                      'We have sent verification \n code to $idThanSendOTPTo',
                       style: TextStyle(
                         fontWeight: FontWeight.w300,
                         fontSize: 13.sp,

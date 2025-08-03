@@ -5,12 +5,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
 import 'package:mahu_home_services_app/core/models/user_type_enum.dart';
-import 'package:mahu_home_services_app/core/utils/helpers/helping_functions.dart';
 import 'package:mahu_home_services_app/features/auth/client_auth/views/screens/client_register_screen.dart';
 import 'package:mahu_home_services_app/features/auth/provider_auth/views/screens/provider_register_screen.dart';
-import 'package:mahu_home_services_app/features/layouts/provider_layout_screen.dart';
-import 'package:mahu_home_services_app/features/services/views/screens/service_provider_dashboard_screen.dart';
-import 'package:mahu_home_services_app/features/user_booking/screens/customer_home_screen.dart';
 
 class ChooseRuleScreen extends StatefulWidget {
   const ChooseRuleScreen({super.key});

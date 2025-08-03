@@ -83,10 +83,10 @@ class AuthCubit extends Cubit<AuthState> {
     );
   }
 
-  void login({required String email, required String password}) async {
+  void login({required String emailOrPhone, required String password}) async {
     emit(LoginLoadingState());
     Either<Failure, String> res = await _authServices.login(
-      email: email,
+      emailOrPhone: emailOrPhone,
       password: password,
     );
     res.fold(

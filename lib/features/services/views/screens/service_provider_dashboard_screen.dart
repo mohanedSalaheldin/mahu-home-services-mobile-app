@@ -166,7 +166,7 @@ class _ServiceProviderDashboardScreenState
                         ),
                         DashboardFilledButton(
                           onPressed: () {
-                            NavigationCubit.get(context).changeTab(2);
+                            ProviderNavigationCubit.get(context).changeTab(2);
 
                             // navigateTo(
                             //     context, const ServiceProviderBookingsScreen());
@@ -368,4 +368,3 @@ class ServiceListItem extends StatelessWidget {
     );
   }
 }
-
