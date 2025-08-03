@@ -41,7 +41,7 @@ class ServiceCubit extends Cubit<ServiceState> {
   Future<void> fetchMyBookings() async {
     emit(GetMyBookingsLoadingState());
 
-    final booking = await _bookingServices.getAllServices();
+    final booking = await _bookingServices.getMyBookings();
     booking.fold(
       (failure) {
         emit(GetMyBookingsFailedState());

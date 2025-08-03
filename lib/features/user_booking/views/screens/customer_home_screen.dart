@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
 import 'package:mahu_home_services_app/features/landing/views/screens/choose_rule_screen.dart';
-import 'package:mahu_home_services_app/features/user_booking/screens/service_category_screen.dart';
-import 'package:mahu_home_services_app/features/user_booking/screens/service_details_screen.dart';
+import 'package:mahu_home_services_app/features/user_booking/cubit/user_booking_cubit.dart';
+import 'package:mahu_home_services_app/features/user_booking/views/screens/service_category_screen.dart';
+import 'package:mahu_home_services_app/features/user_booking/views/screens/service_details_screen.dart';
 import 'package:mahu_home_services_app/core/models/cleaning_service.dart'
     as models;
-import 'package:mahu_home_services_app/features/user_booking/widgets/categories_widget.dart';
-import 'package:mahu_home_services_app/features/user_booking/widgets/favorite_button.dart';
-import 'package:mahu_home_services_app/features/user_booking/widgets/popular_services_widget.dart';
-import 'package:mahu_home_services_app/features/user_booking/widgets/recommended_services_widget.dart';
-import 'package:mahu_home_services_app/features/user_booking/widgets/search_bar_widget.dart';
-import 'package:mahu_home_services_app/features/user_booking/widgets/service_card.dart';
-import 'package:mahu_home_services_app/features/user_booking/widgets/service_list_tile.dart';
+import 'package:mahu_home_services_app/features/user_booking/views/widgets/categories_widget.dart';
+import 'package:mahu_home_services_app/features/user_booking/views/widgets/favorite_button.dart';
+import 'package:mahu_home_services_app/features/user_booking/views/widgets/popular_services_widget.dart';
+import 'package:mahu_home_services_app/features/user_booking/views/widgets/recommended_services_widget.dart';
+import 'package:mahu_home_services_app/features/user_booking/views/widgets/search_bar_widget.dart';
+import 'package:mahu_home_services_app/features/user_booking/views/widgets/service_card.dart';
+import 'package:mahu_home_services_app/features/user_booking/views/widgets/service_list_tile.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -71,30 +73,34 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
       subType: 'weekly',
     ),
     models.CleaningService(
-        id: '3',
-        name: 'Move-In/Move-Out',
-        description: 'Complete cleaning for new or vacated homes',
-        category: 'cleaning',
-        price: 249.99,
-        duration: 6,
-        rating: 4.9,
-        reviews: 156,
-        imageUrl:
-            'https://images.unsplash.com/photo-1512917774080-9991f1c4c750',
-        isFavorite: false,
-        subServices: [
-          'Wall washing',
-          'Appliance cleaning',
-          'Inside cabinets',
-          'Baseboard cleaning'
-        ],
-        serviceType: 'one-time',
-        subType: "normal"),
+      id: '3',
+      name: 'Move-In/Move-Out',
+      description: 'Complete cleaning for new or vacated homes',
+      category: 'cleaning',
+      price: 249.99,
+      duration: 6,
+      rating: 4.9,
+      reviews: 156,
+      imageUrl: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750',
+      isFavorite: false,
+      subServices: [
+        'Wall washing',
+        'Appliance cleaning',
+        'Inside cabinets',
+        'Baseboard cleaning'
+      ],
+      serviceType: 'one-time',
+      subType: "normal",
+    ),
   ];
 
   @override
   void initState() {
     super.initState();
+    var userBookingCubit = UserBookingCubit.get(context);
+    if (userBookingCubit.availableServices.isEmpty) {
+      userBookingCubit.fetchavailableServices();
+    }
     _autoScrollBanners();
   }
 
@@ -151,54 +157,74 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
           Gap(16.w),
         ],
       ),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.w),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SearchBarWidget(controller: _searchController)
-                  .animate()
-                  .fadeIn(delay: 100.ms)
-                  .slide(begin: const Offset(0, 0.1)),
-              Gap(24.h),
-              SpecialOffersBanner(controller: _bannerController).animate(),
-              Gap(24.h),
-              CategoriesWidget(onTap: (label) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ServiceCategoryScreen(
-                        categoryName: label, services: _services),
-                  ),
-                );
-              })
-                  .animate()
-                  .fadeIn(delay: 200.ms)
-                  .slide(begin: const Offset(0, 0.1)),
-              Gap(24.h),
-              PopularServicesWidget(
-                      services: _services,
-                      onToggleFavorite: (s) {
-                        setState(() => s.isFavorite = !s.isFavorite);
-                      })
-                  .animate()
-                  .fadeIn(delay: 300.ms)
-                  .slide(begin: const Offset(0, 0.1)),
-              Gap(24.h),
-              RecommendedServicesWidget(
-                      services: _services,
-                      onToggleFavorite: (s) {
-                        setState(() => s.isFavorite = !s.isFavorite);
-                      })
-                  .animate()
-                  .fadeIn(delay: 400.ms)
-                  .slide(begin: const Offset(0, 0.1)),
-              Gap(24.h),
-            ],
-          ),
-        ),
+      body: BlocConsumer<UserBookingCubit, UserBookingState>(
+        listener: (context, state) {
+          // TODO: implement listener
+        },
+        builder: (context, state) {
+          if (state is FetchAvailableServicesLoading) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+
+          if (state is FetchAvailableServicesError) {
+            return const Center(
+              child: Text('Error loading services'),
+            );
+          }
+          var userBookingCubit = UserBookingCubit.get(context);
+
+          return SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.w),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SearchBarWidget(controller: _searchController)
+                      .animate()
+                      .fadeIn(delay: 100.ms)
+                      .slide(begin: const Offset(0, 0.1)),
+                  Gap(24.h),
+                  SpecialOffersBanner(controller: _bannerController).animate(),
+                  Gap(24.h),
+                  CategoriesWidget(onTap: (label) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ServiceCategoryScreen(
+                            categoryName: label, services: _services),
+                      ),
+                    );
+                  })
+                      .animate()
+                      .fadeIn(delay: 200.ms)
+                      .slide(begin: const Offset(0, 0.1)),
+                  Gap(24.h),
+                  PopularServicesWidget(
+                          services: userBookingCubit.availableServices,
+                          onToggleFavorite: (s) {
+                            setState(() => s.isFavorite = !s.isFavorite);
+                          })
+                      .animate()
+                      .fadeIn(delay: 300.ms)
+                      .slide(begin: const Offset(0, 0.1)),
+                  Gap(24.h),
+                  RecommendedServicesWidget(
+                          services: userBookingCubit.availableServices,
+                          onToggleFavorite: (s) {
+                            setState(() => s.isFavorite = !s.isFavorite);
+                          })
+                      .animate()
+                      .fadeIn(delay: 400.ms)
+                      .slide(begin: const Offset(0, 0.1)),
+                  Gap(24.h),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }

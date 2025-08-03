@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
-import 'package:mahu_home_services_app/features/user_booking/widgets/favorite_button.dart';
+import 'package:mahu_home_services_app/features/user_booking/views/widgets/favorite_button.dart';
 
 class PopularServiceCard extends StatelessWidget {
   const PopularServiceCard({

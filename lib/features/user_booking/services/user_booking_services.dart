@@ -3,11 +3,16 @@ import 'package:dio/dio.dart';
 import 'package:mahu_home_services_app/core/constants/app_const.dart';
 import 'package:mahu_home_services_app/core/errors/failures.dart';
 import 'package:mahu_home_services_app/core/network_info.dart';
+import 'package:mahu_home_services_app/core/utils/app_users_configs.dart';
 import 'package:mahu_home_services_app/core/utils/helpers/cache_helper.dart';
 import 'package:mahu_home_services_app/features/services/models/booking_model.dart';
-import 'package:mahu_home_services_app/features/services/views/screens/booking_details_screen.dart';
+import 'package:mahu_home_services_app/features/services/models/service_model.dart';
+import 'package:mahu_home_services_app/features/user_booking/models/booking_model.dart';
 
-class BookingServices {
+class UserBookingServices {
+  // This class is responsible for managing provider services.
+  // It can include methods to add, update, delete, or retrieve services.
+
   final NetworkInfo _networkInfo = NetworkInfoImpl();
   final Dio _dio = Dio(
     BaseOptions(
@@ -50,20 +55,50 @@ class BookingServices {
     }
   }
 
-  Future<Either<Failure, List<BookingModel>>> getMyBookings() {
-    String token = CacheHelper.getString('token') ?? '';
-
-    return _handleRequest<List<BookingModel>>(
-      request: () => _dio.get('/providers/me/bookings',
-          data: {},
-          options: Options(headers: {
+  // Example method to retrieve all services
+  Future<Either<Failure, List<ServiceModel>>> getAllServices() {
+    return _handleRequest<List<ServiceModel>>(
+      request: () => _dio.get(
+        '/services/list/${AppUsersConfigs.appProvider}',
+        data: {},
+        options: Options(
+          headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer $token',
-          })),
+          },
+        ),
+      ),
       onSuccess: (data) {
         return (data['data'] as List)
-            .map((book) => BookingModel.fromJson(book))
+            .map((service) => ServiceModel.fromJson(service))
             .toList();
+      },
+      knownFailures: {},
+    );
+  }
+
+  Future<Either<Failure, Unit>> createBBooking(UserBookingModel model) {
+    String token = CacheHelper.getString('token') ?? '';
+
+    return _handleRequest<Unit>(
+      request: () => _dio.post(
+        '/bookings',
+        data: {
+          "service": model.service,
+          "schedule": {
+            "startDate": model.schedule.startDate,
+            "recurrence": model.schedule.recurrence
+          },
+          "address": model.address,
+          "details": model.details
+        },
+        options: Options(headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        }),
+      ),
+      onSuccess: (data) {
+        print(data);
+        return unit;
       },
       knownFailures: {},
     );

@@ -11,6 +11,7 @@ class CustomTextField extends StatefulWidget {
   final TextInputType keyboardType;
   final String? Function(String?) validator;
   final int? lines;
+  final bool hasLabel;
 
   const CustomTextField({
     super.key,
@@ -21,6 +22,7 @@ class CustomTextField extends StatefulWidget {
     this.keyboardType = TextInputType.text,
     required this.validator,
     this.lines,
+    this.hasLabel = true,
   });
 
   @override
@@ -35,14 +37,15 @@ class _CustomTextFieldState extends State<CustomTextField> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          widget.label,
-          style: TextStyle(
-            fontWeight: FontWeight.w500,
-            fontSize: 16.sp,
-            color: Colors.black,
+        if (widget.hasLabel)
+          Text(
+            widget.label,
+            style: TextStyle(
+              fontWeight: FontWeight.w500,
+              fontSize: 16.sp,
+              color: Colors.black,
+            ),
           ),
-        ),
         Gap(7.h),
         TextFormField(
           validator: widget.validator,

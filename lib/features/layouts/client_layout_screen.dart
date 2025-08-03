@@ -7,7 +7,7 @@ import 'package:mahu_home_services_app/features/services/views/screens/service_p
 import 'package:mahu_home_services_app/features/services/views/screens/profile_screen.dart';
 import 'package:mahu_home_services_app/features/services/views/screens/service_provider_jobs.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:mahu_home_services_app/features/user_booking/screens/customer_home_screen.dart';
+import 'package:mahu_home_services_app/features/user_booking/views/screens/customer_home_screen.dart';
 
 class CustomerLayoutScreen extends StatelessWidget {
   CustomerLayoutScreen({super.key});

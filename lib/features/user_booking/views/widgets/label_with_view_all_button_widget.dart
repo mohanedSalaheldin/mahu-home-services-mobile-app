@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mahu_home_services_app/features/landing/views/widgets/app_text_button.dart';
-import 'package:mahu_home_services_app/features/user_booking/widgets/home_section_label_text.dart';
+import 'package:mahu_home_services_app/features/user_booking/views/widgets/home_section_label_text.dart';
 
 class LabelWithViewAllButtonWidget extends StatelessWidget {
   const LabelWithViewAllButtonWidget({

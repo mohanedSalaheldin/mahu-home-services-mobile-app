@@ -2,11 +2,13 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
-import 'package:mahu_home_services_app/core/models/cleaning_service.dart' as models;
-import 'package:mahu_home_services_app/features/user_booking/screens/service_details_screen.dart';
+import 'package:mahu_home_services_app/core/models/cleaning_service.dart'
+    as models;
+import 'package:mahu_home_services_app/features/services/models/service_model.dart';
+import 'package:mahu_home_services_app/features/user_booking/views/screens/service_details_screen.dart';
 
 class ServiceCard extends StatelessWidget {
-  final models.CleaningService service;
+  final ServiceModel service;
   final VoidCallback onFavoritePressed;
   const ServiceCard(
       {super.key, required this.service, required this.onFavoritePressed});
@@ -44,15 +46,14 @@ class ServiceCard extends StatelessWidget {
                   CachedNetworkImage(
                     height: 120.h,
                     width: double.infinity,
-                    imageUrl: service.imageUrl,
+                    imageUrl: service.image,
                     fit: BoxFit.cover,
                   ),
                   Positioned(
                     top: 8.w,
                     right: 8.w,
                     child: FavoriteButton(
-                        isFavorite: service.isFavorite,
-                        onPressed: onFavoritePressed),
+                        isFavorite: false, onPressed: onFavoritePressed),
                   ),
                 ],
               ),
@@ -67,7 +68,7 @@ class ServiceCard extends StatelessWidget {
                           fontSize: 14.sp, fontWeight: FontWeight.bold),
                       maxLines: 1),
                   Gap(4.h),
-                  Text('${service.duration} hrs • \$${service.price}',
+                  Text('${service.duration} hrs • \$${service.basePrice}',
                       style: TextStyle(
                           fontSize: 12.sp, color: Colors.grey.shade600)),
                 ],

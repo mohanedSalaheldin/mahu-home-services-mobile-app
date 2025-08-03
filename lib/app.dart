@@ -11,6 +11,7 @@ import 'package:mahu_home_services_app/features/landing/views/screens/landing_sc
 import 'package:mahu_home_services_app/features/layouts/client_layout_screen.dart';
 import 'package:mahu_home_services_app/features/layouts/provider_layout_screen.dart';
 import 'package:mahu_home_services_app/features/services/cubit/servises_cubit.dart';
+import 'package:mahu_home_services_app/features/user_booking/cubit/user_booking_cubit.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -28,6 +29,9 @@ class MyApp extends StatelessWidget {
           BlocProvider(create: (_) => UserRoleCubit()..loadUserRole()),
           BlocProvider<ServiceCubit>(
             create: (_) => ServiceCubit(),
+          ),
+          BlocProvider(
+            create: (context) => UserBookingCubit(),
           ),
         ],
         child: MaterialApp(

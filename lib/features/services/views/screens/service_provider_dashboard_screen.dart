@@ -4,7 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:mahu_home_services_app/core/constants/app_const.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
-import 'package:mahu_home_services_app/core/utils/helpers/helping_functions.dart';
+import 'package:mahu_home_services_app/core/utils/navigation_utils.dart';
 import 'package:mahu_home_services_app/features/layouts/provider_layout_screen.dart';
 import 'package:mahu_home_services_app/features/services/cubit/servises_cubit.dart';
 import 'package:mahu_home_services_app/features/services/cubit/servises_state.dart';

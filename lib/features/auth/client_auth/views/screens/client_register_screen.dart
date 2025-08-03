@@ -5,7 +5,7 @@ import 'package:gap/gap.dart';
 import 'package:mahu_home_services_app/core/constants/app_const.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
 import 'package:mahu_home_services_app/core/utils/helpers/form_validation_method.dart';
-import 'package:mahu_home_services_app/core/utils/helpers/helping_functions.dart';
+import 'package:mahu_home_services_app/core/utils/navigation_utils.dart';
 import 'package:mahu_home_services_app/features/auth/client_auth/cubit/auth_cubit.dart';
 import 'package:mahu_home_services_app/features/auth/client_auth/cubit/auth_state.dart';
 import 'package:mahu_home_services_app/features/auth/client_auth/views/screens/login_screen.dart';

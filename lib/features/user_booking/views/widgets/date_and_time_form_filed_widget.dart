@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
-import 'package:mahu_home_services_app/features/user_booking/screens/booking_form_screen.dart';
+import 'package:mahu_home_services_app/features/user_booking/views/screens/booking_form_screen.dart';
 
 class DateAndTimeFormFiledWidget extends StatefulWidget {
   DateAndTimeFormFiledWidget({

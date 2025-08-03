@@ -4,11 +4,11 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:mahu_home_services_app/core/constants/app_const.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
-import 'package:mahu_home_services_app/core/utils/helpers/helping_functions.dart';
+import 'package:mahu_home_services_app/core/utils/navigation_utils.dart';
 import 'package:mahu_home_services_app/features/landing/views/widgets/app_filled_button.dart';
-import 'package:mahu_home_services_app/features/user_booking/screens/select_address_screen.dart';
-import 'package:mahu_home_services_app/features/user_booking/widgets/dashed_line.dart';
-import 'package:mahu_home_services_app/features/user_booking/widgets/service_summary_card.dart';
+import 'package:mahu_home_services_app/features/user_booking/views/screens/select_address_screen.dart';
+import 'package:mahu_home_services_app/features/user_booking/views/widgets/dashed_line.dart';
+import 'package:mahu_home_services_app/features/user_booking/views/widgets/service_summary_card.dart';
 
 class ReviewBookingSummaryScreen extends StatelessWidget {
   const ReviewBookingSummaryScreen({super.key});

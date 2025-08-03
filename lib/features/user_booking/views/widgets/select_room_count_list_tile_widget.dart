@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
-import 'package:mahu_home_services_app/features/user_booking/screens/select_rooms_screen.dart';
+import 'package:mahu_home_services_app/features/user_booking/views/screens/select_rooms_screen.dart';
 
 class SelectRoomCountListTileWidget extends StatefulWidget {
   const SelectRoomCountListTileWidget({

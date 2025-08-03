@@ -3,7 +3,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
 import 'package:mahu_home_services_app/core/models/cleaning_service.dart';
-import 'package:mahu_home_services_app/features/user_booking/screens/service_details_screen.dart';
+import 'package:mahu_home_services_app/features/services/models/service_model.dart';
+import 'package:mahu_home_services_app/features/user_booking/views/screens/service_details_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
@@ -68,17 +69,16 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
             Gap(16.h),
 
             // Services List
-            if (filteredServices.isEmpty)
-              _buildEmptyState()
-            else
-              Column(
-                children: filteredServices
-                    .map((service) => Padding(
-                          padding: EdgeInsets.only(bottom: 16.h),
-                          child: _buildServiceCard(service),
-                        ))
-                    .toList(),
-              ),
+            if (filteredServices.isEmpty) _buildEmptyState()
+            // else
+            //   Column(
+            //     children: filteredServices
+            //         .map((service) => Padding(
+            //               padding: EdgeInsets.only(bottom: 16.h),
+            //               child: _buildServiceCard(service),
+            //             ))
+            //         .toList(),
+            //   ),
           ],
         ),
       ),
@@ -93,17 +93,20 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
       case 'Deep Clean':
         description =
             'Thorough cleaning of all areas including hard-to-reach spots. Perfect for deep sanitization and intensive cleaning needs.';
-        imageUrl = 'https://images.unsplash.com/photo-1600585152220-90363fe7e115';
+        imageUrl =
+            'https://images.unsplash.com/photo-1600585152220-90363fe7e115';
         break;
       case 'Recurring':
         description =
             'Regular scheduled cleaning services to maintain your space. Set your preferred frequency and enjoy consistent cleanliness.';
-        imageUrl = 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a';
+        imageUrl =
+            'https://images.unsplash.com/photo-1584622650111-993a426fbf0a';
         break;
       case 'One-Time':
         description =
             'Single cleaning sessions for specific needs. Ideal for special occasions, move-ins/move-outs, or when you need a one-time refresh.';
-        imageUrl = 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750';
+        imageUrl =
+            'https://images.unsplash.com/photo-1512917774080-9991f1c4c750';
         break;
       default:
         description = 'Browse our cleaning services in this category.';
@@ -125,7 +128,8 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
               width: double.infinity,
               imageUrl: imageUrl,
               fit: BoxFit.cover,
-              placeholder: (context, url) => Container(color: Colors.grey.shade200),
+              placeholder: (context, url) =>
+                  Container(color: Colors.grey.shade200),
               errorWidget: (context, url, error) => const Icon(Icons.error),
             ),
           ),
@@ -146,7 +150,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
     ).animate().fadeIn(delay: 100.ms).slide(begin: const Offset(0, 0.1));
   }
 
-  Widget _buildServiceCard(CleaningService service) {
+  Widget _buildServiceCard(ServiceModel service) {
     return InkWell(
       onTap: () {
         Navigator.push(
@@ -179,9 +183,10 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
               child: CachedNetworkImage(
                 width: 120.w,
                 height: 120.h,
-                imageUrl: service.imageUrl,
+                imageUrl: service.image,
                 fit: BoxFit.cover,
-                placeholder: (context, url) => Container(color: Colors.grey.shade200),
+                placeholder: (context, url) =>
+                    Container(color: Colors.grey.shade200),
                 errorWidget: (context, url, error) => const Icon(Icons.error),
               ),
             ),
@@ -207,7 +212,8 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                           ),
                         ),
                         Container(
-                          padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 8.w, vertical: 4.h),
                           decoration: BoxDecoration(
                             color: service.serviceType == 'recurring'
                                 ? Colors.blue.withOpacity(0.1)
@@ -215,7 +221,9 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
-                            service.serviceType == 'recurring' ? 'Recurring' : 'One-Time',
+                            service.serviceType == 'recurring'
+                                ? 'Recurring'
+                                : 'One-Time',
                             style: TextStyle(
                               fontSize: 10.sp,
                               color: service.serviceType == 'recurring'
@@ -242,12 +250,12 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                         Icon(Icons.star, color: Colors.amber, size: 16.sp),
                         Gap(4.w),
                         Text(
-                          '${service.rating} (${service.reviews})',
+                          '0 Reviews',
                           style: TextStyle(fontSize: 12.sp),
                         ),
-                        Spacer(),
+                        const Spacer(),
                         Text(
-                          '\$${service.price}',
+                          '\$${service.basePrice}',
                           style: TextStyle(
                             fontSize: 16.sp,
                             fontWeight: FontWeight.bold,

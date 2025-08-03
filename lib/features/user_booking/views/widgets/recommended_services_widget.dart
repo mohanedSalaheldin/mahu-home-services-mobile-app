@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
-import 'package:mahu_home_services_app/core/models/cleaning_service.dart' as models;
-import 'package:mahu_home_services_app/features/user_booking/widgets/service_list_tile.dart';
+import 'package:mahu_home_services_app/core/models/cleaning_service.dart'
+    as models;
+import 'package:mahu_home_services_app/features/services/models/service_model.dart';
+import 'package:mahu_home_services_app/features/user_booking/views/widgets/service_list_tile.dart';
 
 class RecommendedServicesWidget extends StatelessWidget {
-  final List<models.CleaningService> services;
+  final List<ServiceModel> services;
   final Function(models.CleaningService) onToggleFavorite;
   const RecommendedServicesWidget({
     super.key,
@@ -37,8 +39,7 @@ class RecommendedServicesWidget extends StatelessWidget {
               .map((service) => Padding(
                     padding: EdgeInsets.only(bottom: 16.h),
                     child: ServiceListTile(
-                        service: service,
-                        onFavoritePressed: () => onToggleFavorite(service)),
+                        service: service, onFavoritePressed: () {}),
                   ))
               .toList(),
         )

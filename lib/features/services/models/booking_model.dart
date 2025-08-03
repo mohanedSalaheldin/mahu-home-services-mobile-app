@@ -1,18 +1,18 @@
-// booking.dart
+// booking_model.dart
 
 class BookingModel {
   final String id;
   final AppUser user;
   final Service service;
-  final String provider; // provider id
+  final String provider;
   final String serviceType;
-  final Schedule schedule;
+  final Schedule? schedule; // <-- made nullable
   final String? details;
   final String status;
   final double price;
   final String paymentStatus;
   final DateTime createdAt;
-  final int? v; // __v
+  final int? v;
 
   BookingModel({
     required this.id,
@@ -20,7 +20,7 @@ class BookingModel {
     required this.service,
     required this.provider,
     required this.serviceType,
-    required this.schedule,
+    this.schedule,
     this.details,
     required this.status,
     required this.price,
@@ -36,7 +36,9 @@ class BookingModel {
       service: Service.fromJson(json['service'] as Map<String, dynamic>),
       provider: json['provider'] as String,
       serviceType: json['serviceType'] as String,
-      schedule: Schedule.fromJson(json['schedule'] as Map<String, dynamic>),
+      schedule: json['schedule'] != null
+          ? Schedule.fromJson(json['schedule'] as Map<String, dynamic>)
+          : null,
       details: json['details'] as String?,
       status: json['status'] as String,
       price: (json['price'] as num).toDouble(),
@@ -48,19 +50,19 @@ class BookingModel {
 
   Map<String, dynamic> toJson() {
     return {
-      '_id': id, // keep Mongo convention on output
+      '_id': id,
       'user': user.toJson(),
       'service': service.toJson(),
       'provider': provider,
       'serviceType': serviceType,
-      'schedule': schedule.toJson(),
+      'schedule': schedule?.toJson(),
       'details': details,
       'status': status,
       'price': price,
       'paymentStatus': paymentStatus,
       'createdAt': createdAt.toIso8601String(),
       '__v': v,
-      'id': id, // include both if your API sometimes expects 'id'
+      'id': id,
     };
   }
 
@@ -103,7 +105,7 @@ class AppUser {
   final String role;
   final String? businessName;
   final String? businessRegistration;
-  final List<String> services; // service ids (if any)
+  final List<String> services;
   final bool isVerified;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -199,10 +201,10 @@ class Service {
   final String subType;
   final double basePrice;
   final String pricingModel;
-  final int duration; // minutes
+  final int duration;
   final String image;
   final bool active;
-  final String provider; // provider id
+  final String provider;
   final bool isApproved;
   final List<String> availableDays;
   final List<AvailableSlot> availableSlots;
@@ -280,8 +282,8 @@ class Service {
 }
 
 class AvailableSlot {
-  final String startTime; // "HH:mm"
-  final String endTime;   // "HH:mm"
+  final String startTime;
+  final String endTime;
   final String id;
 
   AvailableSlot({
@@ -311,19 +313,22 @@ class AvailableSlot {
 class Schedule {
   final String id;
   final DateTime startDate;
-  final DateTime endDate;
+  final DateTime? endDate; // make nullable
+  final String? recurrence; // support recurrence
 
   Schedule({
     required this.id,
     required this.startDate,
-    required this.endDate,
+    this.endDate,
+    this.recurrence,
   });
 
   factory Schedule.fromJson(Map<String, dynamic> json) {
     return Schedule(
-      id: (json['id'] ?? json['_id']) as String,
-      startDate: DateTime.parse(json['startDate'] as String),
-      endDate: DateTime.parse(json['endDate'] as String),
+      id: (json['id'] ?? json['_id'] ?? '') as String,
+      startDate: DateTime.parse(json['startDate']),
+      endDate: json['endDate'] != null ? DateTime.parse(json['endDate']) : null,
+      recurrence: json['recurrence'] as String?, // <--
     );
   }
 
@@ -332,7 +337,8 @@ class Schedule {
       '_id': id,
       'id': id,
       'startDate': startDate.toIso8601String(),
-      'endDate': endDate.toIso8601String(),
+      'endDate': endDate?.toIso8601String(),
+      'recurrence': recurrence,
     };
   }
 }

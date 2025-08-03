@@ -4,12 +4,12 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:gap/gap.dart';
 import 'package:mahu_home_services_app/core/constants/app_const.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
-import 'package:mahu_home_services_app/core/utils/helpers/helping_functions.dart';
+import 'package:mahu_home_services_app/core/utils/navigation_utils.dart';
 import 'package:mahu_home_services_app/features/landing/views/widgets/app_filled_button.dart';
-import 'package:mahu_home_services_app/features/user_booking/screens/add_payment_method_screen.dart';
-import 'package:mahu_home_services_app/features/user_booking/screens/review_booking_summary_screen.dart';
-import 'package:mahu_home_services_app/features/user_booking/screens/select_address_screen.dart';
-import 'package:mahu_home_services_app/features/user_booking/widgets/home_section_label_text.dart';
+import 'package:mahu_home_services_app/features/user_booking/views/screens/add_payment_method_screen.dart';
+import 'package:mahu_home_services_app/features/user_booking/views/screens/review_booking_summary_screen.dart';
+import 'package:mahu_home_services_app/features/user_booking/views/screens/select_address_screen.dart';
+import 'package:mahu_home_services_app/features/user_booking/views/widgets/home_section_label_text.dart';
 
 class SelectPaymentMethodScreen extends StatelessWidget {
   const SelectPaymentMethodScreen({super.key});

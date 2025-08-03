@@ -111,7 +111,7 @@ class _ServiceProviderBookingsScreenState
               // _buildDateSelector(),
 
               // Stats overview
-              _buildStatsOverview(),
+              // _buildStatsOverview(),
 
               // Bookings list
               Expanded(
@@ -119,7 +119,7 @@ class _ServiceProviderBookingsScreenState
                     ? _buildEmptyState()
                     : ListView.separated(
                         padding: EdgeInsets.all(16.w),
-                        itemCount: _filteredBookings.length,
+                        itemCount: myBookings.length,
                         separatorBuilder: (_, __) => Gap(16.h),
                         itemBuilder: (_, index) {
                           BookingModel bookingModel = myBookings[index];
@@ -127,7 +127,6 @@ class _ServiceProviderBookingsScreenState
                           return _buildBookingCard(
                             Booking(
                               id: bookingModel.id,
-
                               serviceName: bookingModel.service.name,
                               serviceType: bookingModel.service.serviceType,
                               clientName:
@@ -139,8 +138,9 @@ class _ServiceProviderBookingsScreenState
                               address: 'null',
                               date: bookingModel.createdAt,
                               startTime:
-                                  bookingModel.schedule.startDate.toString(),
-                              endTime: bookingModel.schedule.endDate.toString(),
+                                  bookingModel.schedule!.startDate.toString(),
+                              endTime:
+                                  bookingModel.schedule!.endDate.toString(),
                               status: BookingStatus.upcoming,
                               paymentStatus: PaymentStatus.pending,
                               amount: bookingModel.price,
@@ -265,7 +265,7 @@ class _ServiceProviderBookingsScreenState
     );
   }
 
-  Widget  _buildBookingCard(Booking booking) {
+  Widget _buildBookingCard(Booking booking) {
     return Card(
       elevation: 1,
       shape: RoundedRectangleBorder(

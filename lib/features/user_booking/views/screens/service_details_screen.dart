@@ -3,14 +3,15 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:mahu_home_services_app/core/utils/helpers/helping_functions.dart';
-import 'package:mahu_home_services_app/features/user_booking/screens/booking_form_screen.dart';
+import 'package:mahu_home_services_app/core/utils/navigation_utils.dart';
+import 'package:mahu_home_services_app/features/services/models/service_model.dart';
+import 'package:mahu_home_services_app/features/user_booking/views/screens/booking_form_screen.dart';
 import 'package:readmore/readmore.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:mahu_home_services_app/core/models/cleaning_service.dart';
 
 class ServiceDetailsScreen extends StatefulWidget {
-  final CleaningService service;
+  final ServiceModel service;
 
   const ServiceDetailsScreen({super.key, required this.service});
 
@@ -30,7 +31,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
   @override
   void initState() {
     super.initState();
-    _isFavorite = widget.service.isFavorite;
+    _isFavorite = true;
   }
 
   @override
@@ -45,7 +46,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
             child: PageView(
               controller: _imageController,
               children: [
-                _buildServiceImage(widget.service.imageUrl),
+                _buildServiceImage(widget.service.image),
                 _buildServiceImage(
                     'https://images.unsplash.com/photo-1600585152220-90363fe7e115'),
                 _buildServiceImage(
@@ -108,6 +109,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
             minChildSize: 0.65,
             maxChildSize: 0.9,
             builder: (context, scrollController) {
+              // var ss =
               return Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -223,7 +225,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                             Icon(Icons.star, color: Colors.amber, size: 16.sp),
                             Gap(4.w),
                             Text(
-                              '${widget.service.rating} (${widget.service.reviews} reviews)',
+                              '0.0 (0 reviews)',
                               style: TextStyle(fontSize: 14.sp),
                             ),
                             Gap(16.w),
@@ -275,7 +277,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                               Gap(8.h),
                               Wrap(
                                 spacing: 8.w,
-                                children: _availableDays
+                                children: widget.service.availableDays
                                     .map((day) => Chip(
                                           label: Text(day),
                                           backgroundColor: AppColors.primary
@@ -288,6 +290,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                                     .toList(),
                               ),
                               Gap(12.h),
+
                               // Available Time Slots
                               Text(
                                 'Time Slots:',
@@ -298,7 +301,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                               ),
                               Gap(8.h),
                               Column(
-                                children: _availableTimes
+                                children: widget.service.availableSlots
                                     .map((time) => Padding(
                                           padding: EdgeInsets.only(bottom: 8.h),
                                           child: Row(
@@ -308,7 +311,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                                                   color: Colors.grey),
                                               Gap(8.w),
                                               Text(
-                                                time,
+                                                '${time.startTime} - ${time.endTime}',
                                                 style:
                                                     TextStyle(fontSize: 14.sp),
                                               ),
@@ -342,7 +345,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                                     ),
                                   ),
                                   Text(
-                                    '\$${widget.service.price}',
+                                    '\$${widget.service.basePrice}',
                                     style: TextStyle(
                                       fontSize: 28.sp,
                                       fontWeight: FontWeight.bold,
@@ -366,7 +369,10 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                                   onPressed: () {
                                     // Navigate to booking
                                     navigateTo(
-                                        context, const BookingFormScreen());
+                                        context,
+                                        BookingFormScreen(
+                                          serviceID: widget.service.id,
+                                        ));
                                   },
                                   child: Text(
                                     'Book Now',
@@ -414,86 +420,86 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                         ),
                         Gap(24.h),
 
-                        // Included Services
-                        Text(
-                          'What\'s Included',
-                          style: TextStyle(
-                            fontSize: 18.sp,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Gap(12.h),
-                        Column(
-                          children: widget.service.subServices
-                              .map(
-                                (service) => Padding(
-                                  padding: EdgeInsets.only(bottom: 8.h),
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        Icons.check_circle,
-                                        color: AppColors.primary,
-                                        size: 18.sp,
-                                      ),
-                                      Gap(8.w),
-                                      Text(
-                                        service,
-                                        style: TextStyle(
-                                          fontSize: 14.sp,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              )
-                              .toList(),
-                        ),
-                        Gap(24.h),
+                        // // Included Services
+                        // Text(
+                        //   'What\'s Included',
+                        //   style: TextStyle(
+                        //     fontSize: 18.sp,
+                        //     fontWeight: FontWeight.bold,
+                        //   ),
+                        // ),
+                        // Gap(12.h),
+                        // Column(
+                        //   children: widget.service.subServices
+                        //       .map(
+                        //         (service) => Padding(
+                        //           padding: EdgeInsets.only(bottom: 8.h),
+                        //           child: Row(
+                        //             children: [
+                        //               Icon(
+                        //                 Icons.check_circle,
+                        //                 color: AppColors.primary,
+                        //                 size: 18.sp,
+                        //               ),
+                        //               Gap(8.w),
+                        //               Text(
+                        //                 service,
+                        //                 style: TextStyle(
+                        //                   fontSize: 14.sp,
+                        //                 ),
+                        //               ),
+                        //             ],
+                        //           ),
+                        //         ),
+                        //       )
+                        //       .toList(),
+                        // ),
+                        // Gap(24.h),
 
-                        // Reviews Section
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Customer Reviews',
-                              style: TextStyle(
-                                fontSize: 18.sp,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            TextButton(
-                              onPressed: () {},
-                              child: Text(
-                                'See All',
-                                style: TextStyle(
-                                  fontSize: 14.sp,
-                                  color: AppColors.primary,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        Gap(12.h),
-                        _buildReviewCard(
-                          name: 'Sarah Johnson',
-                          date: '2 days ago',
-                          rating: 4.5,
-                          comment:
-                              'The cleaning team was extremely professional and thorough. My apartment has never looked better!',
-                          imageUrl:
-                              'https://randomuser.me/api/portraits/women/44.jpg',
-                        ),
-                        Gap(16.h),
-                        _buildReviewCard(
-                          name: 'Michael Chen',
-                          date: '1 week ago',
-                          rating: 5.0,
-                          comment:
-                              'Excellent service! They arrived on time and did an amazing job with the deep cleaning.',
-                          imageUrl:
-                              'https://randomuser.me/api/portraits/men/32.jpg',
-                        ),
-                        Gap(40.h),
+                        // // Reviews Section
+                        // Row(
+                        //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        //   children: [
+                        //     Text(
+                        //       'Customer Reviews',
+                        //       style: TextStyle(
+                        //         fontSize: 18.sp,
+                        //         fontWeight: FontWeight.bold,
+                        //       ),
+                        //     ),
+                        //     TextButton(
+                        //       onPressed: () {},
+                        //       child: Text(
+                        //         'See All',
+                        //         style: TextStyle(
+                        //           fontSize: 14.sp,
+                        //           color: AppColors.primary,
+                        //         ),
+                        //       ),
+                        //     ),
+                        //   ],
+                        // ),
+                        // Gap(12.h),
+                        // _buildReviewCard(
+                        //   name: 'Sarah Johnson',
+                        //   date: '2 days ago',
+                        //   rating: 4.5,
+                        //   comment:
+                        //       'The cleaning team was extremely professional and thorough. My apartment has never looked better!',
+                        //   imageUrl:
+                        //       'https://randomuser.me/api/portraits/women/44.jpg',
+                        // ),
+                        // Gap(16.h),
+                        // _buildReviewCard(
+                        //   name: 'Michael Chen',
+                        //   date: '1 week ago',
+                        //   rating: 5.0,
+                        //   comment:
+                        //       'Excellent service! They arrived on time and did an amazing job with the deep cleaning.',
+                        //   imageUrl:
+                        //       'https://randomuser.me/api/portraits/men/32.jpg',
+                        // ),
+                        // Gap(40.h),
                       ],
                     ),
                   ),

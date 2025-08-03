@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
-import 'package:mahu_home_services_app/core/models/cleaning_service.dart' as models;
-import 'package:mahu_home_services_app/features/user_booking/widgets/service_card.dart';
+import 'package:mahu_home_services_app/core/models/cleaning_service.dart'
+    as models;
+import 'package:mahu_home_services_app/features/services/models/service_model.dart';
+import 'package:mahu_home_services_app/features/user_booking/views/widgets/service_card.dart';
 
 class PopularServicesWidget extends StatelessWidget {
-  final List<models.CleaningService> services;
+  final List<ServiceModel> services;
   final Function(models.CleaningService) onToggleFavorite;
   const PopularServicesWidget({
     super.key,
@@ -40,9 +42,7 @@ class PopularServicesWidget extends StatelessWidget {
             separatorBuilder: (_, __) => Gap(16.w),
             itemBuilder: (_, i) {
               final service = services[i];
-              return ServiceCard(
-                  service: service,
-                  onFavoritePressed: () => onToggleFavorite(service));
+              return ServiceCard(service: service, onFavoritePressed: () {});
             },
           ),
         )

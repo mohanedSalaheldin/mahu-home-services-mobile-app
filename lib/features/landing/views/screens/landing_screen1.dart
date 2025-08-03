@@ -3,7 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:mahu_home_services_app/core/constants/app_const.dart';
 import 'package:mahu_home_services_app/core/models/landing_model.dart';
-import 'package:mahu_home_services_app/core/utils/helpers/helping_functions.dart';
+import 'package:mahu_home_services_app/core/utils/navigation_utils.dart';
 import 'package:mahu_home_services_app/features/landing/views/screens/landing_scren2.dart';
 import 'package:mahu_home_services_app/features/landing/views/widgets/landing_item.dart';
 import 'package:mahu_home_services_app/features/landing/views/widgets/next_button.dart';
