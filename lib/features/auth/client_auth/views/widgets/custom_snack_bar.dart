@@ -6,7 +6,7 @@ void showCustomSnackBar({
   required BuildContext context,
   required String message,
   required SnackBarType type,
-  Duration duration = const Duration(seconds: 2),
+  Duration duration = const Duration(milliseconds: 2000),
 }) {
   IconData icon;
   Color backgroundColor;

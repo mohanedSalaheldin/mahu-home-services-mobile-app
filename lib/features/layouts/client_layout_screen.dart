@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
-import 'package:mahu_home_services_app/features/services/cubit/servises_cubit.dart';
+import 'package:mahu_home_services_app/features/services/cubit/services_cubit.dart';
 import 'package:mahu_home_services_app/features/services/views/screens/service_provider_dashboard_screen.dart';
 import 'package:mahu_home_services_app/features/services/views/screens/service_provider_calender.dart';
 import 'package:mahu_home_services_app/features/services/views/screens/profile_screen.dart';

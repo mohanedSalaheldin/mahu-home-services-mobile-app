@@ -4,29 +4,18 @@ import 'package:mahu_home_services_app/core/constants/colors.dart';
 import 'package:pinput/pinput.dart';
 
 class OTPFormFiled extends StatelessWidget {
-  OTPFormFiled({
+  const OTPFormFiled({
     super.key,
     required this.otpController,
+    this.onCompleted,
   });
 
   final TextEditingController otpController;
+  final void Function(String)? onCompleted;
 
   final focusedBorderColor = const Color.fromRGBO(23, 171, 144, 1);
   final fillColor = const Color.fromRGBO(243, 246, 249, 0);
   final borderColor = const Color.fromRGBO(23, 171, 144, 0.4);
-
-  // final defaultPinTheme = PinTheme(
-  //   width: 56,
-  //   height: 56,
-  //   textStyle: const TextStyle(
-  //     fontSize: 22,
-  //     color: Color.fromRGBO(30, 60, 87, 1),
-  //   ),
-  //   decoration: BoxDecoration(
-  //     borderRadius: BorderRadius.circular(19),
-  //     border: Border.all(color: const Color.fromRGBO(23, 171, 144, 0.4)),
-  //   ),
-  // );
 
   @override
   Widget build(BuildContext context) {
@@ -51,9 +40,7 @@ class OTPFormFiled extends StatelessWidget {
         // return value == '2222' ? null : 'Pin is incorrect';
       },
       hapticFeedbackType: HapticFeedbackType.lightImpact,
-      onCompleted: (pin) {
-        debugPrint('onCompleted: $pin');
-      },
+      onCompleted: onCompleted,
       onChanged: (value) {
         // debugPrint('onChanged: $value');
       },

@@ -3,8 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
-import 'package:mahu_home_services_app/features/services/cubit/servises_cubit.dart';
-import 'package:mahu_home_services_app/features/services/cubit/servises_state.dart';
+import 'package:mahu_home_services_app/features/services/cubit/services_cubit.dart';
+import 'package:mahu_home_services_app/features/services/cubit/services_state.dart';
 import 'package:mahu_home_services_app/features/services/models/booking_model.dart';
 
 class ServiceProviderJobsScreen extends StatefulWidget {
@@ -98,7 +98,7 @@ class _ServiceProviderBookingsScreenState
           } else if (state is GetMyBookingsFailedState) {
             return Center(
               child: Text(
-                'Error: {state.error}',
+                state.failure.msg,
                 style: TextStyle(fontSize: 16.sp, color: Colors.red),
               ),
             );
@@ -135,7 +135,7 @@ class _ServiceProviderBookingsScreenState
                                   "https://img.freepik.com/premium-psd/3d-avatar-illustration-pro-gamer-isolated-transparent-background_846458-28.jpg?semt=ais_hybrid&w=740&q=80",
                               rating: 0.0,
                               reviews: 0,
-                              address: 'null',
+                              address: 'N/A',
                               date: bookingModel.createdAt,
                               startTime:
                                   bookingModel.schedule!.startDate.toString(),

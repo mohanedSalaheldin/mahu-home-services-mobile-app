@@ -5,8 +5,8 @@ import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
 import 'package:mahu_home_services_app/core/constants/app_const.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
-import 'package:mahu_home_services_app/features/services/cubit/servises_cubit.dart';
-import 'package:mahu_home_services_app/features/services/cubit/servises_state.dart';
+import 'package:mahu_home_services_app/features/services/cubit/services_cubit.dart';
+import 'package:mahu_home_services_app/features/services/cubit/services_state.dart';
 import 'package:mahu_home_services_app/features/services/views/screens/booking_details_screen.dart'
     as booking_details;
 

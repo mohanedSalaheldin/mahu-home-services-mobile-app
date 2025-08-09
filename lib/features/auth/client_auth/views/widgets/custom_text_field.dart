@@ -12,6 +12,7 @@ class CustomTextField extends StatefulWidget {
   final String? Function(String?) validator;
   final int? lines;
   final bool hasLabel;
+  final void Function(String)? onFieldSubmitted;
 
   const CustomTextField({
     super.key,
@@ -23,6 +24,7 @@ class CustomTextField extends StatefulWidget {
     required this.validator,
     this.lines,
     this.hasLabel = true,
+    this.onFieldSubmitted,
   });
 
   @override
@@ -54,6 +56,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
           obscureText: widget.isPassword ? _obscureText : false,
           minLines: 1,
           maxLines: widget.lines,
+          onFieldSubmitted: widget.onFieldSubmitted,
           decoration: InputDecoration(
             hintText: widget.hint,
             hintStyle: TextStyle(

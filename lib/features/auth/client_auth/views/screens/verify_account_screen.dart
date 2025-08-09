@@ -57,6 +57,13 @@ class _VerifyAccountScreenState extends State<VerifyAccountScreen> {
               type: SnackBarType.failure,
             );
           }
+          if (state is VerifyEmailFailedState) {
+            showCustomSnackBar(
+              context: context,
+              message: state.failure.msg,
+              type: SnackBarType.failure,
+            );
+          }
         },
         builder: (context, state) {
           if (state is VerifyEmailLoadingState ||
@@ -69,6 +76,19 @@ class _VerifyAccountScreenState extends State<VerifyAccountScreen> {
           String idThanSendOTPTo = widget.otpChannel == OtpChannel.phone
               ? authCubit.registerResponceUser.phone
               : authCubit.registerResponceUser.email;
+          onVerifyPressed() {
+            if (_formKey.currentState!.validate()) {
+              AuthCubit.get(context).verify(
+                channal: widget.otpChannel,
+                otp: otpController.text,
+              );
+              print("Form is valid");
+            } else {
+              // Invalid, show errors
+              print("Form is invalid");
+            }
+          }
+
           return SafeArea(
             child: Padding(
               padding: EdgeInsets.all(AppConst.appPadding.w),
@@ -86,7 +106,11 @@ class _VerifyAccountScreenState extends State<VerifyAccountScreen> {
                       textAlign: TextAlign.center,
                     ),
                     Gap(10.h),
-                    OTPFormFiled(otpController: otpController),
+                    OTPFormFiled(
+                        otpController: otpController,
+                        onCompleted: (p0) {
+                          onVerifyPressed();
+                        }),
                     Gap(5.h),
                     Row(
                       children: [
@@ -99,18 +123,7 @@ class _VerifyAccountScreenState extends State<VerifyAccountScreen> {
                     ),
                     Gap(5.h),
                     AppFilledButton(
-                      onPressed: () {
-                        if (_formKey.currentState!.validate()) {
-                          AuthCubit.get(context).verify(
-                            channal: widget.otpChannel,
-                            otp: otpController.text,
-                          );
-                          print("Form is valid");
-                        } else {
-                          // Invalid, show errors
-                          print("Form is invalid");
-                        }
-                      },
+                      onPressed: onVerifyPressed,
                       text: 'Verify',
                     ),
                   ],

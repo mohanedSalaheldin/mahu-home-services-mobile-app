@@ -153,6 +153,13 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
             );
             Navigator.pop(context);
           }
+          if (state is CreateUserBookingError) {
+            showCustomSnackBar(
+              context: context,
+              message: state.failure.msg,
+              type: SnackBarType.failure,
+            );
+          }
         },
         builder: (context, state) {
           if (state is CreateUserBookingLoading) {
@@ -161,11 +168,6 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
             );
           }
 
-          if (state is CreateUserBookingError) {
-            return const Center(
-              child: Text('Error loading services'),
-            );
-          }
           return SingleChildScrollView(
             padding: EdgeInsets.all(16.w),
             child: Column(

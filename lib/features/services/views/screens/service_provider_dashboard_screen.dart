@@ -6,8 +6,8 @@ import 'package:mahu_home_services_app/core/constants/app_const.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
 import 'package:mahu_home_services_app/core/utils/navigation_utils.dart';
 import 'package:mahu_home_services_app/features/layouts/provider_layout_screen.dart';
-import 'package:mahu_home_services_app/features/services/cubit/servises_cubit.dart';
-import 'package:mahu_home_services_app/features/services/cubit/servises_state.dart';
+import 'package:mahu_home_services_app/features/services/cubit/services_cubit.dart';
+import 'package:mahu_home_services_app/features/services/cubit/services_state.dart';
 import 'package:mahu_home_services_app/features/services/views/screens/add_service_screen.dart';
 import 'package:mahu_home_services_app/features/services/views/screens/service_details_screen.dart';
 import 'package:mahu_home_services_app/features/services/views/screens/service_provider_calender.dart';
@@ -55,6 +55,11 @@ class _ServiceProviderDashboardScreenState
       body: BlocConsumer<ServiceCubit, ServiceState>(
         listener: (context, state) {
           // TODO: implement listener
+          if (state is ServiceDeletionSuccessState) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("Service deleted successfully")),
+            );
+          }
         },
         builder: (context, state) {
           if (state is ServiceGetAllLoadingState || state is DashboardLoading) {
@@ -70,6 +75,7 @@ class _ServiceProviderDashboardScreenState
               ),
             );
           }
+
           return Padding(
             padding: EdgeInsets.symmetric(vertical: AppConst.appPadding.w),
             child: SingleChildScrollView(
@@ -141,13 +147,8 @@ class _ServiceProviderDashboardScreenState
                             return ServiceListItem(
                               service: service,
                               onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        ServiceDetailsScreen(service: service),
-                                  ),
-                                );
+                                navigateTo(context,
+                                    ServiceDetailsScreen(service: service));
                               },
                             );
                           },

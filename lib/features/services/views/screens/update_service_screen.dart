@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -13,21 +16,20 @@ import 'package:mahu_home_services_app/features/layouts/provider_layout_screen.d
 import 'package:mahu_home_services_app/features/services/cubit/services_cubit.dart';
 import 'package:mahu_home_services_app/features/services/cubit/services_state.dart';
 import 'package:mahu_home_services_app/features/services/models/service_model.dart';
-import 'package:mahu_home_services_app/features/services/views/screens/service_provider_dashboard_screen.dart';
-import 'package:mahu_home_services_app/features/services/views/widgets/bool_radio_group.dart';
-import 'package:mahu_home_services_app/features/services/views/widgets/custom_dropdown.dart';
-import 'package:mahu_home_services_app/features/services/views/widgets/image_picker_container.dart';
 import 'package:mahu_home_services_app/features/services/views/widgets/time_slot_selector.dart';
-import 'package:mahu_home_services_app/features/services/views/widgets/toggle_button_group.dart';
 
-class AddServiceScreen extends StatefulWidget {
-  const AddServiceScreen({super.key});
+class UpdateServiceScreen extends StatefulWidget {
+  const UpdateServiceScreen({
+    super.key,
+    required this.service,
+  });
+  final ServiceModel service;
 
   @override
-  _AddServiceScreenState createState() => _AddServiceScreenState();
+  _UpdateServiceScreenState createState() => _UpdateServiceScreenState();
 }
 
-class _AddServiceScreenState extends State<AddServiceScreen> {
+class _UpdateServiceScreenState extends State<UpdateServiceScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _serviceNameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
@@ -37,37 +39,13 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
   XFile? _selectedImage;
   final ImagePicker _picker = ImagePicker();
 
-  bool _isPricingModelHourly = false;
-  bool _isServiceTypeRecurring = false;
-  String _serviceSubType = 'normal';
-  bool _isActiveImmediately = true;
+  // final bool _isPricingModelHourly = false;
+  // final bool _isServiceTypeRecurring = false;
+  final String _serviceSubType = 'normal';
+  final bool _isActiveImmediately = true;
 
-  final List<String> _selectedDays = [];
-  final List<Map<String, String>> _timeSlots = [];
-
-  // Explanations for service types and pricing models
-  final Map<String, String> _serviceTypeExplanations = {
-    'one-time':
-        'One-time service is performed once and completed. Ideal for specific cleaning needs like move-in/move-out cleaning.',
-    'recurring':
-        'Recurring service repeats at regular intervals. Perfect for regular maintenance like weekly or monthly cleaning.',
-  };
-
-  final Map<String, String> _subTypeExplanations = {
-    'normal':
-        'Standard cleaning covering basic tasks like dusting, vacuuming, and surface wiping.',
-    'deep':
-        'Thorough cleaning including hard-to-reach areas, grout cleaning, and detailed attention to all surfaces.',
-    'weekly':
-        'Regular weekly maintenance cleaning to keep your space consistently clean.',
-    'monthly':
-        'Comprehensive monthly cleaning with deeper attention to detail than weekly service.',
-  };
-
-  final Map<String, String> _pricingModelExamples = {
-    'fixed': 'Example: \$150 for a complete deep cleaning service (3-4 hours)',
-    'hourly': 'Example: \$40/hour (typically 2-4 hours depending on home size)',
-  };
+  List<String> _selectedDays = [];
+  List<Map<String, String>> _timeSlots = [];
 
   Future<void> _pickImage() async {
     final picked = await _picker.pickImage(source: ImageSource.gallery);
@@ -99,20 +77,38 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
   }
 
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    ServiceModel service = widget.service;
+    _selectedDays = service.availableDays;
+    _timeSlots = service.availableSlots
+        .map((slot) => {
+              'startTime': slot.startTime,
+              'endTime': slot.endTime,
+            })
+        .toList();
+    _serviceNameController.text = service.name;
+    _descriptionController.text = service.description;
+    _basePriceController.text = service.basePrice.toString();
+    _durationController.text = service.duration.toString();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         leading: const BackButton(),
-        title: const Text("Add a Service"),
+        title: const Text("Edit Service"),
         centerTitle: true,
         elevation: 0,
       ),
       body: BlocConsumer<ServiceCubit, ServiceState>(
         listener: (context, state) {
-          if (state is ServiceCreationSuccessState) {
+          if (state is ServiceUpdateSuccessState) {
             showCustomSnackBar(
               context: context,
-              message: 'Added Successfully',
+              message: 'Uodated Successfully',
               type: SnackBarType.success,
             );
             Future.delayed(const Duration(milliseconds: 300), () {
@@ -121,7 +117,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
           }
         },
         builder: (context, state) {
-          if (state is ServiceCreationLoadingState) {
+          if (state is ServiceUpdateLoadingState) {
             return const Center(
               child: CircularProgressIndicator(),
             );
@@ -131,17 +127,58 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
             child: Form(
               key: _formKey,
               child: SingleChildScrollView(
-                keyboardDismissBehavior:
-                    ScrollViewKeyboardDismissBehavior.onDrag,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Service Image
-                    ImagePickerContainer(
-                      onTap: _pickImage,
-                      selectedImage: _selectedImage,
-                      // : 'Service Image (Recommended: 800x600px)',
+                    DottedBorder(
+                      color: AppColors.blue,
+                      strokeWidth: 2,
+                      dashPattern: const [8],
+                      borderType: BorderType.RRect,
+                      radius: const Radius.circular(8),
+                      child: Container(
+                        height: 168.h,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          color: Colors.blue[50],
+                        ),
+                        child: Stack(
+                          children: [
+                            Center(
+                              child: _selectedImage == null
+                                  ? Image.network(
+                                      widget.service.image,
+                                      height: 168.h,
+                                      width: double.infinity,
+                                      fit: BoxFit.cover,
+                                    )
+                                  : Image.file(
+                                      File(_selectedImage!.path),
+                                      fit: BoxFit.cover,
+                                      width: double.infinity,
+                                      height: double.infinity,
+                                    ),
+                            ),
+                            Container(
+                              width: double.infinity,
+                              color: Colors.black.withOpacity(0.2),
+                            ),
+                            Align(
+                              alignment: Alignment.center,
+                              child: IconButton.filled(
+                                onPressed: _pickImage,
+                                style: const ButtonStyle(
+                                    backgroundColor:
+                                        WidgetStatePropertyAll(AppColors.blue)),
+                                icon: const Icon(Icons.edit),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
+
                     Gap(16.h),
 
                     // Service Name
@@ -162,7 +199,6 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                     const AppFieledLabelText(label: 'Description'),
                     TextFormField(
                       controller: _descriptionController,
-                      // focusNode: ,
                       maxLines: 5,
                       decoration: InputDecoration(
                         hintText: 'Describe your cleaning service in detail...',
@@ -190,71 +226,9 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                     ),
                     Gap(16.h),
 
-                    // Service Type Section
-                    _buildSectionHeader('Service Type'),
-                    ToggleButtonGroup(
-                      leftLabel: "Recurring",
-                      rightLabel: "One Time",
-                      isLeftSelected: _isServiceTypeRecurring,
-                      onChanged: (value) =>
-                          setState(() => _isServiceTypeRecurring = value),
-                    ),
-                    _buildInfoText(_serviceTypeExplanations[
-                        _isServiceTypeRecurring ? 'recurring' : 'one-time']!),
-                    Gap(16.h),
-
-                    // Cleaning Sub-Type
-                    CustomDropdown<String>(
-                      label: "Cleaning Type",
-                      items: (_isServiceTypeRecurring
-                              ? ['normal', 'deep', 'weekly', 'monthly']
-                              : ['normal', 'deep'])
-                          .map((item) => DropdownMenuItem<String>(
-                                value: item,
-                                child: Text(
-                                  (() {
-                                    switch (item) {
-                                      case 'normal':
-                                        return 'Standard Cleaning';
-                                      case 'deep':
-                                        return 'Deep Cleaning';
-                                      case 'weekly':
-                                        return 'Weekly Cleaning';
-                                      case 'monthly':
-                                        return 'Monthly Cleaning';
-                                      default:
-                                        return item;
-                                    }
-                                  })(),
-                                ),
-                              ))
-                          .toList(),
-                      value: _serviceSubType,
-                      onChanged: (val) => setState(
-                          () => _serviceSubType = val ?? _serviceSubType),
-                    ),
-                    _buildInfoText(_subTypeExplanations[_serviceSubType]!),
-                    Gap(16.h),
-
-                    // Pricing Model
-                    _buildSectionHeader('Pricing Model'),
-                    ToggleButtonGroup(
-                      leftLabel: "Hourly",
-                      rightLabel: "Fixed",
-                      isLeftSelected: _isPricingModelHourly,
-                      onChanged: (value) =>
-                          setState(() => _isPricingModelHourly = value),
-                    ),
-                    _buildInfoText(_pricingModelExamples[
-                        _isPricingModelHourly ? 'hourly' : 'fixed']!),
-                    Gap(16.h),
-
-                    // Price Input
                     CustomTextField(
                       label: 'Pricing Rate',
-                      hint: _isPricingModelHourly
-                          ? 'Hourly Rate (\$/hour)'
-                          : 'Fixed Price (\$)',
+                      hint: 'Pricing Rate',
                       controller: _basePriceController,
                       keyboardType: TextInputType.number,
                       validator: (value) {
@@ -288,14 +262,46 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
 
                     Gap(16.h),
 
-                    // Availability Section
-                    _buildSectionHeader('Availability'),
-
-                    // Available Days
                     const AppFieledLabelText(label: 'Available Days'),
-                    WeekdaySelector(
-                        selectedDays: _selectedDays,
-                        onToggle: _toggleDaySelection),
+                    Wrap(
+                      spacing: 8.w,
+                      children: [
+                        'monday',
+                        'tuesday',
+                        'wednesday',
+                        'thursday',
+                        'friday',
+                        'saturday',
+                        'sunday'
+                      ]
+                          .map((day) => FilterChip(
+                                label: Text(
+                                  day.substring(0, 1).toUpperCase() +
+                                      day.substring(1),
+                                  style: TextStyle(
+                                    color: _selectedDays.contains(day)
+                                        ? Colors.white
+                                        : Colors.black,
+                                  ),
+                                ),
+                                selected: _selectedDays.contains(day),
+                                onSelected: (_) => _toggleDaySelection(day),
+                                selectedColor: AppColors.primary,
+                                checkmarkColor: Colors.white,
+                              ))
+                          .toList(),
+                    ),
+                    if (_selectedDays.isEmpty)
+                      Padding(
+                        padding: EdgeInsets.only(top: 8.h),
+                        child: Text(
+                          'Please select at least one day',
+                          style: TextStyle(
+                            color: Colors.red,
+                            fontSize: 12.sp,
+                          ),
+                        ),
+                      ),
                     Gap(16.h),
 
                     // Time Slots
@@ -316,17 +322,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                           ),
                         ),
                       ),
-                    Gap(16.h),
 
-                    // Active Immediately
-                    BoolRadioGroup(
-                      label: 'Activate Immediately',
-                      value: _isActiveImmediately,
-                      onChanged: (val) =>
-                          setState(() => _isActiveImmediately = val),
-                    ),
-                    _buildInfoText(
-                        'If disabled, the service will need admin approval before becoming visible to clients.'),
                     Gap(24.h),
 
                     // Submit Button
@@ -360,24 +356,21 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                             }
 
                             // Create service model
-                            final service = ServiceModel(
-                              id: '',
+                            var service = widget.service;
+                            final updatedService = ServiceModel(
+                              id: service.id,
                               name: _serviceNameController.text,
                               description: _descriptionController.text,
-                              category: 'cleaning',
-                              serviceType: _isServiceTypeRecurring
-                                  ? 'recurring'
-                                  : 'one-time',
+                              category: service.category,
+                              serviceType: service.serviceType,
                               subType: _serviceSubType,
                               basePrice:
                                   double.parse(_basePriceController.text),
-                              pricingModel:
-                                  _isPricingModelHourly ? 'hourly' : 'fixed',
+                              pricingModel: service.pricingModel,
                               duration: int.parse(_durationController.text),
                               image: _selectedImage?.path ?? '',
                               active: _isActiveImmediately,
-                              provider:
-                                  'current_user_id', // Replace with actual user ID
+                              provider: service.provider,
                               isApproved: _isActiveImmediately,
                               createdAt: DateTime.now(),
                               availableDays: _selectedDays,
@@ -394,7 +387,8 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                             );
 
                             // Call cubit to create service
-                            ServiceCubit.get(context).createService(service);
+                            ServiceCubit.get(context)
+                                .updateService(updatedService);
                           }
                         },
                         child: Text(
@@ -442,68 +436,6 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
           fontStyle: FontStyle.italic,
         ),
       ),
-    );
-  }
-}
-
-class WeekdaySelector extends StatelessWidget {
-  final List<String> selectedDays;
-  final void Function(String day) onToggle;
-
-  const WeekdaySelector({
-    super.key,
-    required this.selectedDays,
-    required this.onToggle,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final days = [
-      'monday',
-      'tuesday',
-      'wednesday',
-      'thursday',
-      'friday',
-      'saturday',
-      'sunday'
-    ];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Wrap(
-          spacing: 8.w,
-          children: days
-              .map(
-                (day) => FilterChip(
-                  label: Text(
-                    day[0].toUpperCase() + day.substring(1),
-                    style: TextStyle(
-                      color: selectedDays.contains(day)
-                          ? Colors.white
-                          : Colors.black,
-                    ),
-                  ),
-                  selected: selectedDays.contains(day),
-                  onSelected: (_) => onToggle(day),
-                  selectedColor: AppColors.primary,
-                  checkmarkColor: Colors.white,
-                ),
-              )
-              .toList(),
-        ),
-        if (selectedDays.isEmpty)
-          Padding(
-            padding: EdgeInsets.only(top: 8.h),
-            child: Text(
-              'Please select at least one day',
-              style: TextStyle(
-                color: Colors.red,
-                fontSize: 12.sp,
-              ),
-            ),
-          ),
-      ],
     );
   }
 }

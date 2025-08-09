@@ -1,5 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mahu_home_services_app/features/services/cubit/servises_state.dart';
+import 'package:mahu_home_services_app/features/services/cubit/services_state.dart';
 import 'package:mahu_home_services_app/features/services/models/booking_model.dart';
 import 'package:mahu_home_services_app/features/services/models/provider_performance.dart';
 import 'package:mahu_home_services_app/features/services/models/service_model.dart';
@@ -25,7 +25,7 @@ class ServiceCubit extends Cubit<ServiceState> {
     final services = await _manageProviderServices.getAllServices();
     services.fold(
       (failure) {
-        emit(ServiceGetAllFailedState());
+        emit(ServiceGetAllFailedState(failure));
       },
       (servicesList) {
         _services.clear();
@@ -44,29 +44,86 @@ class ServiceCubit extends Cubit<ServiceState> {
     final booking = await _bookingServices.getMyBookings();
     booking.fold(
       (failure) {
-        emit(GetMyBookingsFailedState());
+        emit(GetMyBookingsFailedState(failure));
       },
       (bookingList) {
         _myBooking.clear();
         _myBooking.addAll(bookingList);
-        emit(GetMyBookingsuccessState());
+        emit(GetMyBookingSuccessState());
       },
     );
   }
 
   void createService(ServiceModel service) {
-    emit(ServiceCreationSuccessState());
+    emit(ServiceCreationLoadingState());
 
     _manageProviderServices.addService(service).then(
       (result) {
         result.fold(
           (failure) {
-            emit(ServiceCreationlFailedState());
+            emit(ServiceCreationFailedState(failure));
           },
           (_) {
             // _services.add(service);
+            emit(ServiceCreationSuccessState());
             fetchServices();
-            // emit(ServiceCreationSuccessState());
+          },
+        );
+      },
+    );
+  }
+
+  void updateService(ServiceModel service) {
+    emit(ServiceUpdateLoadingState());
+
+    _manageProviderServices.updateService(service).then(
+      (result) {
+        result.fold(
+          (failure) {
+            emit(ServiceUpdateFailedState(failure));
+          },
+          (_) {
+            // _services.add(service);
+            emit(ServiceUpdateSuccessState());
+            fetchServices();
+          },
+        );
+      },
+    );
+  }
+
+  void deleteService(String serviceId) async {
+    emit(ServiceDeletionLoadingState());
+    _manageProviderServices.deleteService(serviceId).then(
+      (result) {
+        result.fold(
+          (failure) {
+            emit(ServiceDeletionFailedState(failure));
+          },
+          (_) {
+            ServiceModel deletedService =
+                _services.firstWhere((element) => element.id == serviceId);
+            _services.remove(deletedService);
+            emit(ServiceDeletionSuccessState());
+            // fetchServices();
+          },
+        );
+      },
+    );
+  }
+
+  void acceptBooking(String bookingId) async {
+    emit(ProviderAccepsLoadingState());
+    _bookingServices.acceptBooking(bookingId).then(
+      (result) {
+        result.fold(
+          (failure) {
+            emit(ProviderAccepsFailedState(failure));
+          },
+          (_) {
+            emit(ProviderAccepsSuccessState());
+            fetchMyBookings();
+            // fetchServices();
           },
         );
       },
@@ -99,18 +156,26 @@ class ServiceCubit extends Cubit<ServiceState> {
         await _manageProviderServices.getProviderPerformance();
 
     // Handle profile first
-    if (profileResult.isLeft()) {
-      emit(DashboardError());
-      return;
-    }
-    _profile = profileResult.getOrElse(() => _profile);
+    profileResult.fold(
+      (failure) {
+        emit(DashboardError(failure));
+        return;
+      },
+      (profile) {
+        _profile = profile;
+      },
+    );
 
     // Handle performance
-    if (performanceResult.isLeft()) {
-      emit(DashboardError());
-      return;
-    }
-    _performanceModel = performanceResult.getOrElse(() => _performanceModel);
+    performanceResult.fold(
+      (failure) {
+        emit(DashboardError(failure));
+        return;
+      },
+      (performance) {
+        _performanceModel = performance;
+      },
+    );
 
     emit(DashboardSuccess());
   }

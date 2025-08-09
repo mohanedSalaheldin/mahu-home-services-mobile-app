@@ -69,6 +69,15 @@ class _LoginScreenState extends State<LoginScreen> {
               child: CircularProgressIndicator(),
             );
           }
+          onLoginPressed() {
+            if (_formKey.currentState!.validate()) {
+              AuthCubit.get(context).login(
+                emailOrPhone: emailOrPhoneController.text,
+                password: passwordController.text,
+              );
+            }
+          }
+
           return SafeArea(
             child: Padding(
               padding: EdgeInsets.all(AppConst.appPadding.w),
@@ -93,6 +102,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       isPassword: true,
                       lines: 1,
                       validator: FormValidationMethod.validatePassword,
+                      onFieldSubmitted: (value) {
+                        onLoginPressed();
+                      },
                     ),
                     Gap(5.h),
                     Row(
@@ -130,14 +142,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     Gap(5.h),
                     AppFilledButton(
-                      onPressed: () {
-                        if (_formKey.currentState!.validate()) {
-                          AuthCubit.get(context).login(
-                            emailOrPhone: emailOrPhoneController.text,
-                            password: passwordController.text,
-                          );
-                        }
-                      },
+                      onPressed: onLoginPressed,
                       text: 'Login',
                     ),
                     Gap(3.h),
@@ -165,7 +170,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       questionTxt: 'Don\'t have an account?',
                       buttonTxt: 'Sign Up',
                       onPresseButton: () {
-                        navigateTo(
+                        navigateToAndKill(
                             context,
                             UserRoleCubit.get(context).state == UserRole.client
                                 ? const ClientRegisterScreen()

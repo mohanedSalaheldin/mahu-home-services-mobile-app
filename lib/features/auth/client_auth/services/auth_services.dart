@@ -1,55 +1,12 @@
 import 'dart:io';
-
 import 'package:dartz/dartz.dart';
-import 'package:dio/dio.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:mahu_home_services_app/core/constants/app_const.dart';
 import 'package:mahu_home_services_app/core/errors/failures.dart';
 import 'package:mahu_home_services_app/core/models/use_model.dart';
-import 'package:mahu_home_services_app/core/network_info.dart';
+import 'package:mahu_home_services_app/core/utils/helpers/request_hundler.dart';
 import 'package:mahu_home_services_app/core/utils/helpers/upload_media_helper.dart';
 import 'package:mahu_home_services_app/features/auth/client_auth/views/screens/client_register_screen.dart';
 
 class AuthServices {
-  final NetworkInfo _networkInfo = NetworkInfoImpl();
-  final Dio _dio = Dio(
-    BaseOptions(
-      baseUrl: apiBaseURL,
-      headers: {'Content-Type': 'application/json'},
-    ),
-  );
-
-  Future<Either<Failure, T>> _handleRequest<T>({
-    required Future<Response> Function() request,
-    required T Function(dynamic data)? onSuccess,
-    Map<int, Failure>? knownFailures,
-  }) async {
-    if (!await _networkInfo.isConnected) return Left(OfflineFailure());
-
-    try {
-      final response = await request();
-      final data = response.data;
-      print(data);
-
-      return Right(onSuccess != null ? onSuccess(data) : unit as T);
-    } on DioException catch (e) {
-      print(e.toString());
-      final code = e.response?.statusCode;
-      if (code != null &&
-          knownFailures != null &&
-          knownFailures.containsKey(code)) {
-        return Left(knownFailures[code]!);
-      }
-      print(e.toString());
-
-      return Left(ServerFailure());
-    } catch (_) {
-      print(_.toString());
-
-      return Left(ServerFailure());
-    }
-  }
-
   Future<Either<Failure, UserModel>> registerAsClient({
     required String email,
     required String phone,
@@ -58,8 +15,8 @@ class AuthServices {
     required String lastName,
     required String otpMethod,
   }) {
-    return _handleRequest<UserModel>(
-      request: () => _dio.post('/auth/register', data: {
+    return RequestHundler.handleRequest<UserModel>(
+      request: () => RequestHundler.dio.post('/auth/register', data: {
         "email": email,
         "phone": phone,
         "password": password,
@@ -70,9 +27,6 @@ class AuthServices {
       }),
       onSuccess: (data) {
         return UserModel.fromJson(data['user']);
-      },
-      knownFailures: {
-        400: UserAlreadyExistsFailure(),
       },
     );
   }
@@ -90,7 +44,7 @@ class AuthServices {
     String imageUrl =
         await UploadMediaHelper.uploadImage(File(avatarPath)) ?? '';
 
-    return _handleRequest<UserModel>(
+    return RequestHundler.handleRequest<UserModel>(
       request: () async {
         var data = {
           "email": email,
@@ -105,19 +59,13 @@ class AuthServices {
           "verificationType": otpMethod,
         };
         print(data);
-        return _dio.post(
+        return RequestHundler.dio.post(
           '/auth/register',
-          options: Options(
-            contentType: 'multipart/form-data',
-          ),
           data: data,
         );
       },
       onSuccess: (data) {
         return UserModel.fromJson(data['user']);
-      },
-      knownFailures: {
-        400: UserAlreadyExistsFailure(),
       },
     );
   }
@@ -126,22 +74,19 @@ class AuthServices {
     required String emailOrPhone,
     required String password,
   }) {
-    return _handleRequest<String>(
+    return RequestHundler.handleRequest<String>(
       request: () {
         var data2 = {
           'emailOrPhone': emailOrPhone,
           "password": password,
         };
         print(data2);
-        return _dio.post(
+        return RequestHundler.dio.post(
           '/auth/login',
           data: data2,
         );
       },
       onSuccess: (data) => data['token'],
-      knownFailures: {
-        401: LoginInvalidCredentialsFailure(),
-      },
     );
   }
 
@@ -150,41 +95,32 @@ class AuthServices {
     required String otp,
     required String newPassword,
   }) {
-    return _handleRequest<Unit>(
-      request: () => _dio.put('/auth/reset-password', data: {
+    return RequestHundler.handleRequest<Unit>(
+      request: () => RequestHundler.dio.put('/auth/reset-password', data: {
         "email": email,
         "otp": otp,
         "newPassword": newPassword,
       }),
       onSuccess: (_) => unit,
-      knownFailures: {
-        400: InvalidOTPFailure(),
-      },
     );
   }
 
   Future<Either<Failure, Unit>> forgotPassword({required String email}) {
-    return _handleRequest<Unit>(
-      request: () => _dio.post('/auth/forgot-password', data: {
+    return RequestHundler.handleRequest<Unit>(
+      request: () => RequestHundler.dio.post('/auth/forgot-password', data: {
         "email": email,
       }),
       onSuccess: (_) => unit,
-      knownFailures: {
-        404: UserNotFoundFailure(),
-      },
     );
   }
 
   Future<Either<Failure, Unit>> resendOTP({required String email}) {
-    return _handleRequest<Unit>(
-      request: () => _dio.post('/auth/resend-otp', data: {
+    return RequestHundler.handleRequest<Unit>(
+      request: () => RequestHundler.dio.post('/auth/resend-otp', data: {
         'emailOrPhone': email,
         "type": "email",
       }),
       onSuccess: (_) => unit,
-      knownFailures: {
-        404: UserNotFoundFailure(),
-      },
     );
   }
 
@@ -193,16 +129,12 @@ class AuthServices {
     required String value,
     required String otp,
   }) {
-    return _handleRequest<Unit>(
-      request: () => _dio.post('/auth/verify-email', data: {
+    return RequestHundler.handleRequest<Unit>(
+      request: () => RequestHundler.dio.post('/auth/verify-email', data: {
         channal.name: value,
         "otp": otp,
       }),
       onSuccess: (_) => unit,
-      knownFailures: {
-        400: InvalidOTPFailure(),
-        404: UserNotFoundFailure(),
-      },
     );
   }
 }

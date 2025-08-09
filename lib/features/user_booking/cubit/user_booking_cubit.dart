@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mahu_home_services_app/core/errors/failures.dart';
 import 'package:mahu_home_services_app/features/services/models/service_model.dart';
 import 'package:mahu_home_services_app/features/user_booking/models/booking_model.dart';
 import 'package:mahu_home_services_app/features/user_booking/services/user_booking_services.dart';
@@ -22,7 +23,7 @@ class UserBookingCubit extends Cubit<UserBookingState> {
     final availableServices = await _bookingServices.getAllServices();
     availableServices.fold(
       (failure) {
-        emit(FetchAvailableServicesError());
+        emit(FetchAvailableServicesError(failure));
       },
       (availableServicesList) {
         _availableServices.clear();
@@ -35,11 +36,10 @@ class UserBookingCubit extends Cubit<UserBookingState> {
   Future<void> createBooking(UserBookingModel bookingMode) async {
     emit(CreateUserBookingLoading());
 
-    final availableServices =
-        await _bookingServices.createBBooking(bookingMode);
+    final availableServices = await _bookingServices.createBooking(bookingMode);
     availableServices.fold(
       (failure) {
-        emit(CreateUserBookingError());
+        emit(CreateUserBookingError(failure));
       },
       (_) {
         emit(CreateUserBookingSuccess());

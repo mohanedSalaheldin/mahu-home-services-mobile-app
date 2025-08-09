@@ -4,7 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:mahu_home_services_app/app.dart';
 import 'package:mahu_home_services_app/features/landing/views/screens/choose_rule_screen.dart';
-import 'package:mahu_home_services_app/features/services/cubit/servises_cubit.dart';
+import 'package:mahu_home_services_app/features/services/cubit/services_cubit.dart';
 import 'package:mahu_home_services_app/features/services/models/provider_performance.dart';
 import 'package:mahu_home_services_app/features/services/models/user_base_profile_model.dart';
 
