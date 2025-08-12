@@ -110,8 +110,16 @@ class _ServiceProviderBookingsScreenState
               // Date selector
               // _buildDateSelector(),
 
+              DateSelectorWidget(
+                onDateSelected: (selectedDate) {
+                  print('Selected date: $selectedDate');
+                  // Handle date selection
+                },
+                initialSelectedDate: DateTime.now(), // Pre-select today
+              ),
+
               // Stats overview
-              // _buildStatsOverview(),
+              _buildStatsOverview(),
 
               // Bookings list
               Expanded(
@@ -625,5 +633,140 @@ extension DateUtils on DateTime {
 extension StringExtension on String {
   String capitalize() {
     return "${this[0].toUpperCase()}${substring(1).toLowerCase()}";
+  }
+}
+
+class DateSelectorWidget extends StatefulWidget {
+  final Function(DateTime)? onDateSelected;
+  final DateTime? initialSelectedDate;
+
+  const DateSelectorWidget({
+    super.key,
+    this.onDateSelected,
+    this.initialSelectedDate,
+  });
+
+  @override
+  State<DateSelectorWidget> createState() => _DateSelectorWidgetState();
+}
+
+class _DateSelectorWidgetState extends State<DateSelectorWidget> {
+  DateTime? selectedDate;
+  late List<DateTime> availableDates;
+
+  @override
+  void initState() {
+    super.initState();
+    selectedDate = widget.initialSelectedDate;
+    _generateAvailableDates();
+  }
+
+  void _generateAvailableDates() {
+    availableDates = [];
+    DateTime today = DateTime.now();
+
+    // Generate dates for the next 14 days
+    for (int i = 0; i < 7; i++) {
+      availableDates.add(today.add(Duration(days: i)));
+    }
+  }
+
+  String _getDayName(DateTime date) {
+    const days = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+    return days[date.weekday % 7];
+  }
+
+  String _getMonthName(DateTime date) {
+    const months = [
+      'JAN',
+      'FEB',
+      'MAR',
+      'APR',
+      'MAY',
+      'JUN',
+      'JUL',
+      'AUG',
+      'SEP',
+      'OCT',
+      'NOV',
+      'DEC'
+    ];
+    return months[date.month - 1];
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          height: 80,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: availableDates.length,
+            itemBuilder: (context, index) {
+              final date = availableDates[index];
+              final isSelected = selectedDate != null &&
+                  selectedDate!.day == date.day &&
+                  selectedDate!.month == date.month;
+
+              return GestureDetector(
+                onTap: () {
+                  setState(() {
+                    selectedDate = date;
+                  });
+                  widget.onDateSelected?.call(date);
+                },
+                child: Container(
+                  width: 70,
+                  margin: const EdgeInsets.only(right: 12),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? const Color(0xFF4DD0E1)
+                        : Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(12),
+                    border: isSelected
+                        ? Border.all(color: const Color(0xFF4DD0E1), width: 2)
+                        : null,
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        _getDayName(date),
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color:
+                              isSelected ? Colors.white : Colors.grey.shade600,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${date.day}',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: isSelected ? Colors.white : Colors.black87,
+                        ),
+                      ),
+                      Text(
+                        _getMonthName(date),
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w500,
+                          color:
+                              isSelected ? Colors.white : Colors.grey.shade600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
   }
 }

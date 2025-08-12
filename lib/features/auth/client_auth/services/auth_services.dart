@@ -7,6 +7,7 @@ import 'package:mahu_home_services_app/core/utils/helpers/upload_media_helper.da
 import 'package:mahu_home_services_app/features/auth/client_auth/views/screens/client_register_screen.dart';
 
 class AuthServices {
+  
   Future<Either<Failure, UserModel>> registerAsClient({
     required String email,
     required String phone,

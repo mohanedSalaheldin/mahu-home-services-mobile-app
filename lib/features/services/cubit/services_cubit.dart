@@ -112,16 +112,16 @@ class ServiceCubit extends Cubit<ServiceState> {
     );
   }
 
-  void acceptBooking(String bookingId) async {
-    emit(ProviderAccepsLoadingState());
-    _bookingServices.acceptBooking(bookingId).then(
+  void changeBookingStatus(String bookingId, String status) async {
+    emit(ProviderChangeBookingStatusLoadingState());
+    _bookingServices.changeBookingStatus(bookingId, status).then(
       (result) {
         result.fold(
           (failure) {
-            emit(ProviderAccepsFailedState(failure));
+            emit(ProviderChangeBookingStatusFailedState(failure));
           },
           (_) {
-            emit(ProviderAccepsSuccessState());
+            emit(ProviderChangeBookingStatusSuccessState());
             fetchMyBookings();
             // fetchServices();
           },

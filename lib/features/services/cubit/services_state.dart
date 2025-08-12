@@ -65,11 +65,11 @@ final class GetMyBookingsFailedState extends ServiceState {
 final class GetMyBookingsLoadingState extends ServiceState {}
 
 // ===== Provider Accept Bookings =====
-final class ProviderAccepsSuccessState extends ServiceState {}
+final class ProviderChangeBookingStatusSuccessState extends ServiceState {}
 
-final class ProviderAccepsFailedState extends ServiceState {
+final class ProviderChangeBookingStatusFailedState extends ServiceState {
   final Failure failure;
-  ProviderAccepsFailedState(this.failure);
+  ProviderChangeBookingStatusFailedState(this.failure);
 }
 
-final class ProviderAccepsLoadingState extends ServiceState {}
+final class ProviderChangeBookingStatusLoadingState extends ServiceState {}

@@ -24,12 +24,13 @@ class BookingServices {
     );
   }
 
-  Future<Either<Failure, Unit>> acceptBooking(String bookingID) {
+  Future<Either<Failure, Unit>> changeBookingStatus(
+      String bookingID, String status) {
     String token = CacheHelper.getString('token') ?? '';
 
     return RequestHundler.handleRequest<Unit>(
       request: () => RequestHundler.dio.put('/bookings/$bookingID/status',
-          data: {"status": "confirmed"},
+          data: {"status": status},
           options: Options(headers: {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer $token',
