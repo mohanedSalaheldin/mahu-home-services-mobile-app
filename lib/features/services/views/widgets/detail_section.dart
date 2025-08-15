@@ -28,7 +28,7 @@ class DetailSection extends StatelessWidget {
         DetailRow(
           label: "Duration",
           value:
-              "${service.duration ~/ 60} hours ${service.duration % 60} minutes",
+              "${service.duration} hours",
         ),
       ],
     );

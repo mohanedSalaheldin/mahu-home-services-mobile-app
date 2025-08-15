@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
-import 'package:mahu_home_services_app/core/constants/app_const.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
 
-class BookingDetailsScreen extends StatelessWidget {
+import '../../cubit/services_cubit.dart';
+
+class BookingDetailsScreen extends StatefulWidget {
   final Booking booking;
-
   const BookingDetailsScreen({super.key, required this.booking});
+  @override
+  State<BookingDetailsScreen> createState() => _BookingDetailsScreenState();
+}
 
+class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -19,250 +24,327 @@ class BookingDetailsScreen extends StatelessWidget {
         elevation: 0,
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(AppConst.appPadding.w),
+        padding: EdgeInsets.all(16.w),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Client Information Section
-            _buildClientSection(),
-            Gap(24.h),
-            Divider(height: 1.h, color: Colors.grey.shade300),
+            // Header with service name and status
+            _buildHeaderSection(),
             Gap(24.h),
 
-            // Service Details Section
-            _buildSectionTitle("Service Details"),
-            Gap(16.h),
-            _buildDetailItem("Service", booking.serviceName),
-            _buildDetailItem("Date & Time", 
-              DateFormat('MMMM d, yyyy, h:mm a').format(booking.date)),
-            _buildStatusItem(booking.status),
-            _buildDetailItem("Address", booking.address),
-            Gap(24.h),
-            Divider(height: 1.h, color: Colors.grey.shade300),
+            // Client information section
+            _buildClientInfoSection(),
             Gap(24.h),
 
-            // Payment Section
-            _buildSectionTitle("Payment"),
-            Gap(16.h),
-            _buildDetailItem("Total Amount", "\$${booking.amount}"),
-            _buildPaymentStatusItem(booking.paymentStatus),
-            Gap(24.h),
-            Divider(height: 1.h, color: Colors.grey.shade300),
+            // Service details section
+            _buildServiceDetailsSection(),
             Gap(24.h),
 
-            // Action Buttons
-            _buildActionButtons(context),
+            // Payment information section
+            _buildPaymentSection(),
+            Gap(24.h),
+
+            // Action buttons
+            _buildActionButtons(),
           ],
         ),
       ),
-      bottomNavigationBar: _buildBottomNavigationBar(),
     );
   }
 
-  Widget _buildClientSection() {
-    return Row(
+  Widget _buildHeaderSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        CircleAvatar(
-          radius: 30.r,
-          backgroundColor: AppColors.blue.withOpacity(0.1),
-          child: Icon(
-            Icons.person,
-            size: 30.sp,
-            color: AppColors.blue,
+        Text(
+          widget.booking.serviceName,
+          style: TextStyle(
+            fontSize: 24.sp,
+            fontWeight: FontWeight.w700,
           ),
         ),
-        Gap(16.w),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                booking.clientName,
+        Gap(8.h),
+        Row(
+          children: [
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+              decoration: BoxDecoration(
+                color: _getStatusColor(widget.booking.status)
+                    .withOpacity(0.1),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                widget.booking.status,
                 style: TextStyle(
-                  fontSize: 20.sp,
+                  fontSize: 12.sp,
+                  color: _getStatusColor(widget.booking.status),
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              Gap(4.h),
-              Text(
-                "Client",
-                style: TextStyle(
-                  fontSize: 14.sp,
-                  color: Colors.grey.shade600,
-                ),
-              ),
-              Gap(8.h),
+            ),
+            Gap(8.w),
+            if (widget.booking.rating > 0)
               Row(
                 children: [
                   Icon(Icons.star, color: Colors.amber, size: 16.sp),
                   Gap(4.w),
                   Text(
-                    "${booking.rating} - ${booking.reviews} reviews",
+                    "${widget.booking.rating} (${widget.booking.reviews} reviews)",
                     style: TextStyle(
-                      fontSize: 14.sp,
+                      fontSize: 12.sp,
                       color: Colors.grey.shade600,
                     ),
                   ),
                 ],
               ),
-            ],
-          ),
+          ],
         ),
       ],
     );
   }
 
-  Widget _buildSectionTitle(String title) {
-    return Text(
-      title,
-      style: TextStyle(
-        fontSize: 18.sp,
-        fontWeight: FontWeight.w600,
-        color: Colors.grey.shade800,
+  Widget _buildClientInfoSection() {
+    return Container(
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(12),
       ),
-    );
-  }
-
-  Widget _buildDetailItem(String label, String value) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: 16.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            label,
-            style: TextStyle(
-              fontSize: 14.sp,
-              color: Colors.grey.shade600,
-            ),
-          ),
-          Gap(4.h),
-          Text(
-            value,
+            "Client Information",
             style: TextStyle(
               fontSize: 16.sp,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatusItem(String status) {
-    Color statusColor;
-    switch (status.toLowerCase()) {
-      case 'confirmed':
-        statusColor = Colors.green;
-        break;
-      case 'pending':
-        statusColor = Colors.orange;
-        break;
-      case 'cancelled':
-        statusColor = Colors.red;
-        break;
-      default:
-        statusColor = Colors.grey;
-    }
-
-    return Padding(
-      padding: EdgeInsets.only(bottom: 16.h),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "Status",
-            style: TextStyle(
-              fontSize: 14.sp,
-              color: Colors.grey.shade600,
-            ),
-          ),
-          Gap(4.h),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-            decoration: BoxDecoration(
-              color: statusColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Text(
-              status,
-              style: TextStyle(
-                fontSize: 14.sp,
-                color: statusColor,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPaymentStatusItem(String status) {
-    Color statusColor;
-    String statusText;
-    
-    switch (status.toLowerCase()) {
-      case 'paid':
-        statusColor = Colors.green;
-        statusText = 'Paid';
-        break;
-      case 'pending':
-        statusColor = Colors.orange;
-        statusText = 'Pending';
-        break;
-      case 'failed':
-        statusColor = Colors.red;
-        statusText = 'Failed';
-        break;
-      default:
-        statusColor = Colors.grey;
-        statusText = status;
-    }
-
-    return Padding(
-      padding: EdgeInsets.only(bottom: 16.h),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "Status",
-            style: TextStyle(
-              fontSize: 14.sp,
-              color: Colors.grey.shade600,
-            ),
-          ),
-          Gap(4.h),
+          Gap(16.h),
           Row(
             children: [
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                width: 48.w,
+                height: 48.w,
                 decoration: BoxDecoration(
-                  color: statusColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(16),
+                  color: AppColors.blue.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.person,
+                  color: AppColors.blue,
+                  size: 24.sp,
+                ),
+              ),
+              Gap(16.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                  Text(
+                  widget.booking.clientName,
+                  style: TextStyle(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                Gap(4.h),
+                Text(
+                  "Client since ${DateFormat('MMM yyyy').format(DateTime.now().subtract(const Duration(days: 90)))}",
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          Gap(16.h),
+          Divider(color: Colors.grey.shade200, height: 1),
+          Gap(16.h),
+          _buildInfoRow(
+            icon: Icons.phone,
+            title: "Phone Number",
+            value: "Tap to call",
+            isClickable: true,
+            onTap: () {
+              // Implement call functionality
+            },
+          ),
+          Gap(12.h),
+          _buildInfoRow(
+            icon: Icons.email,
+            title: "Email Address",
+            value: "Tap to email",
+            isClickable: true,
+            onTap: () {
+              // Implement email functionality
+            },
+          ),
+          Gap(12.h),
+          _buildInfoRow(
+            icon: Icons.location_on,
+            title: "Service Address",
+            value: widget.booking.address,
+            isClickable: false,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildServiceDetailsSection() {
+    return Container(
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Service Details",
+            style: TextStyle(
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          Gap(16.h),
+          _buildInfoRow(
+            icon: Icons.calendar_today,
+            title: "Date & Time",
+            value: DateFormat('MMM d, yyyy • h:mm a').format(widget.booking.date),
+            isClickable: false,
+          ),
+          Gap(12.h),
+          _buildInfoRow(
+            icon: Icons.access_time,
+            title: "Duration",
+            value: "2 hours (estimated)", // You might want to add duration to your Booking model
+            isClickable: false,
+          ),
+          Gap(12.h),
+          _buildInfoRow(
+            icon: Icons.description,
+            title: "Special Instructions",
+            value: widget.booking.details ?? "No special instructions",
+            isClickable: false,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPaymentSection() {
+    return Container(
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Payment Information",
+            style: TextStyle(
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          Gap(16.h),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Service Fee",
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+              Text(
+                "\$${widget.booking.amount.toStringAsFixed(2)}",
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          Gap(8.h),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Tax",
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+              Text(
+                "\$${(widget.booking.amount * 0.1).toStringAsFixed(2)}", // Assuming 10% tax
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          Gap(12.h),
+          Divider(color: Colors.grey.shade200, height: 1),
+          Gap(12.h),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Total Amount",
+                style: TextStyle(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              Text(
+                "\$${(widget.booking.amount * 1.1).toStringAsFixed(2)}", // Total with tax
+                style: TextStyle(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.blue,
+                ),
+              ),
+            ],
+          ),
+          Gap(12.h),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Payment Status",
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
+                decoration: BoxDecoration(
+                  color: _getPaymentStatusColor(widget.booking.paymentStatus)
+                      .withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  statusText,
+                  widget.booking.paymentStatus,
                   style: TextStyle(
-                    fontSize: 14.sp,
-                    color: statusColor,
-                    fontWeight: FontWeight.w500,
+                    fontSize: 12.sp,
+                    color: _getPaymentStatusColor(widget.booking.paymentStatus),
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
-              if (status.toLowerCase() == 'pending') ...[
-                Gap(8.w),
-                Icon(Icons.payment, size: 18.sp, color: Colors.blue),
-                Gap(4.w),
-                Text(
-                  "Request Payment",
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    color: Colors.blue,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ]
             ],
           ),
         ],
@@ -270,141 +352,415 @@ class BookingDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButtons(BuildContext context) {
+  Widget _buildActionButtons() {
     return Column(
       children: [
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              padding: EdgeInsets.symmetric(vertical: 16.h),
-              backgroundColor: AppColors.blue,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton(
+                style: OutlinedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(vertical: 14.h),
+                  side: const BorderSide(color: AppColors.blue),
+                ),
+                onPressed: () {
+                  _showContactOptions(context);
+                },
+                child: const Text(
+                  "Contact Client",
+                  style: TextStyle(color: AppColors.blue),
+                ),
               ),
             ),
-            onPressed: () {
-              // Handle message action
-            },
-            child: Text(
-              "Message Client",
-              style: TextStyle(
-                fontSize: 16.sp,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
+            Gap(16.w),
+            Expanded(
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(vertical: 14.h),
+                  backgroundColor: _getActionButtonColor(widget.booking.status),
+                ),
+                onPressed: () {
+                  _handleStatusAction(context);
+                },
+                child: Text(
+                  _getActionButtonText(widget.booking.status),
+                  style: const TextStyle(color: Colors.white),
+                ),
+              ),
+            ),
+          ],
+        ),
+        if (widget.booking.status.toLowerCase() != 'completed' &&
+            widget.booking.status.toLowerCase() != 'cancelled')
+          Gap(12.h),
+        if (widget.booking.status.toLowerCase() != 'completed' &&
+            widget.booking.status.toLowerCase() != 'cancelled')
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton(
+              style: OutlinedButton.styleFrom(
+                padding: EdgeInsets.symmetric(vertical: 14.h),
+                side: BorderSide(color: Colors.red.shade400),
+              ),
+              onPressed: () {
+                _showCancelDialog(context);
+              },
+              child: Text(
+                "Cancel Booking",
+                style: TextStyle(color: Colors.red.shade400),
               ),
             ),
           ),
-        ),
-        Gap(12.h),
-        SizedBox(
-          width: double.infinity,
-          child: OutlinedButton(
-            style: OutlinedButton.styleFrom(
-              padding: EdgeInsets.symmetric(vertical: 16.h),
-              side: BorderSide(color: AppColors.blue),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            onPressed: () {
-              // Handle start job action
-              if (booking.status.toLowerCase() == 'confirmed') {
-                _showStartJobDialog(context);
-              }
-            },
-            child: Text(
-              "Start Job",
-              style: TextStyle(
-                fontSize: 16.sp,
-                fontWeight: FontWeight.w600,
-                color: AppColors.blue,
-              ),
-            ),
-          ),
-        ),
       ],
     );
   }
 
-  void _showStartJobDialog(BuildContext context) {
+  void _showConfirmationDialog(BuildContext context, String title, String message, String newStatus) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(
-          "Start Service",
-          style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w600),
-        ),
-        content: Text(
-          "Are you ready to start the ${booking.serviceName} service for ${booking.clientName}?",
-          style: TextStyle(fontSize: 16.sp),
-        ),
+        title: Text(title),
+        content: Text(message),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text("Cancel", style: TextStyle(color: Colors.grey.shade600)),
+            child: const Text('Cancel'),
           ),
-          TextButton(
+          ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              // Update booking status and proceed
+              // Update the booking status in the cubit
+              context.read<ServiceCubit>().changeBookingStatus(widget.booking.id, newStatus);
+              // Update local state for UI
+              setState(() {
+                widget.booking.status = newStatus;
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Booking status updated to ${_formatStatus(newStatus)}'),
+                ),
+              );
             },
-            child: const Text("Start Now", style: TextStyle(color: AppColors.blue)),
+            child: const Text('Confirm'),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildBottomNavigationBar() {
-    return BottomNavigationBar(
-      type: BottomNavigationBarType.fixed,
-      currentIndex: 2, // Calendar is selected
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home_outlined),
-          label: 'Home',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.work_outline),
-          label: 'Jobs',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.calendar_today),
-          label: 'Calendar',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.person_outline),
-          label: 'Profile',
-        ),
-      ],
-      onTap: (index) {
-        // Handle navigation
-      },
+  void _showCancelDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Cancel Booking'),
+        content: const Text('Are you sure you want to cancel this booking? This action cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Go Back'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () {
+              Navigator.pop(context);
+              // Update the booking status in the cubit
+              context.read<ServiceCubit>().changeBookingStatus(widget.booking.id, 'cancelled');
+              // Update local state for UI
+              setState(() {
+                widget.booking.status = 'cancelled';
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Booking has been cancelled'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+              // Navigate back after cancellation
+              Future.delayed(const Duration(seconds: 1), () {
+                Navigator.pop(context);
+              });
+            },
+            child: const Text('Cancel Booking', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
     );
+  }
+  Widget _buildInfoRow({
+    required IconData icon,
+    required String title,
+    required String value,
+    required bool isClickable,
+    VoidCallback? onTap,
+  }) {
+    return InkWell(
+      onTap: isClickable ? onTap : null,
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: 8.h),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(
+              icon,
+              size: 20.sp,
+              color: Colors.grey.shade500,
+            ),
+            Gap(12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                  Gap(4.h),
+                  Text(
+                    value,
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      fontWeight: isClickable ? FontWeight.w600 : FontWeight.normal,
+                      color: isClickable ? AppColors.blue : Colors.black,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (isClickable)
+              Icon(
+                Icons.chevron_right,
+                size: 20.sp,
+                color: Colors.grey.shade400,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showContactOptions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => Container(
+        padding: EdgeInsets.all(16.w),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              "Contact Client",
+              style: TextStyle(
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            Gap(16.h),
+            ListTile(
+              leading: Container(
+                width: 40.w,
+                height: 40.w,
+                decoration: BoxDecoration(
+                  color: Colors.green.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.phone,
+                  color: Colors.green,
+                ),
+              ),
+              title: const Text('Call Client'),
+              subtitle: const Text('Initiate a phone call'),
+              onTap: () {
+                Navigator.pop(context);
+                // Implement call functionality
+              },
+            ),
+            ListTile(
+              leading: Container(
+                width: 40.w,
+                height: 40.w,
+                decoration: BoxDecoration(
+                  color: Colors.blue.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.message,
+                  color: Colors.blue,
+                ),
+              ),
+              title: const Text('Send Message'),
+              subtitle: const Text('Send SMS or WhatsApp message'),
+              onTap: () {
+                Navigator.pop(context);
+                // Implement messaging functionality
+              },
+            ),
+            ListTile(
+              leading: Container(
+                width: 40.w,
+                height: 40.w,
+                decoration: BoxDecoration(
+                  color: Colors.red.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.email,
+                  color: Colors.red,
+                ),
+              ),
+              title: const Text('Send Email'),
+              subtitle: const Text('Compose an email'),
+              onTap: () {
+                Navigator.pop(context);
+                // Implement email functionality
+              },
+            ),
+            Gap(16.h),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
+              ),
+            ),
+            Gap(8.h),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _handleStatusAction(BuildContext context) {
+    switch (widget.booking.status.toLowerCase()) {
+      case 'pending':
+        _showConfirmationDialog(
+            context, 'Confirm Booking', 'Are you sure you want to confirm this booking?', 'confirmed');
+        break;
+      case 'confirmed':
+        _showConfirmationDialog(
+            context, 'Start Job', 'Are you ready to start this job?', 'in-progress');
+        break;
+      case 'in-progress':
+        _showConfirmationDialog(
+            context, 'Complete Job', 'Have you completed all the work?', 'completed');
+        break;
+      case 'completed':
+      // Already handled by viewing details
+        break;
+      default:
+        break;
+    }
+  }
+
+  // Helper methods (same as in your original code)
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'pending':
+        return Colors.orange;
+      case 'confirmed':
+        return AppColors.blue;
+      case 'in-progress':
+        return Colors.purple;
+      case 'completed':
+        return Colors.green;
+      case 'cancelled':
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  Color _getPaymentStatusColor(String paymentStatus) {
+    switch (paymentStatus.toLowerCase()) {
+      case 'paid':
+        return Colors.green;
+      case 'pending':
+        return Colors.orange;
+      case 'failed':
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  Color _getActionButtonColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'pending':
+        return Colors.orange;
+      case 'confirmed':
+        return AppColors.blue;
+      case 'in-progress':
+        return Colors.purple;
+      case 'completed':
+        return Colors.green;
+      case 'cancelled':
+        return Colors.grey;
+      default:
+        return AppColors.blue;
+    }
+  }
+
+  String _getActionButtonText(String status) {
+    switch (status.toLowerCase()) {
+      case 'pending':
+        return 'Confirm Booking';
+      case 'confirmed':
+        return 'Start Job';
+      case 'in-progress':
+        return 'Mark as Completed';
+      case 'completed':
+        return 'View Receipt';
+      case 'cancelled':
+        return 'Reschedule';
+      default:
+        return 'Action';
+    }
+  }
+
+  String _formatStatus(String status) {
+    switch (status.toLowerCase()) {
+      case 'pending':
+        return 'Pending';
+      case 'confirmed':
+        return 'Confirmed';
+      case 'in-progress':
+        return 'In Progress';
+      case 'completed':
+        return 'Completed';
+      case 'cancelled':
+        return 'Cancelled';
+      default:
+        return status;
+    }
   }
 }
 
 class Booking {
+  final String id; // Add this field
   final String serviceName;
   final String clientName;
   final double rating;
   final int reviews;
   final String address;
+  final String details;
   final DateTime date;
-  final String status;
+  String status;
   final String paymentStatus;
   final double amount;
 
   Booking({
+    required this.id, // Add this
     required this.serviceName,
     required this.clientName,
     required this.rating,
     required this.reviews,
     required this.address,
     required this.date,
-    this.status = 'Confirmed',
-    this.paymentStatus = 'Paid',
-    this.amount = 100.00,
+    required this.status,
+    required this.paymentStatus,
+    required this.amount,
+    this.details = '',
   });
 }

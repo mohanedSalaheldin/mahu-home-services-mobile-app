@@ -26,7 +26,6 @@ class _ServiceProviderDashboardScreenState
   @override
   initState() {
     super.initState();
-    // Fetch services when the screen is initialized
     var cubit = ServiceCubit.get(context);
     if (cubit.services.isEmpty) {
       cubit.fetchServices();
@@ -41,20 +40,12 @@ class _ServiceProviderDashboardScreenState
     var cubit = ServiceCubit.get(context);
     return Scaffold(
       appBar: AppBar(
-        // leading: const BackButton(),
         title: const Text("Dashboard"),
         centerTitle: false,
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.settings_outlined),
-          ),
-        ],
         elevation: 0,
       ),
       body: BlocConsumer<ServiceCubit, ServiceState>(
         listener: (context, state) {
-          // TODO: implement listener
           if (state is ServiceDeletionSuccessState) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text("Service deleted successfully")),
@@ -63,9 +54,7 @@ class _ServiceProviderDashboardScreenState
         },
         builder: (context, state) {
           if (state is ServiceGetAllLoadingState || state is DashboardLoading) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            return const Center(child: CircularProgressIndicator());
           } else if (state is ServiceGetAllFailedState ||
               state is DashboardError) {
             return Center(
@@ -80,14 +69,12 @@ class _ServiceProviderDashboardScreenState
             padding: EdgeInsets.symmetric(vertical: AppConst.appPadding.w),
             child: SingleChildScrollView(
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Padding(
                     padding:
-                        EdgeInsets.symmetric(horizontal: AppConst.appPadding.w),
+                    EdgeInsets.symmetric(horizontal: AppConst.appPadding.w),
                     child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
@@ -102,57 +89,62 @@ class _ServiceProviderDashboardScreenState
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             DashboardStatisticsCardWidget(
-                              figure: cubit.performanceModel.averageRating
-                                  .toString(),
+                              figure: "${cubit.performanceModel.averageRating}/5",
                               label: 'Rating',
                               width: 171.w,
+                              icon: Icons.star_rounded,
                             ),
                             DashboardStatisticsCardWidget(
-                              figure: cubit.performanceModel.completionRate
+                              figure: cubit.performanceModel.completionRate.round()
                                   .toString(),
-                              label: 'Services',
+                              label: 'Completion Rate',
                               width: 171.w,
+                              icon: Icons.task_alt,
                             ),
                           ],
                         ),
                         Gap(16.h),
                         DashboardStatisticsCardWidget(
-                          figure: cubit.performanceModel.completed.toString(),
+                          figure: "${cubit.performanceModel.completed} Jops",
                           label: 'Completed Jobs',
+                          icon: Icons.check_circle_rounded,
                         ),
                         Gap(32.h),
-                        Text(
-                          'Your Services',
-                          style: TextStyle(
-                            fontSize: 24.sp,
-                            fontWeight: FontWeight.w700,
-                          ),
+                        Row(
+                          children: [
+                            Icon(Icons.home_repair_service,
+                                color: AppColors.blue, size: 26.sp),
+                            Gap(8.w),
+                            Text(
+                              'Your Services: ${cubit.services.length}',
+                              style: TextStyle(
+                                fontSize: 24.sp,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
                         ),
                         Gap(16.h),
                       ],
                     ),
                   ),
-                  // Services List
                   cubit.services.isEmpty
                       ? const Center(child: Text('No Services Added Yet'))
                       : ListView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: cubit.services
-                              .length, // Replace with your actual services count
-                          itemBuilder: (context, index) {
-                            ServiceModel service = cubit.services[index];
-
-                            // Replace with your actual service data
-                            return ServiceListItem(
-                              service: service,
-                              onTap: () {
-                                navigateTo(context,
-                                    ServiceDetailsScreen(service: service));
-                              },
-                            );
-                          },
-                        ),
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: cubit.services.length,
+                    itemBuilder: (context, index) {
+                      ServiceModel service = cubit.services[index];
+                      return ServiceListItem(
+                        service: service,
+                        onTap: () {
+                          navigateTo(context,
+                              ServiceDetailsScreen(service: service));
+                        },
+                      );
+                    },
+                  ),
                   Gap(16.h),
                   Padding(
                     padding: EdgeInsets.all(AppConst.appPadding.w),
@@ -163,17 +155,16 @@ class _ServiceProviderDashboardScreenState
                           onPressed: () {
                             navigateTo(context, const AddServiceScreen());
                           },
-                          txt: '+ New Service',
+                          txt: 'New Service',
+                          icon: Icons.add_circle_outline,
                         ),
                         DashboardFilledButton(
                           onPressed: () {
                             ProviderNavigationCubit.get(context).changeTab(2);
-
-                            // navigateTo(
-                            //     context, const ServiceProviderBookingsScreen());
                           },
                           txt: 'View Calendar',
                           isFilled: false,
+                          icon: Icons.calendar_month_outlined,
                         ),
                       ],
                     ),
@@ -194,19 +185,31 @@ class DashboardFilledButton extends StatelessWidget {
     required this.txt,
     required this.onPressed,
     this.isFilled = true,
+    this.icon,
   });
+
   final String txt;
   final bool isFilled;
+  final IconData? icon;
   final void Function() onPressed;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       height: 40.h,
-      width: 130.w,
-      child: ElevatedButton(
+      width: 150.w,
+      child: ElevatedButton.icon(
+        icon: Icon(icon, size: 18.sp,
+            color: isFilled ? Colors.white : Colors.black),
+        label: Text(
+          txt,
+          style: TextStyle(
+            fontWeight: FontWeight.w700,
+            fontSize: 14.sp,
+            color: isFilled ? Colors.white : Colors.black,
+          ),
+        ),
         style: ButtonStyle(
-          padding: const WidgetStatePropertyAll(EdgeInsets.all(8)),
           backgroundColor: WidgetStatePropertyAll(
               isFilled ? AppColors.blue : const Color(0xffE8EDF2)),
           shape: WidgetStatePropertyAll(
@@ -216,14 +219,6 @@ class DashboardFilledButton extends StatelessWidget {
           ),
         ),
         onPressed: onPressed,
-        child: Text(
-          txt,
-          style: TextStyle(
-            fontWeight: FontWeight.w700,
-            fontSize: 14.sp,
-            color: isFilled ? Colors.white : Colors.black,
-          ),
-        ),
       ),
     );
   }
@@ -235,10 +230,13 @@ class DashboardStatisticsCardWidget extends StatelessWidget {
     this.width,
     required this.label,
     required this.figure,
+    required this.icon,
   });
+
   final double? width;
   final String label;
   final String figure;
+  final IconData icon;
 
   @override
   Widget build(BuildContext context) {
@@ -248,25 +246,32 @@ class DashboardStatisticsCardWidget extends StatelessWidget {
       decoration: BoxDecoration(
         border: Border.all(width: .5, color: const Color(0xffD1DBE8)),
         borderRadius: BorderRadius.circular(8),
+        color: Colors.white,
       ),
-      padding: EdgeInsets.symmetric(horizontal: 24.w),
+      padding: EdgeInsets.all(16.w),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w500,
-            ),
+          Row(
+            children: [
+              Icon(icon, size: 22.sp, color: AppColors.blue),
+              Gap(8.w),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
           ),
-          Gap(8.h),
+          Gap(12.h),
           Text(
             figure,
             style: TextStyle(
               fontSize: 24.sp,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
             ),
           ),
         ],
@@ -350,8 +355,10 @@ class ServiceListItem extends StatelessWidget {
                         style: TextStyle(fontSize: 14.sp),
                       ),
                       const Spacer(),
+                      Icon(Icons.attach_money,
+                          size: 18.sp, color: AppColors.blue),
                       Text(
-                        '\$${service.basePrice.toStringAsFixed(2)}',
+                        service.basePrice.toStringAsFixed(2),
                         style: TextStyle(
                           fontSize: 18.sp,
                           fontWeight: FontWeight.bold,

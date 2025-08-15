@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -16,6 +17,23 @@ class ChooseRuleScreen extends StatefulWidget {
 }
 
 class _ChooseRuleScreenState extends State<ChooseRuleScreen> {
+  void _showSnackBar(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Please select a role to continue',
+          style: TextStyle(fontSize: 14.sp, color: Colors.white),
+        ),
+        backgroundColor: Colors.redAccent,
+        duration: Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -104,18 +122,24 @@ class _ChooseRuleScreenState extends State<ChooseRuleScreen> {
                           ),
                           elevation: 0,
                         ),
-                        onPressed: role != null
-                            ? () {
-                                Navigator.pushReplacement(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          role == UserRole.client
-                                              ? const ClientRegisterScreen()
-                                              : const ProviderRegisterScreen(),
-                                    ));
-                              }
-                            : null,
+                        onPressed: () {
+                          if (kDebugMode) {
+                            print(role);
+                          }
+                          if (role != null) {
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    role == UserRole.client
+                                        ? const ClientRegisterScreen()
+                                        : const ProviderRegisterScreen(),
+                              ),
+                            );
+                          } else {
+                            _showSnackBar(context);
+                          }
+                        },
                         child: Text(
                           'Continue',
                           style: TextStyle(

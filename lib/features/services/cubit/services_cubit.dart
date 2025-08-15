@@ -73,6 +73,7 @@ class ServiceCubit extends Cubit<ServiceState> {
     );
   }
 
+
   void updateService(ServiceModel service) {
     emit(ServiceUpdateLoadingState());
 
@@ -91,6 +92,36 @@ class ServiceCubit extends Cubit<ServiceState> {
       },
     );
   }
+
+  void updateProfile({
+    required String email,
+    required String phone,
+    required String firstName,
+    required String lastName,
+    required String avatar,
+  }) async {
+    emit(ProfileUpdateLoadingState());
+
+    final result = await _profileServices.editProfile(
+      email: email,
+      phone: phone,
+      firstName: firstName,
+      lastName: lastName,
+      avatar: avatar,
+    );
+
+    result.fold(
+          (failure) {
+        emit(ProfileUpdateFailedState(failure.message));
+      },
+          (updatedProfile) {
+        _profile = updatedProfile;
+        emit(ProfileUpdateSuccessState());
+      },
+    );
+  }
+
+
 
   void deleteService(String serviceId) async {
     emit(ServiceDeletionLoadingState());
@@ -134,8 +165,11 @@ class ServiceCubit extends Cubit<ServiceState> {
 
   UserBaseProfileModel _profile = UserBaseProfileModel(
     firstName: '',
+    id: '',
     lastName: '',
     avatar: '',
+    name: '',
+    businessName: '',
   );
   ProviderPerformanceModel _performanceModel = ProviderPerformanceModel(
     totalBookings: 0,
@@ -143,6 +177,7 @@ class ServiceCubit extends Cubit<ServiceState> {
     cancelled: 0,
     completionRate: 0,
     averageRating: 0.0,
+      totalEarnings: 0.0
   );
 
   UserBaseProfileModel get profile => _profile;

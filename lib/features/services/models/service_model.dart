@@ -7,7 +7,7 @@ class ServiceModel {
   final String subType;
   final double basePrice;
   final String pricingModel;
-  final int duration; // in minutes
+  final int duration; // in hours
   final String image;
   final bool active;
   final String provider;
@@ -47,7 +47,7 @@ class ServiceModel {
       subType: json['subType'] ?? 'normal',
       basePrice: (json['basePrice'] ?? 0).toDouble(),
       pricingModel: json['pricingModel'] ?? 'fixed',
-      duration: json['duration'] ?? 60,
+      duration: json['duration'] ?? 1,
       image: json['image'] ?? '',
       active: json['active'] ?? true,
       provider: json['provider'] is Map

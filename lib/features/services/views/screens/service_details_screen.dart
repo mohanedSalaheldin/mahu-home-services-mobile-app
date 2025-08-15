@@ -96,8 +96,6 @@ class ServiceDetailsScreen extends StatelessWidget {
 
                 DetailSection(service: service),
                 Gap(24.h),
-                AvailabilitySection(service: service),
-                Gap(24.h),
                 ActionButtons(
                   onDelete: () => _showDeleteConfirmation(context),
                   onEdit: () => navigateTo(

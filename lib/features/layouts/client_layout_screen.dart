@@ -16,18 +16,7 @@ class CustomerLayoutScreen extends StatelessWidget {
     const CustomerHomeScreen(),
     const CustomerHomeScreen(),
     const CustomerHomeScreen(),
-    const ProfileScreen(
-      hasProfilePicture: false,
-      companyName: "Clean Sweep Co.",
-      companyDescription: "Professional cleaning services",
-      rating: 4.8,
-      reviewCount: 120,
-      totalEarnings: 15000,
-      completedJobs: 250,
-      responseTime: "30 min",
-      subscriptionPlan: "Pro Plan",
-      subscriptionEndDate: "July 15, 2024",
-    ),
+    const ProfileScreen(),
   ];
 
   @override
