@@ -1,21 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:gap/gap.dart';
-import 'package:mahu_home_services_app/features/services/cubit/services_cubit.dart';
-import 'package:mahu_home_services_app/features/services/views/screens/service_provider_dashboard_screen.dart';
-import 'package:mahu_home_services_app/features/services/views/screens/service_provider_calender.dart';
-import 'package:mahu_home_services_app/features/services/views/screens/profile_screen.dart';
-import 'package:mahu_home_services_app/features/services/views/screens/service_provider_jobs.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:gap/gap.dart';
+// C:\nodejs-projects\mahu-app-veersion2\mahu-home-services-mobile-app\lib\features\user_booking\views\screens\my_bookings_screen.dart
+import 'package:mahu_home_services_app/features/user_booking/views/screens/my_bookings_screen.dart';
 import 'package:mahu_home_services_app/features/user_booking/views/screens/customer_home_screen.dart';
-
-class CustomerLayoutScreen extends StatelessWidget {
-  CustomerLayoutScreen({super.key});
+import 'package:mahu_home_services_app/features/user_booking/views/screens/profile_screen.dart';
+import 'package:mahu_home_services_app/features/user_booking/views/screens/my_favorite_services_screen.dart';
+class ClientLayoutScreen extends StatelessWidget {
+  ClientLayoutScreen({super.key});
 
   final List<Widget> screens = [
     const CustomerHomeScreen(),
-    const CustomerHomeScreen(),
-    const CustomerHomeScreen(),
+    const MyBookingsScreen(),
+    const FavoritesScreen(),
     const ProfileScreen(),
   ];
 
@@ -27,7 +25,7 @@ class CustomerLayoutScreen extends StatelessWidget {
         builder: (context, currentIndex) {
           return Scaffold(
             body: screens[currentIndex],
-            bottomNavigationBar: _CustomBottomNavBar(
+            bottomNavigationBar: CustomBottomNavBar(
               currentIndex: currentIndex,
               onTap: (index) =>
                   context.read<ClientNavigationCubit>().changeTab(index),
@@ -39,19 +37,20 @@ class CustomerLayoutScreen extends StatelessWidget {
   }
 }
 
-class _CustomBottomNavBar extends StatelessWidget {
+class CustomBottomNavBar extends StatelessWidget {
   final int currentIndex;
   final Function(int) onTap;
 
-  const _CustomBottomNavBar({
+  const CustomBottomNavBar({
     required this.currentIndex,
     required this.onTap,
+    super.key,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 70.h,
+      height: 80.h,
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
@@ -67,31 +66,28 @@ class _CustomBottomNavBar extends StatelessWidget {
         children: [
           _NavBarItem(
             icon: Icons.home_outlined,
-            activeIcon: Icons.home,
+            activeIcon: Icons.home_rounded,
             label: 'Home',
             isActive: currentIndex == 0,
             onTap: () => onTap(0),
           ),
           _NavBarItem(
-            icon: Icons.work_outline,
-            activeIcon: Icons.work,
-            label: 'Jobs',
+            icon: Icons.calendar_today_outlined,
+            activeIcon: Icons.calendar_today_rounded,
+            label: 'Bookings',
             isActive: currentIndex == 1,
-            onTap: () {
-              onTap(1);
-              context.read<ServiceCubit>().fetchMyBookings();
-            },
+            onTap: () => onTap(1),
           ),
           _NavBarItem(
-            icon: Icons.calendar_today_outlined,
-            activeIcon: Icons.calendar_today,
-            label: 'Calendar',
+            icon: Icons.favorite_outline,
+            activeIcon: Icons.favorite_rounded,
+            label: 'Favorites',
             isActive: currentIndex == 2,
             onTap: () => onTap(2),
           ),
           _NavBarItem(
             icon: Icons.person_outline,
-            activeIcon: Icons.person,
+            activeIcon: Icons.person_rounded,
             label: 'Profile',
             isActive: currentIndex == 3,
             onTap: () => onTap(3),
@@ -123,33 +119,42 @@ class _NavBarItem extends StatelessWidget {
       onTap: onTap,
       splashColor: Colors.transparent,
       highlightColor: Colors.transparent,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            isActive ? activeIcon : icon,
-            size: 24.sp,
-            color: isActive ? Colors.blue.shade300 : Colors.grey.shade600,
-          ),
-          Gap(4.h),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12.sp,
-              fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
-              color: isActive ? Colors.blue.shade300 : Colors.grey.shade600,
+      child: SizedBox(
+        width: 70.w,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: EdgeInsets.all(8.w),
+              decoration: BoxDecoration(
+                color: isActive ? Colors.blue.withOpacity(0.2) : Colors.transparent,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                isActive ? activeIcon : icon,
+                size: 24.sp,
+                color: isActive ? Colors.blue : Colors.grey.shade600,
+              ),
             ),
-          ),
-        ],
+            Gap(4.h),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12.sp,
+                fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+                color: isActive ? Colors.blue : Colors.grey.shade600,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-// navigation_cubit.dart (same as before)
 class ClientNavigationCubit extends Cubit<int> {
   ClientNavigationCubit() : super(0);
-  static ClientNavigationCubit get(context) => BlocProvider.of(context);
 
   void changeTab(int index) => emit(index);
 }

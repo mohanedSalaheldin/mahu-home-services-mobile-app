@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart' as latlng;
 import 'package:intl/intl.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
+import 'package:geocoding/geocoding.dart' as geo;
 
 import '../../cubit/services_cubit.dart';
 
@@ -15,6 +18,47 @@ class BookingDetailsScreen extends StatefulWidget {
 }
 
 class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
+  latlng.LatLng? _serviceLocation;
+  bool _isMapLoading = true;
+  String? _mapError;
+
+  @override
+  void initState() {
+    super.initState();
+    _convertAddressToLatLng();
+  }
+
+  Future<void> _convertAddressToLatLng() async {
+    try {
+      final address = "${widget.booking.address}, Egypt";
+      final locations = await geo.locationFromAddress(address);
+
+      if (locations.isNotEmpty) {
+        setState(() {
+          _serviceLocation = latlng.LatLng(
+              locations.first.latitude, locations.first.longitude);
+          _isMapLoading = false;
+          _mapError = null;
+        });
+      } else {
+        setState(() {
+          _mapError = "Could not determine location";
+          _serviceLocation =
+              const latlng.LatLng(30.0444, 31.2357); // Cairo fallback
+          _isMapLoading = false;
+        });
+      }
+    } catch (e) {
+      print("Error converting address: $e");
+      setState(() {
+        _mapError = "Location service unavailable";
+        _serviceLocation =
+            const latlng.LatLng(30.0444, 31.2357); // Cairo fallback
+        _isMapLoading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -28,23 +72,19 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header with service name and status
             _buildHeaderSection(),
             Gap(24.h),
-
-            // Client information section
             _buildClientInfoSection(),
             Gap(24.h),
-
-            // Service details section
             _buildServiceDetailsSection(),
             Gap(24.h),
-
-            // Payment information section
             _buildPaymentSection(),
             Gap(24.h),
 
-            // Action buttons
+            // Add the Map Section
+            _buildMapSection(),
+            Gap(24.h),
+
             _buildActionButtons(),
           ],
         ),
@@ -69,8 +109,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
             Container(
               padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
               decoration: BoxDecoration(
-                color: _getStatusColor(widget.booking.status)
-                    .withOpacity(0.1),
+                color: _getStatusColor(widget.booking.status).withOpacity(0.1),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
@@ -100,6 +139,99 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
           ],
         ),
       ],
+    );
+  }
+
+  Widget _buildMapSection() {
+    return Container(
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Service Location",
+            style: TextStyle(
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          Gap(16.h),
+          Container(
+            height: 200.h,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey.shade300),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: _isMapLoading
+                  ? Center(child: CircularProgressIndicator())
+                  : _mapError != null
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.error_outline, color: Colors.red),
+                              Gap(8.h),
+                              Text(
+                                _mapError!,
+                                style: TextStyle(color: Colors.red),
+                              ),
+                            ],
+                          ),
+                        )
+                      : FlutterMap(
+                          options: MapOptions(
+                            initialCenter: _serviceLocation!,
+                            initialZoom: 13.0,
+                          ),
+                          children: [
+                            TileLayer(
+                              urlTemplate:
+                                  'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                              userAgentPackageName: 'com.example.app',
+                            ),
+                            MarkerLayer(
+                              markers: [
+                                Marker(
+                                  width: 40.0,
+                                  height: 40.0,
+                                  point: _serviceLocation!,
+                                  child: const Icon(
+                                    Icons.location_pin,
+                                    color: Colors.red,
+                                    size: 40,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+            ),
+          ),
+          if (_mapError != null) Gap(12.h),
+          if (_mapError != null)
+            Text(
+              "Showing approximate location",
+              style: TextStyle(
+                fontSize: 12.sp,
+                color: Colors.orange,
+              ),
+            ),
+          Gap(12.h),
+          Text(
+            widget.booking.address,
+            style: TextStyle(
+              fontSize: 14.sp,
+              color: Colors.grey.shade600,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -141,21 +273,21 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                  Text(
-                  widget.booking.clientName,
-                  style: TextStyle(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                Gap(4.h),
-                Text(
-                  "Client since ${DateFormat('MMM yyyy').format(DateTime.now().subtract(const Duration(days: 90)))}",
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      color: Colors.grey.shade600,
+                    Text(
+                      widget.booking.clientName,
+                      style: TextStyle(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  ),
+                    Gap(4.h),
+                    Text(
+                      "Client since ${DateFormat('MMM yyyy').format(DateTime.now().subtract(const Duration(days: 90)))}",
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -216,14 +348,16 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
           _buildInfoRow(
             icon: Icons.calendar_today,
             title: "Date & Time",
-            value: DateFormat('MMM d, yyyy • h:mm a').format(widget.booking.date),
+            value:
+                DateFormat('MMM d, yyyy • h:mm a').format(widget.booking.date),
             isClickable: false,
           ),
           Gap(12.h),
           _buildInfoRow(
             icon: Icons.access_time,
             title: "Duration",
-            value: "2 hours (estimated)", // You might want to add duration to your Booking model
+            value:
+                "2 hours (estimated)", // You might want to add duration to your Booking model
             isClickable: false,
           ),
           Gap(12.h),
@@ -415,7 +549,8 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
     );
   }
 
-  void _showConfirmationDialog(BuildContext context, String title, String message, String newStatus) {
+  void _showConfirmationDialog(
+      BuildContext context, String title, String message, String newStatus) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -430,14 +565,17 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
             onPressed: () {
               Navigator.pop(context);
               // Update the booking status in the cubit
-              context.read<ServiceCubit>().changeBookingStatus(widget.booking.id, newStatus);
+              context
+                  .read<ServiceCubit>()
+                  .changeBookingStatus(widget.booking.id, newStatus);
               // Update local state for UI
               setState(() {
                 widget.booking.status = newStatus;
               });
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Booking status updated to ${_formatStatus(newStatus)}'),
+                  content: Text(
+                      'Booking status updated to ${_formatStatus(newStatus)}'),
                 ),
               );
             },
@@ -453,7 +591,8 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Cancel Booking'),
-        content: const Text('Are you sure you want to cancel this booking? This action cannot be undone.'),
+        content: const Text(
+            'Are you sure you want to cancel this booking? This action cannot be undone.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -464,7 +603,9 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
             onPressed: () {
               Navigator.pop(context);
               // Update the booking status in the cubit
-              context.read<ServiceCubit>().changeBookingStatus(widget.booking.id, 'cancelled');
+              context
+                  .read<ServiceCubit>()
+                  .changeBookingStatus(widget.booking.id, 'cancelled');
               // Update local state for UI
               setState(() {
                 widget.booking.status = 'cancelled';
@@ -480,12 +621,14 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                 Navigator.pop(context);
               });
             },
-            child: const Text('Cancel Booking', style: TextStyle(color: Colors.white)),
+            child: const Text('Cancel Booking',
+                style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
     );
   }
+
   Widget _buildInfoRow({
     required IconData icon,
     required String title,
@@ -522,7 +665,8 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                     value,
                     style: TextStyle(
                       fontSize: 14.sp,
-                      fontWeight: isClickable ? FontWeight.w600 : FontWeight.normal,
+                      fontWeight:
+                          isClickable ? FontWeight.w600 : FontWeight.normal,
                       color: isClickable ? AppColors.blue : Colors.black,
                     ),
                   ),
@@ -635,19 +779,19 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
   void _handleStatusAction(BuildContext context) {
     switch (widget.booking.status.toLowerCase()) {
       case 'pending':
-        _showConfirmationDialog(
-            context, 'Confirm Booking', 'Are you sure you want to confirm this booking?', 'confirmed');
+        _showConfirmationDialog(context, 'Confirm Booking',
+            'Are you sure you want to confirm this booking?', 'confirmed');
         break;
       case 'confirmed':
-        _showConfirmationDialog(
-            context, 'Start Job', 'Are you ready to start this job?', 'in-progress');
+        _showConfirmationDialog(context, 'Start Job',
+            'Are you ready to start this job?', 'in-progress');
         break;
       case 'in-progress':
-        _showConfirmationDialog(
-            context, 'Complete Job', 'Have you completed all the work?', 'completed');
+        _showConfirmationDialog(context, 'Complete Job',
+            'Have you completed all the work?', 'completed');
         break;
       case 'completed':
-      // Already handled by viewing details
+        // Already handled by viewing details
         break;
       default:
         break;
@@ -738,7 +882,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
 }
 
 class Booking {
-  final String id; // Add this field
+  final String id;
   final String serviceName;
   final String clientName;
   final double rating;

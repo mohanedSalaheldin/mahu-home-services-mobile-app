@@ -24,6 +24,28 @@ class BookingServices {
     );
   }
 
+  Future<Either<Failure, List<BookingModel>>> getUserPreviousBookings() {
+    String token = CacheHelper.getString('token') ?? '';
+
+    return RequestHundler.handleRequest<List<BookingModel>>(
+      request: () => RequestHundler.dio.get(
+        '/users/me/bookings',
+        queryParameters: {
+          'previous': 'true',
+        },
+        options: Options(headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        }),
+      ),
+      onSuccess: (data) {
+        // { success: true, count: x, pagination: {...}, data: [ bookings ] }
+        final bookingsJson = data['data'] as List;
+        return bookingsJson.map((book) => BookingModel.fromJson(book)).toList();
+      },
+    );
+  }
+
   Future<Either<Failure, Unit>> changeBookingStatus(
       String bookingID, String status) {
     String token = CacheHelper.getString('token') ?? '';

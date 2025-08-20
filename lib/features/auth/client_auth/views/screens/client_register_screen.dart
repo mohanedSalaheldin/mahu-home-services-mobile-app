@@ -31,6 +31,7 @@ class _ClientRegisterScreenState extends State<ClientRegisterScreen> {
   final TextEditingController fNameController = TextEditingController();
   final TextEditingController lNameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  final TextEditingController refrenceIdController = TextEditingController();
   final TextEditingController confirmPasswordController =
       TextEditingController();
   final _formKey = GlobalKey<FormState>();
@@ -44,6 +45,7 @@ class _ClientRegisterScreenState extends State<ClientRegisterScreen> {
     passwordController.dispose();
     fNameController.dispose();
     lNameController.dispose();
+    refrenceIdController.dispose();
     confirmPasswordController.dispose();
     phoneController.dispose();
     super.dispose();
@@ -145,6 +147,25 @@ class _ClientRegisterScreenState extends State<ClientRegisterScreen> {
                       lines: 1,
                     ),
                     Gap(10.h),
+                    CustomTextField(
+                      label: 'Business Reference ID',
+                      hint: 'Please add reference id',
+                      keyboardType: TextInputType.name,
+                      controller: refrenceIdController,
+                      isPassword: false,
+                      validator: (value) {
+                        
+                        if (value == null || value.isEmpty) return null;
+
+                        if (!RegExp(r'^[0-9]+$').hasMatch(value)) {
+                          return "Reference ID must be numbers only";
+                        }
+
+                        return null;
+                      },
+                      lines: 1,
+                    ),
+                    Gap(10.h),
                     // NEW: OTP channel section
                     Text(
                       'Receive OTP via',
@@ -216,6 +237,7 @@ class _ClientRegisterScreenState extends State<ClientRegisterScreen> {
                               lastName: lNameController.text,
                               password: passwordController.text,
                               phone: countryCode + phoneController.text,
+                              refrenceId: refrenceIdController.text,
                               otpMethod: _otpChannel.name);
                           print("Form is valid");
                         }

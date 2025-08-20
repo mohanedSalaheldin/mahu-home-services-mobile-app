@@ -92,3 +92,9 @@ class ProfileUpdateFailedState extends ServiceState {
   final String error;
   ProfileUpdateFailedState(this.error);
 }
+
+
+class ServiceErrorState extends ServiceState {
+  final String message;
+  ServiceErrorState(this.message);
+}

@@ -6,12 +6,14 @@ import 'package:intl/intl.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
 import 'package:mahu_home_services_app/features/landing/views/screens/choose_rule_screen.dart';
 import 'package:mahu_home_services_app/features/services/cubit/services_cubit.dart';
+import 'package:mahu_home_services_app/features/services/cubit/services_state.dart';
 import 'package:mahu_home_services_app/features/services/models/provider_performance.dart';
 import 'package:mahu_home_services_app/features/services/models/subscription_model.dart';
 import 'package:mahu_home_services_app/features/services/models/user_base_profile_model.dart';
 import 'package:mahu_home_services_app/features/services/services/subscription_services.dart';
 import 'package:mahu_home_services_app/features/services/views/screens/editprofile_screen.dart';
 import 'package:mahu_home_services_app/features/services/views/screens/upgrade_plan_screen.dart';
+import 'package:mahu_home_services_app/features/user_booking/views/screens/profile_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -34,6 +36,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _loadUserSubscription() async {
     final cubit = context.read<ServiceCubit>();
+    // ignore: unnecessary_null_comparison
+    if (cubit.profile == null) return;
     final userId = cubit.profile.id;
 
     final result = await _subscriptionServices.getUserSubscription(userId);
@@ -54,43 +58,55 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final cubit = context.read<ServiceCubit>();
-    final user = cubit.profile;
-    final performance = cubit.performanceModel;
-
     return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header Section
-              _buildHeaderSection(user, performance),
-              Gap(24.h),
+      body: BlocBuilder<ServiceCubit, ServiceState>(
+        builder: (context, state) {
+          final cubit = context.read<ServiceCubit>();
 
-              // Stats Section
-              _buildStatsSection(performance),
-              Gap(24.h),
+          if (state is UserProfileLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-              // Response Time Section
-              _buildResponseTimeSection(),
-              Gap(24.h),
+          if (state is ServiceErrorState) {
+            return Center(
+              child: Text(
+                "Error: ${state.message}",
+                style: const TextStyle(color: Colors.red, fontSize: 16),
+                textAlign: TextAlign.center,
+              ),
+            );
+          }
 
-              // Subscription Section
-              _buildSubscriptionSection(),
-              Gap(24.h),
+          if (cubit.profile == null) {
+            return const Center(child: Text("No profile loaded"));
+          }
 
-              // Settings Section
-              _buildSettingsSection(user),
-              Gap(32.h),
+          final user = cubit.profile;
+          final performance = cubit.performanceModel;
 
-              // Upgrade Button
-              _buildUpgradeButton(user.id),
-              Gap(40.h),
-            ],
-          ),
-        ),
+          return SafeArea(
+            child: SingleChildScrollView(
+              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildHeaderSection(user, performance),
+                  Gap(24.h),
+                  _buildStatsSection(performance),
+                  Gap(24.h),
+                  _buildResponseTimeSection(),
+                  Gap(24.h),
+                  _buildSubscriptionSection(),
+                  Gap(24.h),
+                  _buildSettingsSection(user),
+                  Gap(32.h),
+                  _buildUpgradeButton(user.id),
+                  Gap(40.h),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -249,18 +265,62 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _isLoadingSubscription
             ? const CircularProgressIndicator()
             : _currentSubscription == null
-                ? Text(
-                    'No active subscription',
-                    style: TextStyle(
-                      fontSize: 16.sp,
-                      color: Colors.grey.shade600,
-                    ),
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: EdgeInsets.all(16.w),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(12.0),
+                        ),
+                        child: Text(
+                          'You are not subscribed to any plan yet.',
+                          style: TextStyle(
+                            fontSize: 16.sp,
+                            color: Colors.grey.shade700,
+                          ),
+                        ),
+                      ),
+                      Gap(12.h),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            padding: EdgeInsets.symmetric(vertical: 16.h),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                          ),
+                          onPressed: () {
+                            final userId =
+                                context.read<ServiceCubit>().profile!.id;
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    UpgradePlanScreen(userId: userId),
+                              ),
+                            ).then((_) => _loadUserSubscription());
+                          },
+                          child: Text(
+                            'Subscribe Now',
+                            style: TextStyle(
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   )
                 : Container(
-                    padding: EdgeInsets.all(16.w),
+                    padding: EdgeInsets.all(16.0.w),
                     decoration: BoxDecoration(
                       color: Colors.grey.shade50,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(12.0),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -272,7 +332,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               height: 40.w,
                               decoration: BoxDecoration(
                                 color: AppColors.primary.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(8.0),
                               ),
                               child: Icon(
                                 Icons.workspace_premium,
@@ -440,7 +500,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           backgroundColor: AppColors.primary,
           padding: EdgeInsets.symmetric(vertical: 16.h),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(8.0),
           ),
         ),
         onPressed: () {
@@ -489,7 +549,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               // Navigate to ChooseRuleScreen and clear navigation stack
               Navigator.pushAndRemoveUntil(
                 context,
-                MaterialPageRoute(builder: (_) => const ChooseRuleScreen()),
+                MaterialPageRoute(builder: (_) => const RoleSelectionScreen()),
                 (Route<dynamic> route) => false, // Remove all previous routes
               );
             },

@@ -85,7 +85,7 @@ class LandingScren2 extends StatelessWidget {
                     await CacheHelper.saveBool('first_time', false);
 
                     if (context.mounted) {
-                      navigateTo(context, const ChooseRuleScreen());
+                      navigateTo(context, const RoleSelectionScreen());
                     }
                   },
                   text: 'Let\'s Get Started',

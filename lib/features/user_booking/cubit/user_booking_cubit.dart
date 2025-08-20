@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mahu_home_services_app/core/errors/failures.dart';
+import 'package:mahu_home_services_app/core/utils/helpers/cache_helper.dart';
 import 'package:mahu_home_services_app/features/services/models/service_model.dart';
 import 'package:mahu_home_services_app/features/user_booking/models/booking_model.dart';
 import 'package:mahu_home_services_app/features/user_booking/services/user_booking_services.dart';
@@ -19,18 +20,35 @@ class UserBookingCubit extends Cubit<UserBookingState> {
 
   Future<void> fetchavailableServices() async {
     emit(FetchAvailableServicesLoading());
-
-    final availableServices = await _bookingServices.getAllServices();
-    availableServices.fold(
-      (failure) {
-        emit(FetchAvailableServicesError(failure));
-      },
-      (availableServicesList) {
-        _availableServices.clear();
-        _availableServices.addAll(availableServicesList);
-        emit(FetchAvailableServicesSuccess());
-      },
-    );
+    // Get referenceId from cache
+    final referenceId = CacheHelper.getString('referenceId');
+    if (referenceId == null || referenceId.isEmpty) {
+      // Get all services for all providers
+      final availableServices = await _bookingServices.getAllServices();
+      availableServices.fold(
+        (failure) {
+          emit(FetchAvailableServicesError(failure));
+        },
+        (availableServicesList) {
+          _availableServices.clear();
+          _availableServices.addAll(availableServicesList as Iterable<ServiceModel>);
+          emit(FetchAvailableServicesSuccess());
+        },
+      );
+    } else {
+      // Get services for the specific provider with referenceId
+      final availableServices = await _bookingServices.getServicesByProvider(referenceId);
+      availableServices.fold(
+        (failure) {
+          emit(FetchAvailableServicesError(failure));
+        },
+        (availableServicesList) {
+          _availableServices.clear();
+          _availableServices.addAll(availableServicesList as Iterable<ServiceModel>);
+          emit(FetchAvailableServicesSuccess());
+        },
+      );
+    }
   }
 
   Future<void> createBooking(UserBookingModel bookingMode) async {
@@ -43,6 +61,22 @@ class UserBookingCubit extends Cubit<UserBookingState> {
       },
       (_) {
         emit(CreateUserBookingSuccess());
+      },
+    );
+  }
+
+  List<UserBookingModel> myBookings = [];
+
+  Future<void> getMyBookings() async {
+    emit(UserGetMyBookingsLoadingState());
+
+    final result = await _bookingServices.getUserPreviousBookings();
+
+    result.fold(
+      (failure) => emit(UserGetMyBookingsErrorState(failure)),
+      (bookings) {
+        myBookings = bookings.cast<UserBookingModel>();
+        emit(UserGetMyBookingsSuccessState(bookings.cast<UserBookingModel>()));
       },
     );
   }

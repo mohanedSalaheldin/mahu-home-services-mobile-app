@@ -52,7 +52,7 @@ class _LoginScreenState extends State<LoginScreen> {
             navigateToAndKill(
               context,
               UserRoleCubit.get(context).state.name == UserRole.client.name
-                  ? CustomerLayoutScreen()
+                  ? ClientLayoutScreen()
                   : ProviderLayoutScreen(),
             );
           } else if (state is LoginFailedState) {
