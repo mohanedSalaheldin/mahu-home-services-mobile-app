@@ -104,10 +104,10 @@ class AuthCubit extends Cubit<AuthState> {
         emit(LoginFailedState(failure: failure));
       },
       (loginResponse) async {
-        
         await CacheHelper.saveString('token', loginResponse.token);
         await CacheHelper.saveString(
             'referenceId', loginResponse.businessRegistration.toString());
+        await CacheHelper.saveString('userId', loginResponse.user.id);
         emit(LoginSucessededState());
       },
     );

@@ -48,24 +48,24 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
   // Explanations for service types and pricing models
   final Map<String, String> _serviceTypeExplanations = {
     'one-time':
-        'One-time service is performed once and completed. Ideal for specific cleaning needs like move-in/move-out cleaning.',
+        'One-time service is performed once and completed. Ideal for specific Service needs like move-in/move-out Service.',
     'recurring':
-        'Recurring service repeats at regular intervals. Perfect for regular maintenance like weekly or monthly cleaning.',
+        'Recurring service repeats at regular intervals. Perfect for regular maintenance like weekly or monthly Service.',
   };
 
   final Map<String, String> _subTypeExplanations = {
     'normal':
-        'Standard cleaning covering basic tasks like dusting, vacuuming, and surface wiping.',
+        'Standard Service covering basic tasks like dusting, vacuuming, and surface wiping.',
     'deep':
-        'Thorough cleaning including hard-to-reach areas, grout cleaning, and detailed attention to all surfaces.',
+        'Thorough Service including hard-to-reach areas, grout Service, and detailed attention to all surfaces.',
     'weekly':
-        'Regular weekly maintenance cleaning to keep your space consistently clean.',
+        'Regular weekly maintenance Service to keep your space consistently clean.',
     'monthly':
-        'Comprehensive monthly cleaning with deeper attention to detail than weekly service.',
+        'Comprehensive monthly Service with deeper attention to detail than weekly service.',
   };
 
   final Map<String, String> _pricingModelExamples = {
-    'fixed': 'Example: \$150 for a complete deep cleaning service (3-4 hours)',
+    'fixed': 'Example: \$150 for a complete deep Service service (3-4 hours)',
     'hourly': 'Example: \$40/hour (typically 2-4 hours depending on home size)',
   };
 
@@ -147,7 +147,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                     // Service Name
                     CustomTextField(
                       label: 'Service Name',
-                      hint: 'e.g., Deep Cleaning, Weekly Maintenance',
+                      hint: 'e.g., Deep Service, Weekly Maintenance',
                       controller: _serviceNameController,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -165,7 +165,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                       // focusNode: ,
                       maxLines: 5,
                       decoration: InputDecoration(
-                        hintText: 'Describe your cleaning service in detail...',
+                        hintText: 'Describe your service in detail...',
                         hintStyle: TextStyle(
                           color: Colors.black.withOpacity(0.5),
                           fontSize: 14.sp,
@@ -203,9 +203,9 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                         _isServiceTypeRecurring ? 'recurring' : 'one-time']!),
                     Gap(16.h),
 
-                    // Cleaning Sub-Type
+                    // Service Sub-Type
                     CustomDropdown<String>(
-                      label: "Cleaning Type",
+                      label: "Service Type",
                       items: (_isServiceTypeRecurring
                               ? ['normal', 'deep', 'weekly', 'monthly']
                               : ['normal', 'deep'])
@@ -215,13 +215,13 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                                   (() {
                                     switch (item) {
                                       case 'normal':
-                                        return 'Standard Cleaning';
+                                        return 'Standard Service';
                                       case 'deep':
-                                        return 'Deep Cleaning';
+                                        return 'Deep Service';
                                       case 'weekly':
-                                        return 'Weekly Cleaning';
+                                        return 'Weekly Service';
                                       case 'monthly':
-                                        return 'Monthly Cleaning';
+                                        return 'Monthly Service';
                                       default:
                                         return item;
                                     }
