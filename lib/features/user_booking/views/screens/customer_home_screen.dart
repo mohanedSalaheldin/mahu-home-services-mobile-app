@@ -42,8 +42,13 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
   void initState() {
     super.initState();
     var userBookingCubit = UserBookingCubit.get(context);
-    if (userBookingCubit.availableServices.isEmpty) {
-      userBookingCubit.fetchavailableServices();
+    final referenceId = CacheHelper.getString('referenceId');
+    if (referenceId == null || referenceId == "null" || referenceId.isEmpty) {
+      // Get all services for all providers
+      userBookingCubit.fetchAllServicesForAllProviders();
+    } else {
+      // Get services for the specific provider
+      userBookingCubit.fetchServicesForProvider(referenceId);
     }
     _fetchProviderProfile();
     _autoScrollBanners();

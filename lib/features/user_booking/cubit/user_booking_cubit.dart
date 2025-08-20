@@ -80,4 +80,34 @@ class UserBookingCubit extends Cubit<UserBookingState> {
       },
     );
   }
+
+  Future<void> fetchAllServicesForAllProviders() async {
+    emit(FetchAvailableServicesLoading());
+    final availableServices = await _bookingServices.getAllServices();
+    availableServices.fold(
+      (failure) {
+        emit(FetchAvailableServicesError(failure));
+      },
+      (availableServicesList) {
+        _availableServices.clear();
+        _availableServices.addAll(availableServicesList as Iterable<ServiceModel>);
+        emit(FetchAvailableServicesSuccess());
+      },
+    );
+  }
+
+  Future<void> fetchServicesForProvider(String referenceId) async {
+    emit(FetchAvailableServicesLoading());
+    final availableServices = await _bookingServices.getServicesByProvider(referenceId);
+    availableServices.fold(
+      (failure) {
+        emit(FetchAvailableServicesError(failure));
+      },
+      (availableServicesList) {
+        _availableServices.clear();
+        _availableServices.addAll(availableServicesList as Iterable<ServiceModel>);
+        emit(FetchAvailableServicesSuccess());
+      },
+    );
+  }
 }

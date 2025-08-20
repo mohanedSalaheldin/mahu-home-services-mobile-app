@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -12,12 +13,22 @@ import 'package:mahu_home_services_app/features/services/views/widgets/action_bu
 import 'package:mahu_home_services_app/features/services/views/widgets/availability_section.dart';
 import 'package:mahu_home_services_app/features/services/views/widgets/detail_section.dart';
 import 'package:mahu_home_services_app/features/user_booking/views/screens/customer_home_screen.dart';
+import 'package:mahu_home_services_app/features/services/services/profile_services.dart';
+import 'package:mahu_home_services_app/features/services/models/user_base_profile_model.dart';
 import '../../models/service_model.dart';
 
 class ServiceDetailsScreen extends StatelessWidget {
   final ServiceModel service;
 
   const ServiceDetailsScreen({super.key, required this.service});
+
+  Future<UserBaseProfileModel?> _getProviderProfile() async {
+    if (service.provider.isNotEmpty) {
+      final result = await ProfileServices().getProviderProfile(service.provider);
+      return result.fold((failure) => null, (profile) => profile);
+    }
+    return null;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -62,6 +73,42 @@ class ServiceDetailsScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Service Provider Info
+                FutureBuilder<UserBaseProfileModel?>(
+                  future: _getProviderProfile(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const SizedBox(height: 32, child: LinearProgressIndicator());
+                    }
+                    if (snapshot.hasData && snapshot.data != null) {
+                      return Row(
+                        children: [
+                          ClipOval(
+                            child: CachedNetworkImage(
+                              imageUrl: snapshot.data!.avatar,
+                              height: 32,
+                              width: 32,
+                              fit: BoxFit.cover,
+                              placeholder: (_, __) => Container(
+                                height: 32,
+                                width: 32,
+                                color: Colors.grey.shade200,
+                              ),
+                            ),
+                          ),
+                          Gap(10.w),
+                          Text(
+                            snapshot.data!.businessName,
+                            style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      );
+                    }
+                    return const SizedBox();
+                  },
+                ),
+                Gap(16.h),
+
                 // Service Image
                 Container(
                   height: 200.h,
