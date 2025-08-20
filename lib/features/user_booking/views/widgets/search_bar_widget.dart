@@ -24,7 +24,7 @@ class SearchBarWidget extends StatelessWidget {
         controller: controller,
         decoration: InputDecoration(
           prefixIcon: Icon(Icons.search, color: Colors.grey.shade600),
-          hintText: 'Search cleaning services...',
+          hintText: 'Search for a service...',
           border: InputBorder.none,
           contentPadding: EdgeInsets.symmetric(vertical: 15.h),
         ),
