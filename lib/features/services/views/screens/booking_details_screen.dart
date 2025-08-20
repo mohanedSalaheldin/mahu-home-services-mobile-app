@@ -169,17 +169,18 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12),
               child: _isMapLoading
-                  ? Center(child: CircularProgressIndicator())
+                  ? const Center(child: CircularProgressIndicator())
                   : _mapError != null
                       ? Center(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.error_outline, color: Colors.red),
+                              const Icon(Icons.error_outline,
+                                  color: Colors.red),
                               Gap(8.h),
                               Text(
                                 _mapError!,
-                                style: TextStyle(color: Colors.red),
+                                style: const TextStyle(color: Colors.red),
                               ),
                             ],
                           ),
@@ -709,7 +710,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                   color: Colors.green.withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
+                child: const Icon(
                   Icons.phone,
                   color: Colors.green,
                 ),
@@ -729,7 +730,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                   color: Colors.blue.withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
+                child: const Icon(
                   Icons.message,
                   color: Colors.blue,
                 ),
@@ -749,7 +750,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                   color: Colors.red.withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
+                child: const Icon(
                   Icons.email,
                   color: Colors.red,
                 ),
