@@ -35,6 +35,7 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
   final TextEditingController fNameController = TextEditingController();
   final TextEditingController lNameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  final TextEditingController categoryController = TextEditingController();
   final TextEditingController confirmPasswordController =
       TextEditingController();
   final TextEditingController businessNameController = TextEditingController();
@@ -45,6 +46,8 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
 
   XFile? _selectedImage;
   final ImagePicker _picker = ImagePicker();
+  final List<String> categories = ['cleaning', 'repair', 'painting', 'electrical'];
+  String? selectedCategory;
 
   Future<void> _pickImage() async {
     final picked = await _picker.pickImage(source: ImageSource.gallery);
@@ -61,6 +64,7 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
     lNameController.dispose();
     confirmPasswordController.dispose();
     businessNameController.dispose();
+    categoryController.dispose();
     phoneController.dispose();
     super.dispose();
   }
@@ -75,7 +79,11 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
       body: BlocConsumer<AuthCubit, AuthState>(
         listener: (context, state) {
           if (state is RegisterSucessededState) {
-            navigateTo(context,  VerifyAccountScreen(otpChannel: _otpChannel,));
+            navigateTo(
+                context,
+                VerifyAccountScreen(
+                  otpChannel: _otpChannel,
+                ));
           } else if (state is RegisterFailedState) {
             showCustomSnackBar(
                 context: context,
@@ -145,6 +153,44 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
                         'Business Name',
                       ),
                     ),
+                    Gap(10.h),
+                    DropdownButtonFormField<String>(
+                      decoration: InputDecoration(
+                        labelText: 'Business Category',
+                        labelStyle: const TextStyle(color: Colors.blue),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide:
+                              const BorderSide(color: Colors.blue, width: 1.5),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide:
+                              const BorderSide(color: Colors.blue, width: 2),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      value: selectedCategory,
+                      items: categories
+                          .map((cat) => DropdownMenuItem(
+                                value: cat,
+                                child: Text(
+                                  cat[0].toUpperCase() + cat.substring(1),
+                                  style: const TextStyle(color: Colors.black),
+                                ),
+                              ))
+                          .toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          selectedCategory = value;
+                          categoryController.text =
+                              value ?? ''; // keep it in controller
+                        });
+                      },
+                      validator: (value) => value == null || value.isEmpty
+                          ? 'Please select a category'
+                          : null,
+                    ),
+
                     Gap(10.h),
                     CustomTextField(
                       label: 'Password',
@@ -264,6 +310,7 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
                             phone: countryCode + phoneController.text,
                             avatarPath: _selectedImage?.path ?? '',
                             businessName: businessNameController.text,
+                            businessCategory: selectedCategory ?? '',
                             otpMethod: _otpChannel.name,
                           );
                           print("Form is valid");

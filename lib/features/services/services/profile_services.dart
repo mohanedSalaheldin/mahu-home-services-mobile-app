@@ -10,6 +10,25 @@ import 'package:dio/dio.dart';
 import 'package:mahu_home_services_app/core/constants/app_const.dart'; // تأكد من مسار الـ apiBaseURL
 
 class ProfileServices {
+  /// Get provider profile by referenceId
+  Future<Either<Failure, UserBaseProfileModel>> getProviderProfile(String referenceId) async {
+    try {
+      Response response = await RequestHundler.dio.get(
+        '$apiBaseURL/providers/$referenceId',
+        options: Options(
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        ),
+      );
+      return Right(
+        UserBaseProfileModel.fromJson(response.data['data']),
+      );
+    } catch (e) {
+      print(e);
+      return Left(Failure('Server Error'));
+    }
+  }
   /// Get logged-in user's profile
   Future<Either<Failure, UserBaseProfileModel>> getProfile() async {
     try {

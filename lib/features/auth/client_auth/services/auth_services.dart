@@ -7,7 +7,6 @@ import 'package:mahu_home_services_app/core/utils/helpers/upload_media_helper.da
 import 'package:mahu_home_services_app/features/auth/client_auth/views/screens/client_register_screen.dart';
 
 class AuthServices {
-  
   Future<Either<Failure, UserModel>> registerAsClient({
     required String email,
     required String phone,
@@ -15,6 +14,7 @@ class AuthServices {
     required String firstName,
     required String lastName,
     required String otpMethod,
+    required String refrenceId,
   }) {
     return RequestHundler.handleRequest<UserModel>(
       request: () => RequestHundler.dio.post('/auth/register', data: {
@@ -24,7 +24,8 @@ class AuthServices {
         "firstName": firstName,
         "lastName": lastName,
         "role": "user",
-        "verificationType": otpMethod
+        "verificationType": otpMethod,
+        "businessRegistration": refrenceId,
       }),
       onSuccess: (data) {
         return UserModel.fromJson(data['user']);
@@ -41,6 +42,7 @@ class AuthServices {
     required String avatarPath,
     required String businessName,
     required String otpMethod,
+    required String businessCategory,
   }) async {
     String imageUrl =
         await UploadMediaHelper.uploadImage(File(avatarPath)) ?? '';
@@ -56,7 +58,7 @@ class AuthServices {
           "avatar": imageUrl,
           "role": "provider",
           "businessName": businessName,
-          "businessRegistration": "REG123456",
+          "serviceProviderCategory": businessCategory,
           "verificationType": otpMethod,
         };
         print(data);
@@ -71,11 +73,11 @@ class AuthServices {
     );
   }
 
-  Future<Either<Failure, String>> login({
+  Future<Either<Failure, LoginResponse>> login({
     required String emailOrPhone,
     required String password,
   }) {
-    return RequestHundler.handleRequest<String>(
+    return RequestHundler.handleRequest<LoginResponse>(
       request: () {
         var data2 = {
           'emailOrPhone': emailOrPhone,
@@ -87,7 +89,9 @@ class AuthServices {
           data: data2,
         );
       },
-      onSuccess: (data) => data['token'],
+      onSuccess: (data) {
+        return LoginResponse.fromJson(data);
+      },
     );
   }
 
@@ -131,11 +135,38 @@ class AuthServices {
     required String otp,
   }) {
     return RequestHundler.handleRequest<Unit>(
-      request: () => RequestHundler.dio.post('/auth/verify-email', data: {
+      request: () =>
+          RequestHundler.dio.post('/auth/verify-${channal.name}', data: {
         channal.name: value,
         "otp": otp,
       }),
       onSuccess: (_) => unit,
     );
   }
+}
+
+class LoginResponse {
+  final String token;
+  final String? businessRegistration; // nullable الآن
+  final UserModel user;
+
+  LoginResponse({
+    required this.token,
+    this.businessRegistration,
+    required this.user,
+  });
+
+  factory LoginResponse.fromJson(Map<String, dynamic> json) {
+    return LoginResponse(
+      token: json['token'] ?? '',
+      businessRegistration: json['businessRegistration'], // nullable
+      user: UserModel.fromJson(json['user']),
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'token': token,
+        'businessRegistration': businessRegistration,
+        'user': user.toJson(),
+      };
 }

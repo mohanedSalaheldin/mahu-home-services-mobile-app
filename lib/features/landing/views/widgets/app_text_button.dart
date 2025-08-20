@@ -13,6 +13,7 @@ class AppTextButton extends StatelessWidget {
   final void Function() onPressed;
   final double? fontSize;
 
+
   @override
   Widget build(BuildContext context) {
     return TextButton(
@@ -22,7 +23,7 @@ class AppTextButton extends StatelessWidget {
         style: TextStyle(
           fontWeight: FontWeight.w500,
           fontSize: (fontSize ?? 15).sp,
-          decoration: TextDecoration.underline,
+          decoration: TextDecoration.none,
           color: AppColors.blue,
         ),
       ),

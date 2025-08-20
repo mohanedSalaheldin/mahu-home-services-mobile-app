@@ -31,6 +31,7 @@ class TermsCheckbox extends StatelessWidget {
             fontWeight: FontWeight.w400,
             fontSize: 14.sp,
             color: Colors.black,
+            
           ),
         ),
         AppTextButton(

@@ -1,8 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
+import 'package:mahu_home_services_app/features/auth/client_auth/views/screens/login_screen.dart';
 import 'package:mahu_home_services_app/features/landing/views/screens/choose_rule_screen.dart';
 import 'package:mahu_home_services_app/features/user_booking/cubit/user_booking_cubit.dart';
 import 'package:mahu_home_services_app/features/user_booking/views/screens/service_category_screen.dart';
@@ -14,11 +16,13 @@ import 'package:mahu_home_services_app/features/user_booking/views/widgets/favor
 import 'package:mahu_home_services_app/features/user_booking/views/widgets/popular_services_widget.dart';
 import 'package:mahu_home_services_app/features/user_booking/views/widgets/recommended_services_widget.dart';
 import 'package:mahu_home_services_app/features/user_booking/views/widgets/search_bar_widget.dart';
-import 'package:mahu_home_services_app/features/user_booking/views/widgets/service_card.dart';
-import 'package:mahu_home_services_app/features/user_booking/views/widgets/service_list_tile.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:mahu_home_services_app/core/utils/helpers/cache_helper.dart';
+import 'package:mahu_home_services_app/features/services/models/service_model.dart';
+import 'package:mahu_home_services_app/features/services/services/profile_services.dart';
+import 'package:mahu_home_services_app/features/services/models/user_base_profile_model.dart';
 
 class CustomerHomeScreen extends StatefulWidget {
   const CustomerHomeScreen({super.key});
@@ -30,78 +34,46 @@ class CustomerHomeScreen extends StatefulWidget {
 class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
   final PageController _bannerController = PageController();
   final TextEditingController _searchController = TextEditingController();
-  final List<models.CleaningService> _services = [
-    models.CleaningService(
-      id: '1',
-      name: 'Deep Cleaning',
-      description:
-          'Thorough cleaning of all areas including hard-to-reach spots',
-      category: 'cleaning',
-      price: 199.99,
-      duration: 4,
-      rating: 4.8,
-      reviews: 124,
-      imageUrl: 'https://images.unsplash.com/photo-1600585152220-90363fe7e115',
-      isFavorite: false,
-      subServices: [
-        'Kitchen deep clean',
-        'Bathroom sanitization',
-        'Window cleaning',
-        'Carpet shampooing'
-      ],
-      serviceType: 'One-Time',
-      subType: 'deep',
-    ),
-    models.CleaningService(
-      id: '2',
-      name: 'Regular Cleaning',
-      description: 'Standard cleaning for maintained homes',
-      category: 'cleaning',
-      price: 129.99,
-      duration: 3,
-      rating: 4.5,
-      reviews: 89,
-      imageUrl: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a',
-      isFavorite: true,
-      subServices: [
-        'Dusting surfaces',
-        'Vacuuming floors',
-        'Bathroom cleaning',
-        'Kitchen cleaning'
-      ],
-      serviceType: 'recurring',
-      subType: 'weekly',
-    ),
-    models.CleaningService(
-      id: '3',
-      name: 'Move-In/Move-Out',
-      description: 'Complete cleaning for new or vacated homes',
-      category: 'cleaning',
-      price: 249.99,
-      duration: 6,
-      rating: 4.9,
-      reviews: 156,
-      imageUrl: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750',
-      isFavorite: false,
-      subServices: [
-        'Wall washing',
-        'Appliance cleaning',
-        'Inside cabinets',
-        'Baseboard cleaning'
-      ],
-      serviceType: 'one-time',
-      subType: "normal",
-    ),
-  ];
+
+  UserBaseProfileModel? providerProfile;
+  bool isLoadingProviderProfile = false;
 
   @override
   void initState() {
     super.initState();
     var userBookingCubit = UserBookingCubit.get(context);
-    if (userBookingCubit.availableServices.isEmpty) {
-      userBookingCubit.fetchavailableServices();
+    final referenceId = CacheHelper.getString('referenceId');
+    if (referenceId == null || referenceId == "null" || referenceId.isEmpty) {
+      // Get all services for all providers
+      userBookingCubit.fetchAllServicesForAllProviders();
+    } else {
+      // Get services for the specific provider
+      userBookingCubit.fetchServicesForProvider(referenceId);
     }
+    _fetchProviderProfile();
     _autoScrollBanners();
+  }
+
+  Future<void> _fetchProviderProfile() async {
+    final referenceId = CacheHelper.getString('referenceId');
+    if (referenceId != null && referenceId.isNotEmpty) {
+      setState(() => isLoadingProviderProfile = true);
+      final result = await ProfileServices().getProviderProfile(referenceId);
+      result.fold(
+        (failure) {
+          setState(() {
+            providerProfile = null;
+            isLoadingProviderProfile = false;
+          });
+        },
+        (profile) {
+          setState(() {
+            providerProfile = profile;
+            isLoadingProviderProfile = false;
+          });
+        },
+      );
+    }
   }
 
   void _autoScrollBanners() {
@@ -126,11 +98,12 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
+        onPressed: () async {
+          await CacheHelper.remove('token');
           Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                  builder: (context) => const ChooseRuleScreen()));
+                  builder: (context) => const RoleSelectionScreen()));
         },
         child: const Icon(Icons.logout_outlined),
       ),
@@ -140,22 +113,25 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
           padding: EdgeInsets.only(left: 16.w),
           child: Row(
             children: [
-              Image.asset('assets/imgs/logo.png',
-                  height: 40.w, fit: BoxFit.contain),
+              Builder(
+                builder: (context) {
+                  final referenceId = CacheHelper.getString('referenceId');
+                  
+                  if (referenceId == null || referenceId == "null") {
+                    return Image.asset(
+                      'assets/imgs/logo.png',
+                      height: 40.w,
+                      fit: BoxFit.contain,
+                    );
+                  }
+                  // If referenceId exists, don't show logo
+                  return const SizedBox.shrink();
+                },
+              ),
             ],
           ),
         ),
-        actions: [
-          IconButton(
-            icon: const Badge(
-              backgroundColor: AppColors.primary,
-              label: Text('3'),
-              child: Icon(Icons.notifications_outlined),
-            ),
-            onPressed: () {},
-          ),
-          Gap(16.w),
-        ],
+        actions: [],
       ),
       body: BlocConsumer<UserBookingCubit, UserBookingState>(
         listener: (context, state) {
@@ -174,6 +150,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
             );
           }
           var userBookingCubit = UserBookingCubit.get(context);
+          final referenceId = CacheHelper.getString('referenceId');
 
           return SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
@@ -182,6 +159,12 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  if (referenceId != null &&
+                      referenceId.isNotEmpty &&
+                      providerProfile != null)
+                    _ProviderProfileCard(
+                        profile: providerProfile!,
+                        isLoading: isLoadingProviderProfile),
                   SearchBarWidget(controller: _searchController)
                       .animate()
                       .fadeIn(delay: 100.ms)
@@ -189,23 +172,41 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                   Gap(24.h),
                   SpecialOffersBanner(controller: _bannerController).animate(),
                   Gap(24.h),
-                  CategoriesWidget(onTap: (label) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ServiceCategoryScreen(
-                            categoryName: label, services: _services),
-                      ),
-                    );
-                  })
-                      .animate()
-                      .fadeIn(delay: 200.ms)
-                      .slide(begin: const Offset(0, 0.1)),
+                  Builder(
+                    builder: (context) {
+                      final referenceId = CacheHelper.getString('referenceId');
+                      if (referenceId == null || referenceId == "null" || referenceId.isEmpty) {
+                        return CategoriesWidget(
+                          categories: const [
+                            {'icon': Icons.cleaning_services, 'label': 'cleaning'},
+                            {'icon': Icons.build, 'label': 'repair'},
+                            {'icon': Icons.format_paint, 'label': 'painting'},
+                            {'icon': Icons.electrical_services, 'label': 'electrical'},
+                          ],
+                          onTap: (label) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ServiceCategoryScreen(
+                                    categoryName: label, services: const []),
+                              ),
+                            );
+                          },
+                        )
+                            .animate()
+                            .fadeIn(delay: 200.ms)
+                            .slide(begin: const Offset(0, 0.1));
+                      }
+                      return const SizedBox.shrink();
+                    },
+                  ),
                   Gap(24.h),
                   PopularServicesWidget(
                           services: userBookingCubit.availableServices,
-                          onToggleFavorite: (s) {
-                            setState(() => s.isFavorite = !s.isFavorite);
+                          onToggleFavorite: (service) {
+                            setState(() {
+                              service.isFavorite = !service.isFavorite;
+                            });
                           })
                       .animate()
                       .fadeIn(delay: 300.ms)
@@ -213,8 +214,10 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                   Gap(24.h),
                   RecommendedServicesWidget(
                           services: userBookingCubit.availableServices,
-                          onToggleFavorite: (s) {
-                            setState(() => s.isFavorite = !s.isFavorite);
+                          onToggleFavorite: (service) {
+                            setState(() {
+                              service.isFavorite = !service.isFavorite;
+                            });
                           })
                       .animate()
                       .fadeIn(delay: 400.ms)
@@ -306,6 +309,59 @@ class SpecialOffersBanner extends StatelessWidget {
           ),
         )
       ],
+    );
+  }
+}
+
+class _ProviderProfileCard extends StatelessWidget {
+  final UserBaseProfileModel profile;
+  final bool isLoading;
+  const _ProviderProfileCard({required this.profile, required this.isLoading});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      margin: EdgeInsets.only(top: 16.h, bottom: 16.h),
+      child: Padding(
+        padding: EdgeInsets.all(16.w),
+        child: Row(
+          children: [
+            ClipOval(
+              child: CachedNetworkImage(
+                imageUrl: profile.avatar,
+                height: 60.w,
+                width: 60.w,
+                fit: BoxFit.cover,
+                placeholder: (_, __) => Container(
+                  height: 60.w,
+                  width: 60.w,
+                  color: Colors.grey.shade200,
+                ),
+              ),
+            ),
+            Gap(13.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(profile.businessName,
+                      style: TextStyle(
+                          fontSize: 18.sp, fontWeight: FontWeight.bold)),
+                  Gap(4.h),
+                  Text('Business Registration: ${profile.businessRegistration}',
+                      style: TextStyle(
+                          fontSize: 14.sp, color: Colors.grey.shade700)),
+                  Gap(4.h),
+                  Text('${profile.firstName} ${profile.lastName}',
+                      style: TextStyle(fontSize: 14.sp)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

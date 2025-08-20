@@ -22,3 +22,17 @@ final class CreateUserBookingError extends UserBookingState {
 }
 
 final class CreateUserBookingLoading extends UserBookingState {}
+
+
+class UserGetMyBookingsLoadingState extends UserBookingState {}
+
+class UserGetMyBookingsSuccessState extends UserBookingState {
+  final List<UserBookingModel> bookings;
+  UserGetMyBookingsSuccessState(this.bookings);
+}
+
+class UserGetMyBookingsErrorState extends UserBookingState {
+  final Failure failure;
+  UserGetMyBookingsErrorState(this.failure);
+}
+

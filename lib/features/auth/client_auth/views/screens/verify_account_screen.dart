@@ -80,7 +80,7 @@ class _VerifyAccountScreenState extends State<VerifyAccountScreen> {
             if (_formKey.currentState!.validate()) {
               AuthCubit.get(context).verify(
                 channal: widget.otpChannel,
-                otp: otpController.text,
+                otp: otpController.text.toString(),
               );
               print("Form is valid");
             } else {

@@ -170,12 +170,14 @@ class ServiceCubit extends Cubit<ServiceState> {
     avatar: '',
     name: '',
     businessName: '',
+    businessRegistration: '',
+    serviceProviderCategory: '',
   );
   ProviderPerformanceModel _performanceModel = ProviderPerformanceModel(
     totalBookings: 0,
     completed: 0,
     cancelled: 0,
-    completionRate: 0,
+    completionRate: 0.0,
     averageRating: 0.0,
       totalEarnings: 0.0
   );
@@ -194,6 +196,7 @@ class ServiceCubit extends Cubit<ServiceState> {
     profileResult.fold(
       (failure) {
         emit(DashboardError(failure));
+        emit(ServiceErrorState(failure.message));
         return;
       },
       (profile) {
@@ -205,6 +208,7 @@ class ServiceCubit extends Cubit<ServiceState> {
     performanceResult.fold(
       (failure) {
         emit(DashboardError(failure));
+        emit(ServiceErrorState(failure.message));
         return;
       },
       (performance) {

@@ -23,6 +23,7 @@ class AuthCubit extends Cubit<AuthState> {
       profile: UserProfile(firstName: 'firstName', lastName: 'lastName'));
 
   UserModel get registerResponceUser => _registerResponceUser;
+
   void registerAsClient({
     required String email,
     required String phone,
@@ -30,6 +31,7 @@ class AuthCubit extends Cubit<AuthState> {
     required String firstName,
     required String lastName,
     required String otpMethod,
+    required String refrenceId,
   }) async {
     emit(RegisterLoadingState());
     Either<Failure, UserModel> res = await _authServices.registerAsClient(
@@ -39,6 +41,7 @@ class AuthCubit extends Cubit<AuthState> {
       firstName: firstName,
       lastName: lastName,
       otpMethod: otpMethod,
+      refrenceId: refrenceId,
     );
     res.fold(
       (failure) {
@@ -60,6 +63,7 @@ class AuthCubit extends Cubit<AuthState> {
     required String avatarPath,
     required String businessName,
     required String otpMethod,
+    required String businessCategory,
   }) async {
     emit(RegisterLoadingState());
     Either<Failure, UserModel> res = await _authServices.registerAsProvider(
@@ -71,6 +75,7 @@ class AuthCubit extends Cubit<AuthState> {
       avatarPath: avatarPath,
       businessName: businessName,
       otpMethod: otpMethod,
+      businessCategory: businessCategory,
     );
     res.fold(
       (failure) {
@@ -83,18 +88,26 @@ class AuthCubit extends Cubit<AuthState> {
     );
   }
 
-  void login({required String emailOrPhone, required String password}) async {
+  void login({
+    required String emailOrPhone,
+    required String password,
+  }) async {
     emit(LoginLoadingState());
-    Either<Failure, String> res = await _authServices.login(
+
+    final res = await _authServices.login(
       emailOrPhone: emailOrPhone,
       password: password,
     );
+
     res.fold(
       (failure) {
         emit(LoginFailedState(failure: failure));
       },
-      (token) async {
-        await CacheHelper.saveString('token', token);
+      (loginResponse) async {
+        
+        await CacheHelper.saveString('token', loginResponse.token);
+        await CacheHelper.saveString(
+            'referenceId', loginResponse.businessRegistration.toString());
         emit(LoginSucessededState());
       },
     );

@@ -10,7 +10,7 @@ void main() async {
   await CacheHelper.init();
   Bloc.observer = const SimpleBlocObserver();
   final userRoleCubit = UserRoleCubit();
-  await userRoleCubit.loadUserRole();
+  await userRoleCubit.loadSavedRole();
 
   runApp(const MyApp());
 }

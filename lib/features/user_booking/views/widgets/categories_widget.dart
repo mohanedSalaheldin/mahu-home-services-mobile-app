@@ -5,17 +5,11 @@ import 'package:mahu_home_services_app/core/constants/colors.dart';
 
 class CategoriesWidget extends StatelessWidget {
   final void Function(String label) onTap;
-  const CategoriesWidget({super.key, required this.onTap});
+  final List<Map<String, dynamic>> categories;
+  const CategoriesWidget({super.key, required this.onTap, required this.categories});
 
   @override
   Widget build(BuildContext context) {
-    final categories = [
-      {'icon': Icons.cleaning_services, 'label': 'Deep Clean'},
-      {'icon': Icons.repeat, 'label': 'Recurring'},
-      {'icon': Icons.event, 'label': 'One-Time'},
-      {'icon': Icons.air, 'label': 'Normal'},
-      {'icon': Icons.window, 'label': 'Windows'},
-    ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

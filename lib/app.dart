@@ -26,11 +26,17 @@ class MyApp extends StatelessWidget {
           BlocProvider<AuthCubit>(
             create: (context) => AuthCubit(),
           ),
-          BlocProvider(create: (_) => UserRoleCubit()..loadUserRole()),
+          BlocProvider<UserRoleCubit>(
+            create: (_) {
+              final cubit = UserRoleCubit();
+              cubit.loadSavedRole(); // load saved role if exists
+              return cubit;
+            },
+          ),
           BlocProvider<ServiceCubit>(
             create: (_) => ServiceCubit(),
           ),
-          BlocProvider(
+          BlocProvider<UserBookingCubit>(
             create: (context) => UserBookingCubit(),
           ),
         ],
@@ -44,22 +50,18 @@ class MyApp extends StatelessWidget {
             colorScheme: ColorScheme.fromSeed(seedColor: AppColors.black),
             useMaterial3: true,
           ),
-          // home: const UploadTestScreen(),
           home: FutureBuilder<Widget>(
             future: getInitialScreen(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                // أثناء التحميل
                 return const Scaffold(
                   body: Center(child: CircularProgressIndicator()),
                 );
               } else if (snapshot.hasError) {
-                // في حال حدوث خطأ
                 return const Scaffold(
                   body: Center(child: Text('حدث خطأ!')),
                 );
               } else {
-                // عند اكتمال المستقبل
                 return snapshot.data!;
               }
             },
@@ -83,7 +85,7 @@ Future<Widget> getInitialScreen() async {
 
   // الحالة 2: ما اختار دور لسه
   if (userRole == null || userRole.isEmpty) {
-    return const ChooseRuleScreen();
+    return const RoleSelectionScreen();
   }
 
   // الحالة 3: اختار دور لكن ما عمل تسجيل دخول
@@ -93,11 +95,11 @@ Future<Widget> getInitialScreen() async {
 
   // الحالة 4: اختار دور وسجّل دخول
   if (userRole == 'client') {
-    return CustomerLayoutScreen();
+    return ClientLayoutScreen();
   } else if (userRole == 'provider') {
     return ProviderLayoutScreen();
   }
 
   // fallback
-  return const ChooseRuleScreen();
+  return const RoleSelectionScreen();
 }

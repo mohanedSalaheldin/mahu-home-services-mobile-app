@@ -1,0 +1,2 @@
+C:/nodejs-projects/mahu-app-veersion2/mahu-home-services-mobile-app/android/app/.cxx/Debug/5r6o4h6u/x86/CMakeFiles/edit_cache.dir
+C:/nodejs-projects/mahu-app-veersion2/mahu-home-services-mobile-app/android/app/.cxx/Debug/5r6o4h6u/x86/CMakeFiles/rebuild_cache.dir
