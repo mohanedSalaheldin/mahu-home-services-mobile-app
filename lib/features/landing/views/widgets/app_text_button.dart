@@ -22,7 +22,7 @@ class AppTextButton extends StatelessWidget {
         txt,
         style: TextStyle(
           fontWeight: FontWeight.w500,
-          fontSize: (fontSize ?? 15).sp,
+          fontSize: (fontSize ?? 15),
           decoration: TextDecoration.none,
           color: AppColors.blue,
         ),

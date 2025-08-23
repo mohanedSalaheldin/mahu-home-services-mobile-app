@@ -33,7 +33,7 @@ class AppFilledButton extends StatelessWidget {
           text,
           style: TextStyle(
             fontWeight: FontWeight.w500,
-            fontSize: fontSize?.sp ?? 25.sp,
+            fontSize: fontSize?.sp ?? 25,
             color: Colors.white,
           ),
         ),

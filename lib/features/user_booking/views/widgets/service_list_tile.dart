@@ -1,94 +1,116 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
-import 'package:mahu_home_services_app/core/constants/colors.dart';
-import 'package:mahu_home_services_app/core/models/cleaning_service.dart' as models;
+// import 'package:mahu_home_services_app/core/constants/colors.dart';
 import 'package:mahu_home_services_app/features/services/models/service_model.dart';
-import 'package:mahu_home_services_app/features/user_booking/views/screens/customer_home_screen.dart';
+import 'package:mahu_home_services_app/features/user_booking/views/widgets/favorite_button.dart';
 import 'package:mahu_home_services_app/features/user_booking/views/screens/service_details_screen.dart';
 
 class ServiceListTile extends StatelessWidget {
   final ServiceModel service;
+  final bool isFavorite;
+  final bool isLoading;
   final VoidCallback onFavoritePressed;
-  const ServiceListTile(
-      {super.key, required this.service, required this.onFavoritePressed});
+
+  const ServiceListTile({
+    super.key,
+    required this.service,
+    required this.isFavorite,
+    required this.isLoading,
+    required this.onFavoritePressed,
+  });
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
+        // Navigate to Service Details Screen
         Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (_) => ServiceDetailsScreen(service: service)));
+          context,
+          MaterialPageRoute(
+            builder: (context) => ServiceDetailsScreen(service: service),
+          ),
+        );
       },
+      borderRadius: BorderRadius.circular(12),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-                color: Colors.black.withOpacity(.05),
-                blurRadius: 10,
-                offset: const Offset(0, 5)),
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 5),
+            ),
           ],
         ),
         child: Row(
           children: [
+            // Service Image
             ClipRRect(
-              borderRadius:
-                  const BorderRadius.horizontal(left: Radius.circular(12)),
-              child: CachedNetworkImage(
-                width: 100.w,
-                height: 100.h,
-                imageUrl: service.image,
+              borderRadius: const BorderRadius.horizontal(left: Radius.circular(12)),
+              child: Image.network(
+                service.image,
+                width: 80.w,
+                height: 80.w,
                 fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => Container(
+                  width: 80.w,
+                  height: 80.w,
+                  color: Colors.grey.shade200,
+                  child: Icon(Icons.error, color: Colors.grey.shade400),
+                ),
               ),
             ),
+            Gap(12.w),
+            
+            // Service Info
             Expanded(
               child: Padding(
-                padding: EdgeInsets.all(12.w),
+                padding: EdgeInsets.symmetric(vertical: 12.h),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(service.name,
-                              style: TextStyle(
-                                  fontSize: 14.sp, fontWeight: FontWeight.bold),
-                              overflow: TextOverflow.ellipsis),
-                        ),
-                        FavoriteButton(
-                            isFavorite: false,
-                            onPressed: onFavoritePressed),
-                      ],
+                    Text(
+                      service.name,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     Gap(4.h),
-                    Text(service.description,
-                        style: TextStyle(
-                            fontSize: 12.sp, color: Colors.grey.shade600),
-                        maxLines: 2),
-                    Gap(8.h),
-                    Row(
-                      children: [
-                        Icon(Icons.star, color: Colors.amber, size: 14.sp),
-                        Gap(4.w),
-                        Text('0 Reviews',
-                            style: TextStyle(fontSize: 12.sp)),
-                        const Spacer(),
-                        Text('\$${service.basePrice}',
-                            style: TextStyle(
-                                fontSize: 14.sp,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.primary)),
-                      ],
-                    )
+                    Text(
+                      '${service.duration} hrs • \$${service.basePrice}',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                    Gap(4.h),
+                    Text(
+                      service.category,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade500,
+                      ),
+                    ),
                   ],
                 ),
               ),
-            )
+            ),
+            
+            // Favorite Button
+            // Padding(
+            //   padding: EdgeInsets.all(8.w),
+            //   child: FavoriteButton(
+            //     isFavorite: isFavorite,
+            //     isLoading: isLoading,
+            //     onPressed: onFavoritePressed,
+            //   ),
+            // ),
           ],
         ),
       ),

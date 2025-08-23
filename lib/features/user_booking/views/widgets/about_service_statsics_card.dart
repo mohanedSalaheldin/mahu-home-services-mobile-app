@@ -31,14 +31,14 @@ class AboutServiceStatsicsCard extends StatelessWidget {
             statistic,
             style: TextStyle(
               fontWeight: FontWeight.w500,
-              fontSize: 17.sp,
+              fontSize: 17,
             ),
           ),
           Text(
             label,
             style: TextStyle(
               fontWeight: FontWeight.w300,
-              fontSize: 9.sp,
+              fontSize: 9,
             ),
           ),
         ],

@@ -49,12 +49,12 @@ class _LoginScreenState extends State<LoginScreen> {
       body: BlocConsumer<AuthCubit, AuthState>(
         listener: (context, state) {
           if (state is LoginSucessededState) {
-            navigateToAndKill(
-              context,
-              UserRoleCubit.get(context).state.name == UserRole.client.name
-                  ? ClientLayoutScreen()
-                  : ProviderLayoutScreen(),
-            );
+            final role = state.userModel.role;
+            if (role == 'provider') {
+              navigateToAndKill(context, ProviderLayoutScreen());
+            } else {
+              navigateToAndKill(context, ClientLayoutScreen());
+            }
           } else if (state is LoginFailedState) {
             showCustomSnackBar(
               context: context,
@@ -66,7 +66,7 @@ class _LoginScreenState extends State<LoginScreen> {
         builder: (context, state) {
           if (state is LoginLoadingState) {
             return const Center(
-              child: CircularProgressIndicator(),
+              child: CircularProgressIndicator(color: Colors.blue),
             );
           }
           onLoginPressed() {
@@ -126,7 +126,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           'Remember Me',
                           style: TextStyle(
                             fontWeight: FontWeight.w400,
-                            fontSize: 14.sp,
+                            fontSize: 14,
                             color: Colors.black,
                           ),
                         ),
@@ -150,7 +150,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     //   "Or",
                     //   style: TextStyle(
                     //     fontWeight: FontWeight.w300,
-                    //     fontSize: 16.sp,
+                    //     fontSize: 16,
                     //     color: Colors.black,
                     //   ),
                     // ),

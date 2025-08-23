@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
-import 'package:mahu_home_services_app/core/models/cleaning_service.dart';
 import 'package:mahu_home_services_app/features/services/models/service_model.dart';
 import 'package:mahu_home_services_app/features/user_booking/views/screens/service_details_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -10,7 +9,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 
 class ServiceCategoryScreen extends StatefulWidget {
   final String categoryName;
-  final List<CleaningService> services;
+  final List<ServiceModel> services;
 
   const ServiceCategoryScreen({
     super.key,
@@ -30,9 +29,9 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
       if (widget.categoryName == 'Deep Clean') {
         return service.subType == 'deep';
       } else if (widget.categoryName == 'Recurring') {
-        return service.serviceType == 'recurring';
+        return service.serviceType.toLowerCase() == 'recurring';
       } else if (widget.categoryName == 'One-Time') {
-        return service.serviceType == 'one-time';
+        return service.serviceType.toLowerCase() == 'one-time';
       }
       return true;
     }).toList();
@@ -42,7 +41,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
         title: Text(
           widget.categoryName,
           style: TextStyle(
-            fontSize: 20.sp,
+            fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -54,7 +53,6 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Category Description
             _buildCategoryDescription(),
             Gap(24.h),
 
@@ -62,23 +60,24 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
             Text(
               '${filteredServices.length} Services Available',
               style: TextStyle(
-                fontSize: 14.sp,
+                fontSize: 14,
                 color: Colors.grey.shade600,
               ),
             ),
             Gap(16.h),
 
             // Services List
-            if (filteredServices.isEmpty) _buildEmptyState()
-            // else
-            //   Column(
-            //     children: filteredServices
-            //         .map((service) => Padding(
-            //               padding: EdgeInsets.only(bottom: 16.h),
-            //               child: _buildServiceCard(service),
-            //             ))
-            //         .toList(),
-            //   ),
+            if (filteredServices.isEmpty)
+              _buildEmptyState()
+            else
+              Column(
+                children: filteredServices
+                    .map((service) => Padding(
+                          padding: EdgeInsets.only(bottom: 16.h),
+                          child: _buildServiceCard(service),
+                        ))
+                    .toList(),
+              ),
           ],
         ),
       ),
@@ -138,7 +137,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
             child: Text(
               description,
               style: TextStyle(
-                fontSize: 14.sp,
+                fontSize: 14,
                 color: Colors.grey.shade700,
                 height: 1.5,
               ),
@@ -182,7 +181,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
               ),
               child: CachedNetworkImage(
                 width: 120.w,
-                height: 120.h,
+                height: 140.h,
                 imageUrl: service.image,
                 fit: BoxFit.cover,
                 placeholder: (context, url) =>
@@ -197,6 +196,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Title + Type
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -204,7 +204,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                           child: Text(
                             service.name,
                             style: TextStyle(
-                              fontSize: 16.sp,
+                              fontSize: 16,
                               fontWeight: FontWeight.bold,
                             ),
                             maxLines: 1,
@@ -215,18 +215,18 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                           padding: EdgeInsets.symmetric(
                               horizontal: 8.w, vertical: 4.h),
                           decoration: BoxDecoration(
-                            color: service.serviceType == 'recurring'
+                            color: service.serviceType.toLowerCase() ==
+                                    'recurring'
                                 ? Colors.blue.withOpacity(0.1)
                                 : Colors.orange.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
-                            service.serviceType == 'recurring'
-                                ? 'Recurring'
-                                : 'One-Time',
+                            service.serviceType,
                             style: TextStyle(
-                              fontSize: 10.sp,
-                              color: service.serviceType == 'recurring'
+                              fontSize: 10,
+                              color: service.serviceType.toLowerCase() ==
+                                      'recurring'
                                   ? Colors.blue
                                   : Colors.orange,
                             ),
@@ -235,16 +235,19 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                       ],
                     ),
                     Gap(8.h),
-                    Text(
-                      service.description,
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        color: Colors.grey.shade600,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+
+                    // Provider Info
+                    _ServiceProviderInfo(
+                      providerName:
+                          "${service.firstName ?? ''} ${service.lastName ?? ''}".trim(),
+                      businessName:
+                          service.businessName ?? "Independent Provider",
+                      logoUrl: service.avatar,
                     ),
+
                     Gap(12.h),
+
+                    // Rating + Price
                     Row(
                       children: [
                         Icon(Icons.star, color: Colors.amber, size: 16.sp),
@@ -257,7 +260,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                         Text(
                           '\$${service.basePrice}',
                           style: TextStyle(
-                            fontSize: 16.sp,
+                            fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: AppColors.primary,
                           ),
@@ -280,14 +283,14 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
         Gap(40.h),
         Icon(
           Icons.cleaning_services,
-          size: 60.sp,
+          size: 60,
           color: Colors.grey.shade300,
         ),
         Gap(16.h),
         Text(
           'No services found',
           style: TextStyle(
-            fontSize: 18.sp,
+            fontSize: 18,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -295,12 +298,69 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
         Text(
           'We currently have no ${widget.categoryName.toLowerCase()} services available',
           style: TextStyle(
-            fontSize: 14.sp,
+            fontSize: 14,
             color: Colors.grey.shade600,
           ),
           textAlign: TextAlign.center,
         ),
       ],
     ).animate().fadeIn(delay: 200.ms);
+  }
+}
+
+/// Compact Provider Info Widget for List Cards
+class _ServiceProviderInfo extends StatelessWidget {
+  final String providerName;
+  final String businessName;
+  final String? logoUrl;
+
+  const _ServiceProviderInfo({
+    super.key,
+    required this.providerName,
+    required this.businessName,
+    this.logoUrl,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        CircleAvatar(
+          radius: 16,
+          backgroundColor: Colors.grey.shade200,
+          backgroundImage:
+              (logoUrl != null && logoUrl!.isNotEmpty) ? NetworkImage(logoUrl!) : null,
+          child: (logoUrl == null || logoUrl!.isEmpty)
+              ? Icon(Icons.person, size: 16, color: Colors.grey)
+              : null,
+        ),
+        Gap(8.w),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                providerName.isNotEmpty ? providerName : "Unknown",
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              Text(
+                businessName,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.grey.shade600,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 }

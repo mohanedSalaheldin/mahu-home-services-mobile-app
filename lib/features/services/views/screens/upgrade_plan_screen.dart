@@ -102,7 +102,7 @@ class _UpgradePlanScreenState extends State<UpgradePlanScreen> {
             child: Text(
               'Choose the plan that fits your business needs',
               style: TextStyle(
-                fontSize: 16.sp,
+                fontSize: 16,
                 color: Colors.grey.shade600,
                 height: 1.5,
               ),
@@ -239,7 +239,7 @@ class _PlanCard extends StatelessWidget {
                   Text(
                     plan.name,
                     style: TextStyle(
-                      fontSize: 20.sp,
+                      fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: AppColors.primary,
                     ),
@@ -257,7 +257,7 @@ class _PlanCard extends StatelessWidget {
                       child: Text(
                         'Selected',
                         style: TextStyle(
-                          fontSize: 12.sp,
+                          fontSize: 12,
                           color: Colors.white,
                         ),
                       ),
@@ -268,7 +268,7 @@ class _PlanCard extends StatelessWidget {
               Text(
                 plan.description,
                 style: TextStyle(
-                  fontSize: 14.sp,
+                  fontSize: 14,
                   color: Colors.grey.shade600,
                 ),
               ),
@@ -276,7 +276,7 @@ class _PlanCard extends StatelessWidget {
               Text(
                 '\$${plan.price.toStringAsFixed(2)}',
                 style: TextStyle(
-                  fontSize: 28.sp,
+                  fontSize: 28,
                   fontWeight: FontWeight.bold,
                   color: AppColors.primary,
                 ),
@@ -285,7 +285,7 @@ class _PlanCard extends StatelessWidget {
               Text(
                 'per ${plan.duration} month${plan.duration > 1 ? 's' : ''}',
                 style: TextStyle(
-                  fontSize: 14.sp,
+                  fontSize: 14,
                   color: Colors.grey.shade600,
                 ),
               ),
@@ -295,7 +295,7 @@ class _PlanCard extends StatelessWidget {
               Text(
                 'Plan Features:',
                 style: TextStyle(
-                  fontSize: 16.sp,
+                  fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -308,7 +308,7 @@ class _PlanCard extends StatelessWidget {
                     children: [
                       Icon(
                         Icons.check_circle_rounded,
-                        size: 18.sp,
+                        size: 18,
                         color: AppColors.primary,
                       ),
                       SizedBox(width: 12.w),
@@ -316,7 +316,7 @@ class _PlanCard extends StatelessWidget {
                         child: Text(
                           feature,
                           style: TextStyle(
-                            fontSize: 14.sp,
+                            fontSize: 14,
                             height: 1.4,
                           ),
                         ),
@@ -368,7 +368,7 @@ class _SubscribeButton extends StatelessWidget {
             : Text(
                 'Subscribe Now',
                 style: TextStyle(
-                  fontSize: 16.sp,
+                  fontSize: 16,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
@@ -401,7 +401,7 @@ class SubscriptionConfirmationDialog extends StatelessWidget {
             Text(
               'Confirm Subscription',
               style: TextStyle(
-                fontSize: 20.sp,
+                fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -409,7 +409,7 @@ class SubscriptionConfirmationDialog extends StatelessWidget {
             Text(
               'You are about to subscribe to:',
               style: TextStyle(
-                fontSize: 16.sp,
+                fontSize: 16,
                 color: Colors.grey.shade600,
               ),
             ),
@@ -417,7 +417,7 @@ class SubscriptionConfirmationDialog extends StatelessWidget {
             Text(
               plan.name,
               style: TextStyle(
-                fontSize: 18.sp,
+                fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: AppColors.primary,
               ),
@@ -479,14 +479,14 @@ class SubscriptionConfirmationDialog extends StatelessWidget {
           Text(
             label,
             style: TextStyle(
-              fontSize: 16.sp,
+              fontSize: 16,
               color: Colors.grey.shade600,
             ),
           ),
           Text(
             value,
             style: TextStyle(
-              fontSize: 16.sp,
+              fontSize: 16,
               fontWeight: FontWeight.bold,
             ),
           ),

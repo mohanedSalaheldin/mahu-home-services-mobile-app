@@ -22,7 +22,7 @@
 //         title: Text(
 //           'My Bookings',
 //           style: TextStyle(
-//             fontSize: 20.sp,
+//             fontSize: 20,
 //             fontWeight: FontWeight.bold,
 //             color: AppColors.primary,
 //           ),
@@ -41,7 +41,9 @@
 //         },
 //         builder: (context, state) {
 //           if (state is UserGetMyBookingsLoadingState) {
-//             return const Center(child: CircularProgressIndicator());
+//             return const Center(child: CircularProgressIndicator(
+              //   color: Colors.blue
+              // ));
 //           }
 
 //           if (state is UserGetMyBookingsSuccessState) {
@@ -98,12 +100,12 @@
 //                 Text(
 //                   serviceName,
 //                   style:
-//                       TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
+//                       TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
 //                 ),
 //                 Chip(
 //                   label: Text(
 //                     status,
-//                     style: TextStyle(fontSize: 12.sp, color: Colors.white),
+//                     style: TextStyle(fontSize: 12, color: Colors.white),
 //                   ),
 //                   backgroundColor: status.toLowerCase() == 'confirmed'
 //                       ? Colors.green
@@ -119,12 +121,12 @@
 //             Row(
 //               children: [
 //                 Icon(Icons.calendar_today,
-//                     size: 16.sp, color: Colors.grey.shade600),
+//                     size: 16, color: Colors.grey.shade600),
 //                 Gap(8.w),
 //                 Text(
 //                   DateFormat('MMM dd, yyyy').format(date),
 //                   style:
-//                       TextStyle(fontSize: 14.sp, color: Colors.grey.shade600),
+//                       TextStyle(fontSize: 14, color: Colors.grey.shade600),
 //                 ),
 //               ],
 //             ),
@@ -133,7 +135,7 @@
 //             // price
 //             Text(
 //               '\$${price.toStringAsFixed(2)}',
-//               style: TextStyle(fontSize: 14.sp, color: AppColors.primary),
+//               style: TextStyle(fontSize: 14, color: AppColors.primary),
 //             ),
 
 //             Gap(12.h),
@@ -154,7 +156,7 @@
 //                   },
 //                   child: Text(
 //                     'View Details',
-//                     style: TextStyle(fontSize: 14.sp, color: AppColors.primary),
+//                     style: TextStyle(fontSize: 14, color: AppColors.primary),
 //                   ),
 //                 ),
 //                 Gap(8.w),
@@ -172,7 +174,7 @@
 //                   ),
 //                   child: Text(
 //                     'Rebook',
-//                     style: TextStyle(fontSize: 14.sp, color: Colors.white),
+//                     style: TextStyle(fontSize: 14, color: Colors.white),
 //                   ),
 //                 ),
 //               ],
@@ -214,7 +216,7 @@ class MyBookingsScreen extends StatelessWidget {
             Text(
               'Under Development',
               style: TextStyle(
-                fontSize: 28.sp,
+                fontSize: 28,
                 fontWeight: FontWeight.bold,
                 color: Theme.of(context).colorScheme.onBackground,
               ),
@@ -226,7 +228,7 @@ class MyBookingsScreen extends StatelessWidget {
             Text(
               'We\'re working hard to bring you\nan amazing booking experience!',
               style: TextStyle(
-                fontSize: 16.sp,
+                fontSize: 16,
                 color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                 height: 1.5,
               ),
@@ -238,7 +240,7 @@ class MyBookingsScreen extends StatelessWidget {
             Text(
               'Coming Soon',
               style: TextStyle(
-                fontSize: 18.sp,
+                fontSize: 18,
                 fontWeight: FontWeight.w600,
                 color: Colors.blue,
                 fontStyle: FontStyle.italic,

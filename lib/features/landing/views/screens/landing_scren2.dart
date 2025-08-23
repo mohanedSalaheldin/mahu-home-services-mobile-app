@@ -52,7 +52,7 @@ class LandingScren2 extends StatelessWidget {
                     text: 'Let\'s Try the ',
                     style: TextStyle(
                       fontWeight: FontWeight.w700,
-                      fontSize: 28.sp,
+                      fontSize: 28,
                       color: Colors.black,
                     ),
                     children: const <TextSpan>[
@@ -73,7 +73,7 @@ class LandingScren2 extends StatelessWidget {
                     'here you can find all the services with best prices',
                     style: TextStyle(
                       fontWeight: FontWeight.w300,
-                      fontSize: 18.sp,
+                      fontSize: 18,
                       color: Colors.black.withOpacity(.6),
                     ),
                     textAlign: TextAlign.center,

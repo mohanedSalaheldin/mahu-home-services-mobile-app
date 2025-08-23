@@ -119,7 +119,9 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen> {
         builder: (context, state) {
           if (state is ServiceUpdateLoadingState) {
             return const Center(
-              child: CircularProgressIndicator(),
+              child: CircularProgressIndicator(
+                color: Colors.blue
+              ),
             );
           }
           return Padding(
@@ -204,7 +206,7 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen> {
                         hintText: 'Describe your cleaning service in detail...',
                         hintStyle: TextStyle(
                           color: Colors.black.withOpacity(0.5),
-                          fontSize: 14.sp,
+                          fontSize: 14,
                         ),
                         filled: true,
                         fillColor: AppColors.greyBack,
@@ -245,8 +247,8 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen> {
                     Gap(16.h),
 
                     CustomTextField(
-                      label: 'Min. Duration',
-                      hint: 'e.g., 120 for 2 hours',
+                      label: 'Minimum Duration',
+                      hint: 'e.g., 2 hours',
                       controller: _durationController,
                       keyboardType: TextInputType.number,
                       validator: (value) {
@@ -298,7 +300,7 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen> {
                           'Please select at least one day',
                           style: TextStyle(
                             color: Colors.red,
-                            fontSize: 12.sp,
+                            fontSize: 12,
                           ),
                         ),
                       ),
@@ -318,7 +320,7 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen> {
                           'Please add at least one time slot',
                           style: TextStyle(
                             color: Colors.red,
-                            fontSize: 12.sp,
+                            fontSize: 12,
                           ),
                         ),
                       ),
@@ -383,7 +385,11 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen> {
                                     ),
                                   )
                                   .toList(),
-                              v: 1,
+                              v: 1, 
+                              businessName: '',
+                              firstName: '',
+                              lastName: '',
+                              avatar: '',
                             );
 
                             // Call cubit to create service
@@ -394,7 +400,7 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen> {
                         child: Text(
                           'Publish Service',
                           style: TextStyle(
-                            fontSize: 16.sp,
+                            fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
@@ -417,7 +423,7 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen> {
       child: Text(
         title,
         style: TextStyle(
-          fontSize: 18.sp,
+          fontSize: 18,
           fontWeight: FontWeight.bold,
           color: Colors.black87,
         ),
@@ -431,7 +437,7 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen> {
       child: Text(
         text,
         style: TextStyle(
-          fontSize: 12.sp,
+          fontSize: 12,
           color: Colors.grey[600],
           fontStyle: FontStyle.italic,
         ),

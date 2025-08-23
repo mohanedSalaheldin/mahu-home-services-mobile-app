@@ -26,7 +26,7 @@ class HomeAppbarLeadingWidget extends StatelessWidget {
             Text(
               'Hi, Mark',
               style: TextStyle(
-                fontSize: 13.sp,
+                fontSize: 13,
                 fontWeight: FontWeight.w300,
                 color: Colors.black.withOpacity(.5),
               ),
@@ -34,7 +34,7 @@ class HomeAppbarLeadingWidget extends StatelessWidget {
             Text(
               'UAE, Dubai',
               style: TextStyle(
-                fontSize: 14.sp,
+                fontSize: 14,
                 fontWeight: FontWeight.w500,
                 color: Colors.black,
               ),

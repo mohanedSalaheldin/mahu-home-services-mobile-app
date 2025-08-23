@@ -92,7 +92,7 @@ class _LandingScreen1State extends State<LandingScreen1> {
                         style: TextStyle(
                           color: Colors.black,
                           fontWeight: FontWeight.w400,
-                          fontSize: 13.sp,
+                          fontSize: 13,
                         ),
                       ),
                     ),

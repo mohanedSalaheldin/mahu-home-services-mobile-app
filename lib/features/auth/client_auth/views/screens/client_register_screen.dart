@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:intl_phone_field/countries.dart';
+import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:gap/gap.dart';
 import 'package:mahu_home_services_app/core/constants/app_const.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
@@ -38,6 +40,7 @@ class _ClientRegisterScreenState extends State<ClientRegisterScreen> {
   bool agreedToTerms = false;
   bool showTermsError = false;
   OtpChannel _otpChannel = OtpChannel.phone;
+  String phoneNumber = '';
 
   @override
   void dispose() {
@@ -76,7 +79,7 @@ class _ClientRegisterScreenState extends State<ClientRegisterScreen> {
         builder: (context, state) {
           if (state is RegisterLoadingState) {
             return const Center(
-              child: CircularProgressIndicator(),
+              child: CircularProgressIndicator(color: Colors.blue),
             );
           }
           return SafeArea(
@@ -86,7 +89,65 @@ class _ClientRegisterScreenState extends State<ClientRegisterScreen> {
                 key: _formKey,
                 child: ListView(
                   children: [
-                    // Gap(20.h),
+                    Gap(20.h),
+                    // Gap(10.h),
+                    IntlPhoneField(
+                      decoration: InputDecoration(
+                        labelText: 'Phone Number',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.r),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.r),
+                          borderSide: const BorderSide(color: AppColors.blue),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.r),
+                          borderSide:
+                              const BorderSide(color: AppColors.blue, width: 2),
+                        ),
+                      ),
+                      initialCountryCode: 'EG', // default to Egypt
+                      countries: const [
+                        Country(
+                          code: 'EG',
+                          name: 'Egypt',
+                          dialCode: '20',
+                          flag: '🇪🇬',
+                          nameTranslations: const {'en': 'Egypt', 'ar': 'مصر'},
+                          minLength: 10,
+                          maxLength: 10,
+                        ),
+                        Country(
+                          code: 'AE',
+                          name: 'United Arab Emirates',
+                          dialCode: '971',
+                          flag: '🇦🇪',
+                          nameTranslations: const {
+                            'en': 'United Arab Emirates',
+                            'ar': 'الإمارات العربية المتحدة'
+                          },
+                          minLength: 9,
+                          maxLength: 9,
+                        ),
+                      ], // Only Egypt and UAE
+                      controller: phoneController,
+                      onChanged: (phone) {
+                        phoneNumber = phone.completeNumber;
+                        countryCode = '${phone.countryCode}';
+                      },
+                      onCountryChanged: (country) {
+                        countryCode = '${country.dialCode}';
+                        AppUserConfig.selectedCountryCode = countryCode;
+                      },
+                      validator: (value) {
+                        if (value == null || value.number.isEmpty) {
+                          return 'Please enter a phone number';
+                        }
+                        return null;
+                      },
+                    ),
+                    Gap(10.h),
                     CustomTextField(
                       label: 'Email',
                       hint: 'Enter Email Address',
@@ -94,16 +155,6 @@ class _ClientRegisterScreenState extends State<ClientRegisterScreen> {
                       controller: emailController,
                       validator: FormValidationMethod.validateEmail,
                     ),
-                    Gap(10.h),
-                    PhoneTextField(
-                      label: 'Phone Number',
-                      controller: phoneController,
-                      onCountryCodeChanged: (code) {
-                        countryCode = code;
-                        // print("Selected code: ${}");
-                      },
-                    ),
-
                     Gap(10.h),
                     CustomTextField(
                       label: 'First Name',
@@ -154,7 +205,6 @@ class _ClientRegisterScreenState extends State<ClientRegisterScreen> {
                       controller: refrenceIdController,
                       isPassword: false,
                       validator: (value) {
-                        
                         if (value == null || value.isEmpty) return null;
 
                         if (!RegExp(r'^[0-9]+$').hasMatch(value)) {
@@ -170,7 +220,7 @@ class _ClientRegisterScreenState extends State<ClientRegisterScreen> {
                     Text(
                       'Receive OTP via',
                       style: TextStyle(
-                        fontSize: 14.sp,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -236,7 +286,9 @@ class _ClientRegisterScreenState extends State<ClientRegisterScreen> {
                               firstName: fNameController.text,
                               lastName: lNameController.text,
                               password: passwordController.text,
-                              phone: countryCode + phoneController.text,
+                              phone: countryCode +
+                                  phoneController.text
+                                      .replaceAll(RegExp(r'^\\+'), ''),
                               refrenceId: refrenceIdController.text,
                               otpMethod: _otpChannel.name);
                           print("Form is valid");
@@ -249,7 +301,7 @@ class _ClientRegisterScreenState extends State<ClientRegisterScreen> {
                     //   "Or",
                     //   style: TextStyle(
                     //     fontWeight: FontWeight.w300,
-                    //     fontSize: 16.sp,
+                    //     fontSize: 16,
                     //     color: Colors.black,
                     //   ),
                     // ),
@@ -283,3 +335,7 @@ class _ClientRegisterScreenState extends State<ClientRegisterScreen> {
 }
 
 enum OtpChannel { phone, email }
+
+class AppUserConfig {
+  static String selectedCountryCode = '+20'; // default Egypt
+}

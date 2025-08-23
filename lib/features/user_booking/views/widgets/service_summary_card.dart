@@ -28,7 +28,7 @@ class ServiceSummaryCard extends StatelessWidget {
             Text(
               'Home Cleaning',
               style: TextStyle(
-                fontSize: 15.sp,
+                fontSize: 15,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -36,7 +36,7 @@ class ServiceSummaryCard extends StatelessWidget {
               text: TextSpan(
                 text: '300AED',
                 style: TextStyle(
-                  fontSize: 13.sp,
+                  fontSize: 13,
                   fontWeight: FontWeight.w600,
                   color: Colors.black,
                 ),
@@ -44,7 +44,7 @@ class ServiceSummaryCard extends StatelessWidget {
                   TextSpan(
                     text: '/hour',
                     style: TextStyle(
-                      fontSize: 10.sp,
+                      fontSize: 10,
                       fontWeight: FontWeight.w400,
                     ),
                   ),
@@ -64,7 +64,7 @@ class ServiceSummaryCard extends StatelessWidget {
             Text(
               '4.5',
               style: TextStyle(
-                fontSize: 14.sp,
+                fontSize: 14,
                 fontWeight: FontWeight.w400,
               ),
             ),

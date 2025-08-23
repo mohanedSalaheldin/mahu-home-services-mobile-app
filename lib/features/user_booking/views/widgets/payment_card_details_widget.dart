@@ -31,7 +31,7 @@ class PaymentCardDetailsWidget extends StatelessWidget {
             Text(
               '4556 ****  **** 7654',
               style: TextStyle(
-                fontSize: 20.sp,
+                fontSize: 20,
                 fontWeight: FontWeight.w600,
                 color: Colors.white,
               ),
@@ -44,7 +44,7 @@ class PaymentCardDetailsWidget extends StatelessWidget {
                     Text(
                       'Card Holder Name',
                       style: TextStyle(
-                        fontSize: 13.sp,
+                        fontSize: 13,
                         fontWeight: FontWeight.w300,
                         color: const Color.fromARGB(153, 246, 246, 246),
                       ),
@@ -53,7 +53,7 @@ class PaymentCardDetailsWidget extends StatelessWidget {
                     Text(
                       'Hosam Ali',
                       style: TextStyle(
-                        fontSize: 13.sp,
+                        fontSize: 13,
                         fontWeight: FontWeight.w600,
                         color: Colors.white,
                       ),
@@ -67,7 +67,7 @@ class PaymentCardDetailsWidget extends StatelessWidget {
                     Text(
                       'Expiry Date',
                       style: TextStyle(
-                        fontSize: 13.sp,
+                        fontSize: 13,
                         fontWeight: FontWeight.w300,
                         color: const Color.fromARGB(153, 246, 246, 246),
                       ),
@@ -76,7 +76,7 @@ class PaymentCardDetailsWidget extends StatelessWidget {
                     Text(
                       '14/2/28',
                       style: TextStyle(
-                        fontSize: 13.sp,
+                        fontSize: 13,
                         fontWeight: FontWeight.w600,
                         color: Colors.white,
                       ),

@@ -16,7 +16,7 @@ class DetailSection extends StatelessWidget {
       children: [
         Text(
           'Service Details',
-          style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         Gap(16.h),
         DetailRow(label: "Category", value: service.category),
@@ -53,7 +53,7 @@ class DetailRow extends StatelessWidget {
             child: Text(
               label,
               style: TextStyle(
-                fontSize: 16.sp,
+                fontSize: 16,
                 fontWeight: FontWeight.w500,
                 color: Colors.grey.shade600,
               ),
@@ -63,7 +63,7 @@ class DetailRow extends StatelessWidget {
             child: Text(
               value,
               style: TextStyle(
-                fontSize: 16.sp,
+                fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),
             ),

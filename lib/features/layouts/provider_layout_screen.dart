@@ -127,14 +127,14 @@ class _NavBarItem extends StatelessWidget {
         children: [
           Icon(
             isActive ? activeIcon : icon,
-            size: 24.sp,
+            size: 24,
             color: isActive ? Colors.blue.shade300 : Colors.grey.shade600,
           ),
           Gap(4.h),
           Text(
             label,
             style: TextStyle(
-              fontSize: 12.sp,
+              fontSize: 12,
               fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
               color: isActive ? Colors.blue.shade300 : Colors.grey.shade600,
             ),

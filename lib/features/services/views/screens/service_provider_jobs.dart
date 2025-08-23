@@ -45,12 +45,14 @@ class _ServiceProviderJobsScreenState extends State<ServiceProviderJobsScreen> {
         listener: (context, state) {},
         builder: (context, state) {
           if (state is GetMyBookingsLoadingState) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator(
+                color: Colors.blue
+              ));
           } else if (state is GetMyBookingsFailedState) {
             return Center(
               child: Text(
                 state.failure.msg,
-                style: TextStyle(fontSize: 16.sp, color: Colors.red),
+                style: TextStyle(fontSize: 16, color: Colors.red),
               ),
             );
           }
@@ -166,7 +168,7 @@ class _ServiceProviderJobsScreenState extends State<ServiceProviderJobsScreen> {
         Text(
           count.toString(),
           style: TextStyle(
-            fontSize: 18.sp,
+            fontSize: 18,
             fontWeight: FontWeight.bold,
             color: _getStatusColor(label),
           ),
@@ -174,7 +176,7 @@ class _ServiceProviderJobsScreenState extends State<ServiceProviderJobsScreen> {
         Text(
           label,
           style: TextStyle(
-            fontSize: 12.sp,
+            fontSize: 12,
             color: Colors.grey.shade600,
           ),
         ),
@@ -217,12 +219,12 @@ class _ServiceProviderJobsScreenState extends State<ServiceProviderJobsScreen> {
                       children: [
                         Text(
                           booking.serviceName,
-                          style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                         Gap(4.h),
                         Text(
                           booking.serviceType,
-                          style: TextStyle(fontSize: 12.sp, color: Colors.grey.shade600),
+                          style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                         ),
                       ],
                     ),
@@ -236,7 +238,7 @@ class _ServiceProviderJobsScreenState extends State<ServiceProviderJobsScreen> {
                     child: Text(
                       booking.status.capitalize(),
                       style: TextStyle(
-                        fontSize: 12.sp,
+                        fontSize: 12,
                         color: _getStatusColor(booking.status),
                       ),
                     ),
@@ -265,7 +267,7 @@ class _ServiceProviderJobsScreenState extends State<ServiceProviderJobsScreen> {
                     children: [
                       Text(
                         booking.clientName,
-                        style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w500),
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
                       ),
                       Gap(2.h),
                       Row(
@@ -274,7 +276,7 @@ class _ServiceProviderJobsScreenState extends State<ServiceProviderJobsScreen> {
                           Gap(4.w),
                           Text(
                             '${booking.rating} (${booking.reviews})',
-                            style: TextStyle(fontSize: 12.sp, color: Colors.grey.shade600),
+                            style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                           ),
                         ],
                       ),
@@ -315,7 +317,7 @@ class _ServiceProviderJobsScreenState extends State<ServiceProviderJobsScreen> {
         ),
         child: Row(
           children: [
-            Icon(icon, size: 14.sp, color: Colors.grey.shade600),
+            Icon(icon, size: 14, color: Colors.grey.shade600),
             Gap(4.w),
             Expanded(
               child: Text(
@@ -335,16 +337,16 @@ class _ServiceProviderJobsScreenState extends State<ServiceProviderJobsScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.event_note_outlined, size: 60.sp, color: Colors.grey.shade300),
+          Icon(Icons.event_note_outlined, size: 60, color: Colors.grey.shade300),
           Gap(16.h),
           Text(
             'No bookings found',
-            style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w500),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
           ),
           Gap(8.h),
           Text(
             'No bookings on ${DateFormat('MMM d, yyyy').format(_selectedDate)}',
-            style: TextStyle(fontSize: 14.sp, color: Colors.grey.shade600),
+            style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
           ),
         ],
       ),

@@ -54,13 +54,15 @@ class _ServiceProviderDashboardScreenState
         },
         builder: (context, state) {
           if (state is ServiceGetAllLoadingState || state is DashboardLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator(
+                color: Colors.blue
+              ));
           } else if (state is ServiceGetAllFailedState ||
               state is DashboardError) {
             return Center(
               child: Text(
                 'Error: {state.error}',
-                style: TextStyle(fontSize: 16.sp, color: Colors.red),
+                style: TextStyle(fontSize: 16, color: Colors.red),
               ),
             );
           }
@@ -80,7 +82,7 @@ class _ServiceProviderDashboardScreenState
                         Text(
                           'Welcome back, ${cubit.profile.firstName}',
                           style: TextStyle(
-                            fontSize: 24.sp,
+                            fontSize: 24,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -105,7 +107,7 @@ class _ServiceProviderDashboardScreenState
                         ),
                         Gap(16.h),
                         DashboardStatisticsCardWidget(
-                          figure: "${cubit.performanceModel.completed} Jops",
+                          figure: "${cubit.performanceModel.completed} Jobs",
                           label: 'Completed Jobs',
                           icon: Icons.check_circle_rounded,
                         ),
@@ -118,7 +120,7 @@ class _ServiceProviderDashboardScreenState
                             Text(
                               'Your Services: ${cubit.services.length}',
                               style: TextStyle(
-                                fontSize: 24.sp,
+                                fontSize: 24,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
@@ -199,13 +201,13 @@ class DashboardFilledButton extends StatelessWidget {
       height: 40.h,
       width: 150.w,
       child: ElevatedButton.icon(
-        icon: Icon(icon, size: 18.sp,
+        icon: Icon(icon, size: 18,
             color: isFilled ? Colors.white : Colors.black),
         label: Text(
           txt,
           style: TextStyle(
             fontWeight: FontWeight.w700,
-            fontSize: 14.sp,
+            fontSize: 14,
             color: isFilled ? Colors.white : Colors.black,
           ),
         ),
@@ -254,12 +256,12 @@ class DashboardStatisticsCardWidget extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(icon, size: 22.sp, color: AppColors.blue),
+              Icon(icon, size: 22, color: AppColors.blue),
               Gap(8.w),
               Text(
                 label,
                 style: TextStyle(
-                  fontSize: 12.sp,
+                  fontSize: 12,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -269,7 +271,7 @@ class DashboardStatisticsCardWidget extends StatelessWidget {
           Text(
             figure,
             style: TextStyle(
-              fontSize: 24.sp,
+              fontSize: 24,
               fontWeight: FontWeight.bold,
               color: Colors.black87,
             ),
@@ -331,7 +333,7 @@ class ServiceListItem extends StatelessWidget {
                   Text(
                     service.name,
                     style: TextStyle(
-                      fontSize: 18.sp,
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -339,7 +341,7 @@ class ServiceListItem extends StatelessWidget {
                   Text(
                     service.description,
                     style: TextStyle(
-                      fontSize: 14.sp,
+                      fontSize: 14,
                       color: Colors.grey,
                     ),
                     maxLines: 2,
@@ -356,11 +358,11 @@ class ServiceListItem extends StatelessWidget {
                       ),
                       const Spacer(),
                       Icon(Icons.attach_money,
-                          size: 18.sp, color: AppColors.blue),
+                          size: 18, color: AppColors.blue),
                       Text(
                         service.basePrice.toStringAsFixed(2),
                         style: TextStyle(
-                          fontSize: 18.sp,
+                          fontSize: 18,
                           fontWeight: FontWeight.bold,
                           color: AppColors.blue,
                         ),

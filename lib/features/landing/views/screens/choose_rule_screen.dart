@@ -93,7 +93,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                     child: Text(
                       'Continue',
                       style: TextStyle(
-                        fontSize: 16.sp,
+                        fontSize: 16,
                         fontWeight: FontWeight.w600,
                         color: Colors.white,
                       ),
@@ -116,7 +116,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
         Text(
           'Join as a...',
           style: TextStyle(
-            fontSize: 32.sp,
+            fontSize: 32,
             fontWeight: FontWeight.bold,
             height: 1.2,
           ),
@@ -125,7 +125,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
         Text(
           'Select your role to get started',
           style: TextStyle(
-            fontSize: 16.sp,
+            fontSize: 16,
             color: Colors.grey.shade600,
           ),
         ),
@@ -175,7 +175,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                   Text(
                     title,
                     style: TextStyle(
-                      fontSize: 18.sp,
+                      fontSize: 18,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -183,7 +183,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                   Text(
                     description,
                     style: TextStyle(
-                      fontSize: 14.sp,
+                      fontSize: 14,
                       color: Colors.grey.shade600,
                     ),
                   ),

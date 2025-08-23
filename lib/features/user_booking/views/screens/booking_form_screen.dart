@@ -1,114 +1,6 @@
-// import 'package:flutter/material.dart';
-// import 'package:flutter_screenutil/flutter_screenutil.dart';
-// import 'package:gap/gap.dart';
-// import 'package:mahu_home_services_app/core/constants/app_const.dart';
-// import 'package:mahu_home_services_app/core/constants/colors.dart';
-// import 'package:mahu_home_services_app/core/utils/helpers/form_validation_method.dart';
-// import 'package:mahu_home_services_app/core/utils/navigation_utils.dart';
-// import 'package:mahu_home_services_app/core/widgets/app_filed_label_text.dart';
-// import 'package:mahu_home_services_app/features/auth/client_auth/views/widgets/custom_text_field.dart';
-// import 'package:mahu_home_services_app/features/auth/client_auth/views/widgets/phone_text_field.dart';
-// import 'package:mahu_home_services_app/features/landing/views/widgets/app_filled_button.dart';
-// import 'package:mahu_home_services_app/features/user_booking/views/screens/select_rooms_screen.dart';
-// import 'package:mahu_home_services_app/features/user_booking/views/widgets/date_and_time_form_filed_widget.dart';
-
-// class BookingFormScreen extends StatelessWidget {
-//   const BookingFormScreen({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: const Text('Booking Form'),
-//         centerTitle: true,
-//         leading: const BackButton(
-//           style: ButtonStyle(),
-//         ),
-//       ),
-//       body: LayoutBuilder(
-//         builder: (context, constraints) {
-//           return SingleChildScrollView(
-//             child: ConstrainedBox(
-//               constraints: BoxConstraints(minHeight: constraints.maxHeight),
-//               child: IntrinsicHeight(
-//                 child: Padding(
-//                   padding: EdgeInsets.all(AppConst.appPadding.w),
-//                   child: Column(
-//                     crossAxisAlignment: CrossAxisAlignment.start,
-//                     children: [
-//                       CustomTextField(
-//                         label: 'Name',
-//                         hint: 'Enter Name',
-//                         keyboardType: TextInputType.name,
-//                         controller: TextEditingController(),
-//                         validator: FormValidationMethod.validateEmail,
-//                       ),
-//                       Gap(10.h),
-//                       CustomTextField(
-//                         label: 'Email',
-//                         hint: 'Enter Email Address',
-//                         keyboardType: TextInputType.emailAddress,
-//                         controller: TextEditingController(),
-//                         validator: FormValidationMethod.validateEmail,
-//                       ),
-//                       Gap(10.h),
-//                       DateAndTimeFormFiledWidget(isDateNotTime: true),
-//                       Gap(10.h),
-//                       DateAndTimeFormFiledWidget(isDateNotTime: false),
-//                       Gap(10.h),
-//                       const AppFieledLabelText(label: 'Additional Notes'),
-//                       TextFormField(
-//                         controller: TextEditingController(),
-//                         keyboardType: TextInputType.name,
-//                         maxLines: 5,
-//                         decoration: InputDecoration(
-//                           hintText: 'Add Note',
-//                           hintStyle: TextStyle(
-//                             height: 4,
-//                             color: Colors.black.withOpacity(.5),
-//                             fontWeight: FontWeight.w400,
-//                             fontSize: 13.sp,
-//                           ),
-//                           filled: true,
-//                           fillColor: AppColors.greyBack,
-//                           contentPadding: EdgeInsets.symmetric(
-//                             horizontal: 24.w,
-//                           ),
-//                           border: OutlineInputBorder(
-//                             borderRadius: BorderRadius.circular(12),
-//                             borderSide: BorderSide.none,
-//                           ),
-//                           errorBorder: OutlineInputBorder(
-//                             borderRadius: BorderRadius.circular(12),
-//                             borderSide:
-//                                 const BorderSide(color: Colors.red, width: 1),
-//                           ),
-//                         ),
-//                       ),
-//                       const Spacer(),
-//                       AppFilledButton(
-//                         onPressed: () {
-//                           navigateTo(context, const SelectRoomsScreen());
-//                         },
-//                         fontSize: 15,
-//                         text: "Continue",
-//                       ),
-//                     ],
-//                   ),
-//                 ),
-//               ),
-//             ),
-//           );
-//         },
-//       ),
-//     );
-//   }
-// }
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_datetime_picker_plus/flutter_datetime_picker_plus.dart'
-    as dp;
 import 'package:gap/gap.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
 import 'package:mahu_home_services_app/core/widgets/app_filed_label_text.dart';
@@ -117,38 +9,65 @@ import 'package:mahu_home_services_app/features/auth/client_auth/views/widgets/c
 import 'package:mahu_home_services_app/features/landing/views/widgets/app_filled_button.dart';
 import 'package:mahu_home_services_app/features/user_booking/cubit/user_booking_cubit.dart';
 import 'package:mahu_home_services_app/features/user_booking/models/booking_model.dart';
+import 'package:mahu_home_services_app/features/services/models/service_model.dart';
+import 'package:intl/intl.dart';
 
 class BookingFormScreen extends StatefulWidget {
-  const BookingFormScreen({super.key, required this.serviceID});
+  const BookingFormScreen({
+    super.key,
+    required this.serviceID,
+    required this.service,
+  });
+
   final String serviceID;
+  final ServiceModel service;
+
   @override
   State<BookingFormScreen> createState() => _BookingFormScreenState();
 }
 
 class _BookingFormScreenState extends State<BookingFormScreen> {
-  final TextEditingController startDateController = TextEditingController();
-  final TextEditingController endDateController = TextEditingController();
-  final TextEditingController streetController = TextEditingController();
-  final TextEditingController cityController = TextEditingController();
-  final TextEditingController stateController = TextEditingController();
-  final TextEditingController zipCodeController = TextEditingController();
-  final TextEditingController detailsController = TextEditingController();
+  final TextEditingController _startDateController = TextEditingController();
+  final TextEditingController _endDateController = TextEditingController();
+  final TextEditingController _streetController = TextEditingController();
+  final TextEditingController _cityController = TextEditingController();
+  final TextEditingController _stateController = TextEditingController();
+  final TextEditingController _zipCodeController = TextEditingController();
+  final TextEditingController _detailsController = TextEditingController();
+  final TextEditingController _latitudeController = TextEditingController();
+  final TextEditingController _longitudeController = TextEditingController();
 
-  String? selectedService;
-  String? selectedRecurrence;
+  String? _selectedRecurrence;
+  String? _selectedDayOfWeek;
+  String? _selectedTimeSlot;
+  final TextEditingController _startTimeController = TextEditingController();
+  final TextEditingController _endTimeController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    // Set default recurrence based on service type
+    _selectedRecurrence =
+        widget.service.serviceType.toLowerCase() == 'recurring'
+            ? 'weekly'
+            : 'once';
+  }
 
   @override
   Widget build(BuildContext context) {
     var cubit = UserBookingCubit.get(context);
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Create Booking')),
+      appBar: AppBar(
+        title: const Text('Create Booking'),
+        centerTitle: true,
+      ),
       body: BlocConsumer<UserBookingCubit, UserBookingState>(
         listener: (context, state) {
-          // TODO: implement listener
           if (state is CreateUserBookingSuccess) {
             showCustomSnackBar(
               context: context,
-              message: 'Success',
+              message: 'Booking created successfully!',
               type: SnackBarType.success,
             );
             Navigator.pop(context);
@@ -156,7 +75,7 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
           if (state is CreateUserBookingError) {
             showCustomSnackBar(
               context: context,
-              message: state.failure.msg,
+              message: state.failure.message,
               type: SnackBarType.failure,
             );
           }
@@ -164,7 +83,7 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
         builder: (context, state) {
           if (state is CreateUserBookingLoading) {
             return const Center(
-              child: CircularProgressIndicator(),
+              child: CircularProgressIndicator(color: Colors.blue),
             );
           }
 
@@ -173,131 +92,226 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // _label(''),
-                // const AppFieledLabelText(label: 'Select Service'),
-                // DropdownButtonFormField<String>(
-                //   decoration: _inputDecoration(),
-                //   value: selectedService,
-                //   items: const [
-                //     DropdownMenuItem(
-                //         value: '6870366c9ee099357428ac64',
-                //         child: Text('Monthly Maintenance')),
-                //     DropdownMenuItem(
-                //         value: '6870404f257cf42010849c95',
-                //         child: Text('Deep Cleaning')),
-                //   ],
-                //   onChanged: (val) => setState(() => selectedService = val),
-                // ),
-                // Gap(16.h),
-                // _label('Start Date'),
-                GestureDetector(
-                  onTap: () => _pickDateTime(startDateController),
-                  child: AbsorbPointer(
-                    child: CustomTextField(
-                      label: 'Start Date',
-                      hint: 'Select start date',
-                      controller: startDateController,
-                      validator: (_) => null,
-                    ),
+                // Service Info
+                _buildServiceInfo(),
+                Gap(24.h),
+
+                // Schedule Section
+                Text(
+                  'Schedule Details',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey.shade800,
                   ),
                 ),
                 Gap(16.h),
-                // _label('End Date (Optional)'),
-                GestureDetector(
-                  onTap: () => _pickDateTime(endDateController),
-                  child: AbsorbPointer(
-                    child: CustomTextField(
-                      label: 'End Date (Optional)',
-                      hint: 'Select end date',
-                      controller: endDateController,
-                      validator: (_) => null,
-                    ),
-                  ),
-                ),
-                Gap(16.h),
-                const AppFieledLabelText(label: 'Recurrence'),
-                // _label('Recurrence'),
+
+                // Day of Week (only available days)
+                const AppFieledLabelText(label: 'Select Day'),
                 DropdownButtonFormField<String>(
                   decoration: _inputDecoration(),
-                  value: selectedRecurrence,
-                  items: const [
-                    DropdownMenuItem(value: 'once', child: Text('One Time')),
-                    DropdownMenuItem(value: 'weekly', child: Text('Weekly')),
-                    DropdownMenuItem(value: 'monthly', child: Text('Monthly')),
-                  ],
-                  onChanged: (val) => setState(() => selectedRecurrence = val),
+                  value: _selectedDayOfWeek,
+                  items: widget.service.availableDays.map((day) {
+                    return DropdownMenuItem(
+                      value: day,
+                      child: Text(
+                        _capitalizeFirstLetter(day),
+                        style: TextStyle(fontSize: 14),
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: (val) {
+                    setState(() {
+                      _selectedDayOfWeek = val;
+                      _selectedTimeSlot = null;
+                      _startTimeController.clear();
+                      _endTimeController.clear();
+                    });
+                  },
+                ),
+                Gap(12.h),
+
+                // Time Slot Selection (only if day is selected)
+                if (_selectedDayOfWeek != null) ...[
+                  const AppFieledLabelText(label: 'Select Time Slot'),
+                  DropdownButtonFormField<String>(
+                    decoration: _inputDecoration(),
+                    value: _selectedTimeSlot,
+                    items: widget.service.availableSlots.map((slot) {
+                      final slotText = '${slot.startTime} - ${slot.endTime}';
+                      return DropdownMenuItem(
+                        value: slotText,
+                        child: Text(slotText),
+                      );
+                    }).toList(),
+                    onChanged: (val) {
+                      setState(() {
+                        _selectedTimeSlot = val;
+                        if (val != null) {
+                          final times = val.split(' - ');
+                          _startTimeController.text = times[0];
+                          _endTimeController.text = times[1];
+                        }
+                      });
+                    },
+                  ),
+                  Gap(12.h),
+                ],
+
+                // Recurrence Type (only for recurring services)
+                if (widget.service.serviceType.toLowerCase() ==
+                    'recurring') ...[
+                  const AppFieledLabelText(label: 'Recurrence Type'),
+                  DropdownButtonFormField<String>(
+                    decoration: _inputDecoration(),
+                    value: _selectedRecurrence,
+                    items: const [
+                      DropdownMenuItem(value: 'weekly', child: Text('Weekly')),
+                      DropdownMenuItem(
+                          value: 'monthly', child: Text('Monthly')),
+                    ],
+                    onChanged: (val) =>
+                        setState(() => _selectedRecurrence = val),
+                  ),
+                  Gap(12.h),
+
+                  // Start Date for recurrence
+                  GestureDetector(
+                    onTap: () => _pickDate(_startDateController, 'Start Date'),
+                    child: AbsorbPointer(
+                      child: CustomTextField(
+                        label: 'Start Date',
+                        hint: 'Select start date for recurrence',
+                        controller: _startDateController,
+                        validator: (_) => null,
+                      ),
+                    ),
+                  ),
+                  Gap(12.h),
+
+                  // End Date for recurrence
+                  GestureDetector(
+                    onTap: () => _pickDate(_endDateController, 'End Date'),
+                    child: AbsorbPointer(
+                      child: CustomTextField(
+                        label: 'End Date',
+                        hint: 'Select end date for recurrence',
+                        controller: _endDateController,
+                        validator: (_) => null,
+                      ),
+                    ),
+                  ),
+                  Gap(12.h),
+                ],
+
+                // Address Section
+                Text(
+                  'Address Details',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey.shade800,
+                  ),
                 ),
                 Gap(16.h),
-                // _label('Street'),
+
                 CustomTextField(
-                  label: 'Address',
-                  hint: 'Street Address',
-                  controller: streetController,
+                  label: 'Street Address',
+                  hint: 'Enter street address',
+                  controller: _streetController,
                   validator: (_) => null,
                 ),
                 Gap(12.h),
+
                 Row(
                   children: [
                     Expanded(
                       child: CustomTextField(
-                        label: '',
-                        hasLabel: false,
-                        hint: 'City',
-                        controller: cityController,
+                        label: 'City',
+                        hint: 'Enter city',
+                        controller: _cityController,
                         validator: (_) => null,
                       ),
                     ),
                     Gap(12.w),
                     Expanded(
                       child: CustomTextField(
-                        label: '',
-                        hasLabel: false,
-                        hint: 'State',
-                        controller: stateController,
+                        label: 'State',
+                        hint: 'Enter state',
+                        controller: _stateController,
                         validator: (_) => null,
                       ),
                     ),
                   ],
                 ),
                 Gap(12.h),
+
                 CustomTextField(
-                  label: '',
-                  hasLabel: false,
-                  hint: 'Zip Code (optional)',
-                  controller: zipCodeController,
+                  label: 'Zip Code',
+                  hint: 'Enter zip code',
+                  controller: _zipCodeController,
                   validator: (_) => null,
+                  keyboardType: TextInputType.number,
+                ),
+                Gap(12.h),
+
+                Row(
+                  children: [
+                    Expanded(
+                      child: CustomTextField(
+                        label: 'Latitude',
+                        hint: 'Optional',
+                        controller: _latitudeController,
+                        validator: (_) => null,
+                        keyboardType: TextInputType.number,
+                      ),
+                    ),
+                    Gap(12.w),
+                    Expanded(
+                      child: CustomTextField(
+                        label: 'Longitude',
+                        hint: 'Optional',
+                        controller: _longitudeController,
+                        validator: (_) => null,
+                        keyboardType: TextInputType.number,
+                      ),
+                    ),
+                  ],
                 ),
                 Gap(16.h),
-                _label('Additional Details'),
+
+                // Additional Details
+                Text(
+                  'Additional Information',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey.shade800,
+                  ),
+                ),
+                Gap(16.h),
+
                 CustomTextField(
-                  label: '',
-                  hint: 'E.g. deep cleaning for 3 bedrooms...',
-                  controller: detailsController,
+                  label: 'Service Details',
+                  hint: 'Describe any specific requirements...',
+                  controller: _detailsController,
                   validator: (_) => null,
-                  lines: 3,
+                  lines: 4,
                 ),
                 Gap(32.h),
+
+                // Price Display
+                _buildPriceDisplay(),
+                Gap(16.h),
+
+                // Submit Button
                 AppFilledButton(
-                  onPressed: () {
-                    UserBookingModel model = UserBookingModel(
-                      service: widget.serviceID,
-                      schedule: ScheduleModel(
-                        startDate: startDateController.text,
-                        endDate: endDateController.text,
-                        recurrence: selectedRecurrence,
-                      ),
-                      address: AddressModel(
-                        street: streetController.text,
-                        city: cityController.text,
-                        state: stateController.text,
-                      ),
-                      details: detailsController.text,
-                    );
-                    cubit.createBooking(model);
-                  },
-                  fontSize: 15,
-                  text: "Confirm",
+                  onPressed: _validateAndSubmit,
+                  fontSize: 16,
+                  text: "Create Booking",
                 ),
+                Gap(24.h),
               ],
             ),
           );
@@ -306,23 +320,190 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
     );
   }
 
-  void _pickDateTime(TextEditingController controller) {
-    dp.DatePicker.showDateTimePicker(
-      context,
-      showTitleActions: true,
-      onConfirm: (date) {
-        controller.text = date.toIso8601String();
-      },
+  Widget _buildServiceInfo() {
+    return Container(
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: Colors.blue.shade50,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            widget.service.name,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.blue.shade800,
+            ),
+          ),
+          Gap(8.h),
+          Text(
+            'Category: ${_capitalizeFirstLetter(widget.service.category)}',
+            style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+          ),
+          Gap(4.h),
+          Text(
+            'Type: ${_capitalizeFirstLetter(widget.service.serviceType)}',
+            style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+          ),
+          Gap(4.h),
+          Text(
+            'Duration: ${widget.service.duration} hours',
+            style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+          ),
+          Gap(4.h),
+          Text(
+            'Available Days: ${widget.service.availableDays.map(_capitalizeFirstLetter).join(', ')}',
+            style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _label(String text) => Padding(
-        padding: EdgeInsets.only(bottom: 6.h),
-        child: Text(
-          text,
-          style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
-        ),
+  Widget _buildPriceDisplay() {
+    return Container(
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: Colors.green.shade50,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            'Total Price:',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.green.shade800,
+            ),
+          ),
+          Text(
+            '\$${widget.service.basePrice.toStringAsFixed(2)}',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.green.shade800,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _pickDate(TextEditingController controller, String title) {
+    showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(Duration(days: 365)),
+    ).then((date) {
+      if (date != null) {
+        controller.text = DateFormat('yyyy-MM-dd').format(date);
+      }
+    });
+  }
+
+  void _validateAndSubmit() {
+    final cubit = UserBookingCubit.get(context);
+
+    // Validation
+    if (_selectedDayOfWeek == null) {
+      showCustomSnackBar(
+        context: context,
+        message: 'Please select a day',
+        type: SnackBarType.failure,
       );
+      return;
+    }
+
+    if (_selectedTimeSlot == null) {
+      showCustomSnackBar(
+        context: context,
+        message: 'Please select a time slot',
+        type: SnackBarType.failure,
+      );
+      return;
+    }
+
+    if (_streetController.text.isEmpty ||
+        _cityController.text.isEmpty ||
+        _stateController.text.isEmpty) {
+      showCustomSnackBar(
+        context: context,
+        message: 'Please fill in all address fields',
+        type: SnackBarType.failure,
+      );
+      return;
+    }
+
+    // For recurring services, validate recurrence dates
+    if (widget.service.serviceType.toLowerCase() == 'recurring') {
+      if (_startDateController.text.isEmpty) {
+        showCustomSnackBar(
+          context: context,
+          message: 'Please select a start date for recurrence',
+          type: SnackBarType.failure,
+        );
+        return;
+      }
+      if (_endDateController.text.isEmpty) {
+        showCustomSnackBar(
+          context: context,
+          message: 'Please select an end date for recurrence',
+          type: SnackBarType.failure,
+        );
+        return;
+      }
+    }
+
+    // Prepare address data
+    final address = AddressModel(
+      street: _streetController.text,
+      city: _cityController.text,
+      state: _stateController.text,
+      zipCode:
+          _zipCodeController.text.isNotEmpty ? _zipCodeController.text : null,
+      latitude: _latitudeController.text.isNotEmpty
+          ? double.tryParse(_latitudeController.text)
+          : null,
+      longitude: _longitudeController.text.isNotEmpty
+          ? double.tryParse(_longitudeController.text)
+          : null,
+    );
+
+    // Prepare schedule data
+    final schedule = ScheduleModel(
+      dayOfWeek: _selectedDayOfWeek!,
+      startTime: _startTimeController.text,
+      endTime: _endTimeController.text,
+      recurrence: _selectedRecurrence,
+      recurrenceEndDate:
+          _endDateController.text.isNotEmpty ? _endDateController.text : null,
+      details:
+          _detailsController.text.isNotEmpty ? _detailsController.text : null,
+    );
+
+    final bookingModel = UserBookingModel(
+      service: widget.serviceID,
+      schedule: schedule,
+      address: address,
+      details: _detailsController.text,
+      price: widget.service.basePrice, // Include price from service
+    );
+
+    print(bookingModel);
+
+    cubit.createBooking(bookingModel);
+  }
+
+  String _capitalizeFirstLetter(String text) {
+    if (text.isEmpty) return text;
+    return text[0].toUpperCase() + text.substring(1);
+  }
 
   InputDecoration _inputDecoration() {
     return InputDecoration(

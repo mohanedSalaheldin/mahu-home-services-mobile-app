@@ -47,7 +47,7 @@ class UserRuleItem extends StatelessWidget {
             txt,
             style: TextStyle(
               fontWeight: FontWeight.w600,
-              fontSize: 22.sp,
+              fontSize: 22,
               color: Colors.black,
             ),
           ),

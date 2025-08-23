@@ -175,7 +175,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       : Text(
                     'Save Changes',
                     style: TextStyle(
-                      fontSize: 16.sp,
+                      fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),

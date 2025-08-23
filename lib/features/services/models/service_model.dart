@@ -15,6 +15,10 @@ class ServiceModel {
   final DateTime createdAt;
   final List<String> availableDays;
   final List<TimeSlot> availableSlots;
+  final String? firstName;
+  final String? lastName;
+  final String? avatar;
+  final String? businessName;
   final int v;
 
   ServiceModel({
@@ -34,10 +38,46 @@ class ServiceModel {
     required this.createdAt,
     required this.availableDays,
     required this.availableSlots,
+    required this.businessName,
+    required this.firstName,
+    required this.lastName,
+    required this.avatar,
     required this.v,
   });
 
   factory ServiceModel.fromJson(Map<String, dynamic> json) {
+    // Handle provider data based on the actual response structure
+    String providerId = '';
+    String? businessName;
+    String? firstName;
+    String? lastName;
+    String? avatar;
+
+    if (json['provider'] != null) {
+      if (json['provider'] is String) {
+        // If provider is just an ID string
+        providerId = json['provider'];
+      } else if (json['provider'] is Map<String, dynamic>) {
+        final providerData = json['provider'] as Map<String, dynamic>;
+        providerId = providerData['_id'] ?? '';
+        businessName = providerData['businessName'];
+
+        // Check if profile data exists in the response
+        if (providerData['profile'] != null &&
+            providerData['profile'] is Map<String, dynamic>) {
+          final profileData = providerData['profile'] as Map<String, dynamic>;
+          firstName = profileData['firstName'];
+          lastName = profileData['lastName'];
+          avatar = profileData['avatar'];
+        } else {
+          // If no profile data, try to get from top level or use defaults
+          firstName = providerData['firstName'];
+          lastName = providerData['lastName'];
+          avatar = providerData['avatar'];
+        }
+      }
+    }
+
     return ServiceModel(
       id: json['_id'] ?? '',
       name: json['name'] ?? '',
@@ -49,13 +89,14 @@ class ServiceModel {
       pricingModel: json['pricingModel'] ?? 'fixed',
       duration: json['duration'] ?? 1,
       image: json['image'] ?? '',
+      avatar: avatar, // Use the extracted avatar
+      businessName: businessName, // Use the extracted businessName
+      firstName: firstName, // Use the extracted firstName
+      lastName: lastName, // Use the extracted lastName
       active: json['active'] ?? true,
-      provider: json['provider'] is Map
-          ? json['provider']['_id'] ?? ''
-          : json['provider'] ?? '',
+      provider: providerId, // Use the extracted provider ID
       isApproved: json['isApproved'] ?? false,
-      createdAt:
-          DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
+      createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
       availableDays: List<String>.from(json['availableDays'] ?? []),
       availableSlots: (json['availableSlots'] as List<dynamic>?)
               ?.map((slot) => TimeSlot.fromJson(slot))
@@ -63,28 +104,6 @@ class ServiceModel {
           [],
       v: json['__v'] ?? 0,
     );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      '_id': id,
-      'name': name,
-      'description': description,
-      'category': category,
-      'serviceType': serviceType,
-      'subType': subType,
-      'basePrice': basePrice,
-      'pricingModel': pricingModel,
-      'duration': duration,
-      'image': image,
-      'active': active,
-      'provider': provider,
-      'isApproved': isApproved,
-      'createdAt': createdAt.toIso8601String(),
-      'availableDays': availableDays,
-      'availableSlots': availableSlots.map((slot) => slot.toJson()).toList(),
-      '__v': v,
-    };
   }
 }
 

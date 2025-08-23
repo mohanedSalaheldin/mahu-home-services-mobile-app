@@ -27,7 +27,7 @@ class ActionButtons extends StatelessWidget {
             onPressed: onDelete,
             child: Text(
               "Delete Service",
-              style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
           ),
         ),
@@ -45,7 +45,7 @@ class ActionButtons extends StatelessWidget {
             child: Text(
               "Edit Service",
               style: TextStyle(
-                  fontSize: 16.sp,
+                  fontSize: 16,
                   fontWeight: FontWeight.bold,
                   color: Colors.white),
             ),

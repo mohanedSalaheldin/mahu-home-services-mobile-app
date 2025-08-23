@@ -116,7 +116,7 @@ class PaymentMethodCardWidget extends StatelessWidget {
           Text(
             label,
             style: TextStyle(
-              fontSize: 14.sp,
+              fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
           ),

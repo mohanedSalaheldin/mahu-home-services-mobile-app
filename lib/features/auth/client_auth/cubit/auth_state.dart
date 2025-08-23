@@ -1,6 +1,8 @@
 import 'package:mahu_home_services_app/core/errors/failures.dart';
+import 'package:mahu_home_services_app/core/models/use_model.dart';
 
 sealed class AuthState {}
+
 
 final class AuthInitial extends AuthState {}
 
@@ -10,19 +12,21 @@ final class RegisterSucessededState extends AuthState {}
 
 final class RegisterFailedState extends AuthState {
   final Failure failure;
-
   RegisterFailedState({required this.failure});
 }
 
 final class LoginLoadingState extends AuthState {}
 
-final class LoginSucessededState extends AuthState {}
+final class LoginSucessededState extends AuthState {
+  final UserModel userModel;
+  LoginSucessededState({required this.userModel});
+}
 
 final class LoginFailedState extends AuthState {
   final Failure failure;
-
   LoginFailedState({required this.failure});
 }
+
 
 final class VerifyEmailLoadingState extends AuthState {}
 

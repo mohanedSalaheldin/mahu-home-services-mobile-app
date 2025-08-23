@@ -47,8 +47,8 @@ class LandingItem extends StatelessWidget {
                 model.title,
                 style: TextStyle(
                   fontWeight: FontWeight.w700,
-                  fontSize: 21.sp,
-                  height: 1.5.sp,
+                  fontSize: 21,
+                  height: 1.5,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -58,8 +58,8 @@ class LandingItem extends StatelessWidget {
                 style: TextStyle(
                   color: const Color.fromARGB(153, 0, 0, 0),
                   fontWeight: FontWeight.w400,
-                  fontSize: 13.sp,
-                  height: 1.9.sp,
+                  fontSize: 13,
+                  height: 1.9,
                 ),
                 textAlign: TextAlign.center,
               ),

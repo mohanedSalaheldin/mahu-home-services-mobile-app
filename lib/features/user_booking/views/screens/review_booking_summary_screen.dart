@@ -135,14 +135,14 @@ class SummeryLineItem extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            fontSize: 13.sp,
+            fontSize: 13,
             fontWeight: FontWeight.w400,
           ),
         ),
         Text(
           value,
           style: TextStyle(
-            fontSize: 15.sp,
+            fontSize: 15,
             fontWeight: FontWeight.w600,
           ),
         ),

@@ -42,4 +42,6 @@ class CacheHelper {
   static Future<bool> remove(String key) async => await _prefs.remove(key);
 
   static Future<bool> clear() async => await _prefs.clear();
+
+  static getProviderData() {}
 }

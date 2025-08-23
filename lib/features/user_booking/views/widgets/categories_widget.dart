@@ -14,7 +14,7 @@ class CategoriesWidget extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('Categories',
-            style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold)),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         Gap(12.h),
         SizedBox(
           height: 100.h,

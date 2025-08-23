@@ -99,7 +99,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
         Text(
           widget.booking.serviceName,
           style: TextStyle(
-            fontSize: 24.sp,
+            fontSize: 24,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -115,7 +115,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
               child: Text(
                 widget.booking.status,
                 style: TextStyle(
-                  fontSize: 12.sp,
+                  fontSize: 12,
                   color: _getStatusColor(widget.booking.status),
                   fontWeight: FontWeight.w600,
                 ),
@@ -130,7 +130,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                   Text(
                     "${widget.booking.rating} (${widget.booking.reviews} reviews)",
                     style: TextStyle(
-                      fontSize: 12.sp,
+                      fontSize: 12,
                       color: Colors.grey.shade600,
                     ),
                   ),
@@ -155,7 +155,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
           Text(
             "Service Location",
             style: TextStyle(
-              fontSize: 16.sp,
+              fontSize: 16,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -169,7 +169,9 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12),
               child: _isMapLoading
-                  ? Center(child: CircularProgressIndicator())
+                  ? Center(child: CircularProgressIndicator(
+                color: Colors.blue
+              ))
                   : _mapError != null
                       ? Center(
                           child: Column(
@@ -218,7 +220,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
             Text(
               "Showing approximate location",
               style: TextStyle(
-                fontSize: 12.sp,
+                fontSize: 12,
                 color: Colors.orange,
               ),
             ),
@@ -226,7 +228,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
           Text(
             widget.booking.address,
             style: TextStyle(
-              fontSize: 14.sp,
+              fontSize: 14,
               color: Colors.grey.shade600,
             ),
           ),
@@ -248,7 +250,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
           Text(
             "Client Information",
             style: TextStyle(
-              fontSize: 16.sp,
+              fontSize: 16,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -265,7 +267,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                 child: Icon(
                   Icons.person,
                   color: AppColors.blue,
-                  size: 24.sp,
+                  size: 24,
                 ),
               ),
               Gap(16.w),
@@ -276,7 +278,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                     Text(
                       widget.booking.clientName,
                       style: TextStyle(
-                        fontSize: 16.sp,
+                        fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -284,7 +286,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                     Text(
                       "Client since ${DateFormat('MMM yyyy').format(DateTime.now().subtract(const Duration(days: 90)))}",
                       style: TextStyle(
-                        fontSize: 12.sp,
+                        fontSize: 12,
                         color: Colors.grey.shade600,
                       ),
                     ),
@@ -340,7 +342,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
           Text(
             "Service Details",
             style: TextStyle(
-              fontSize: 16.sp,
+              fontSize: 16,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -385,7 +387,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
           Text(
             "Payment Information",
             style: TextStyle(
-              fontSize: 16.sp,
+              fontSize: 16,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -396,14 +398,14 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
               Text(
                 "Service Fee",
                 style: TextStyle(
-                  fontSize: 14.sp,
+                  fontSize: 14,
                   color: Colors.grey.shade600,
                 ),
               ),
               Text(
                 "\$${widget.booking.amount.toStringAsFixed(2)}",
                 style: TextStyle(
-                  fontSize: 14.sp,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -416,14 +418,14 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
               Text(
                 "Tax",
                 style: TextStyle(
-                  fontSize: 14.sp,
+                  fontSize: 14,
                   color: Colors.grey.shade600,
                 ),
               ),
               Text(
                 "\$${(widget.booking.amount * 0.1).toStringAsFixed(2)}", // Assuming 10% tax
                 style: TextStyle(
-                  fontSize: 14.sp,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -438,14 +440,14 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
               Text(
                 "Total Amount",
                 style: TextStyle(
-                  fontSize: 16.sp,
+                  fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
               ),
               Text(
                 "\$${(widget.booking.amount * 1.1).toStringAsFixed(2)}", // Total with tax
                 style: TextStyle(
-                  fontSize: 16.sp,
+                  fontSize: 16,
                   fontWeight: FontWeight.w600,
                   color: AppColors.blue,
                 ),
@@ -459,7 +461,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
               Text(
                 "Payment Status",
                 style: TextStyle(
-                  fontSize: 14.sp,
+                  fontSize: 14,
                   color: Colors.grey.shade600,
                 ),
               ),
@@ -473,7 +475,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                 child: Text(
                   widget.booking.paymentStatus,
                   style: TextStyle(
-                    fontSize: 12.sp,
+                    fontSize: 12,
                     color: _getPaymentStatusColor(widget.booking.paymentStatus),
                     fontWeight: FontWeight.w600,
                   ),
@@ -645,7 +647,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
           children: [
             Icon(
               icon,
-              size: 20.sp,
+              size: 20,
               color: Colors.grey.shade500,
             ),
             Gap(12.w),
@@ -656,7 +658,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                   Text(
                     title,
                     style: TextStyle(
-                      fontSize: 12.sp,
+                      fontSize: 12,
                       color: Colors.grey.shade600,
                     ),
                   ),
@@ -664,7 +666,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                   Text(
                     value,
                     style: TextStyle(
-                      fontSize: 14.sp,
+                      fontSize: 14,
                       fontWeight:
                           isClickable ? FontWeight.w600 : FontWeight.normal,
                       color: isClickable ? AppColors.blue : Colors.black,
@@ -676,7 +678,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
             if (isClickable)
               Icon(
                 Icons.chevron_right,
-                size: 20.sp,
+                size: 20,
                 color: Colors.grey.shade400,
               ),
           ],
@@ -696,7 +698,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
             Text(
               "Contact Client",
               style: TextStyle(
-                fontSize: 18.sp,
+                fontSize: 18,
                 fontWeight: FontWeight.w600,
               ),
             ),

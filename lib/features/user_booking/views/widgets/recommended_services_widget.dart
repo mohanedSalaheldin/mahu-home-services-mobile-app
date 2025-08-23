@@ -9,11 +9,16 @@ import 'package:mahu_home_services_app/features/user_booking/views/widgets/servi
 
 class RecommendedServicesWidget extends StatelessWidget {
   final List<ServiceModel> services;
-  final Function(models.CleaningService) onToggleFavorite;
+  final void Function(String serviceId) onToggleFavorite;
+  final bool Function(String serviceId) isFavorite;
+  final bool Function(String serviceId) isFavoriteLoading;
+  
   const RecommendedServicesWidget({
     super.key,
     required this.services,
     required this.onToggleFavorite,
+    required this.isFavorite,
+    required this.isFavoriteLoading,
   });
 
   @override
@@ -21,25 +26,18 @@ class RecommendedServicesWidget extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text('Recommended For You',
-                style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold)),
-            TextButton(
-                onPressed: () {},
-                child: Text('View All',
-                    style:
-                        TextStyle(color: AppColors.primary, fontSize: 12.sp))),
-          ],
-        ),
+        
         Gap(12.h),
         Column(
           children: services
               .map((service) => Padding(
                     padding: EdgeInsets.only(bottom: 16.h),
                     child: ServiceListTile(
-                        service: service, onFavoritePressed: () {}),
+                      service: service,
+                      isFavorite: isFavorite(service.id),
+                      isLoading: isFavoriteLoading(service.id),
+                      onFavoritePressed: () => onToggleFavorite(service.id),
+                    ),
                   ))
               .toList(),
         )

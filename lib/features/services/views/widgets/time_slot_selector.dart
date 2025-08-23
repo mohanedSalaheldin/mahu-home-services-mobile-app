@@ -43,7 +43,7 @@ class _TimeSlotSelectorState extends State<TimeSlotSelector> {
         height: 4,
         color: Colors.black.withOpacity(.5),
         fontWeight: FontWeight.w400,
-        fontSize: 13.sp,
+        fontSize: 13,
       ),
       filled: true,
       fillColor: AppColors.greyBack,

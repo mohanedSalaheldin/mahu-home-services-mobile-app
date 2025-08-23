@@ -5,6 +5,7 @@ import 'package:gap/gap.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mahu_home_services_app/core/constants/app_const.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
+import 'package:mahu_home_services_app/core/utils/helpers/cache_helper.dart';
 import 'package:mahu_home_services_app/core/utils/navigation_utils.dart';
 import 'package:mahu_home_services_app/core/widgets/app_filed_label_text.dart';
 import 'package:mahu_home_services_app/features/auth/client_auth/views/widgets/custom_snack_bar.dart';
@@ -123,7 +124,9 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
         builder: (context, state) {
           if (state is ServiceCreationLoadingState) {
             return const Center(
-              child: CircularProgressIndicator(),
+              child: CircularProgressIndicator(
+                color: Colors.blue
+              ),
             );
           }
           return Padding(
@@ -168,7 +171,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                         hintText: 'Describe your service in detail...',
                         hintStyle: TextStyle(
                           color: Colors.black.withOpacity(0.5),
-                          fontSize: 14.sp,
+                          fontSize: 14,
                         ),
                         filled: true,
                         fillColor: AppColors.greyBack,
@@ -271,8 +274,8 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                     Gap(16.h),
 
                     CustomTextField(
-                      label: 'Min. Duration',
-                      hint: 'e.g., 120 for 2 hours',
+                      label: 'Minimum Duration',
+                      hint: 'e.g., 2 hours',
                       controller: _durationController,
                       keyboardType: TextInputType.number,
                       validator: (value) {
@@ -312,7 +315,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                           'Please add at least one time slot',
                           style: TextStyle(
                             color: Colors.red,
-                            fontSize: 12.sp,
+                            fontSize: 12,
                           ),
                         ),
                       ),
@@ -364,7 +367,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                               id: '',
                               name: _serviceNameController.text,
                               description: _descriptionController.text,
-                              category: 'cleaning',
+                              category: CacheHelper.getString("serviceProviderCategory") ?? " ",
                               serviceType: _isServiceTypeRecurring
                                   ? 'recurring'
                                   : 'one-time',
@@ -377,7 +380,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                               image: _selectedImage?.path ?? '',
                               active: _isActiveImmediately,
                               provider:
-                                  'current_user_id', // Replace with actual user ID
+                                  CacheHelper.getProviderData(), // Replace with actual ProviderData object
                               isApproved: _isActiveImmediately,
                               createdAt: DateTime.now(),
                               availableDays: _selectedDays,
@@ -390,7 +393,11 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                                     ),
                                   )
                                   .toList(),
-                              v: 1,
+                              v: 1, 
+                              businessName: '',
+                              firstName: '',
+                              lastName: '',
+                              avatar: '',
                             );
 
                             // Call cubit to create service
@@ -400,7 +407,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                         child: Text(
                           'Publish Service',
                           style: TextStyle(
-                            fontSize: 16.sp,
+                            fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
@@ -423,7 +430,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
       child: Text(
         title,
         style: TextStyle(
-          fontSize: 18.sp,
+          fontSize: 18,
           fontWeight: FontWeight.bold,
           color: Colors.black87,
         ),
@@ -437,7 +444,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
       child: Text(
         text,
         style: TextStyle(
-          fontSize: 12.sp,
+          fontSize: 12,
           color: Colors.grey[600],
           fontStyle: FontStyle.italic,
         ),
@@ -499,7 +506,7 @@ class WeekdaySelector extends StatelessWidget {
               'Please select at least one day',
               style: TextStyle(
                 color: Colors.red,
-                fontSize: 12.sp,
+                fontSize: 12,
               ),
             ),
           ),

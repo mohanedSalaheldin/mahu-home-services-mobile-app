@@ -69,7 +69,9 @@ class _VerifyAccountScreenState extends State<VerifyAccountScreen> {
           if (state is VerifyEmailLoadingState ||
               state is OTPResendLoadingState) {
             return const Center(
-              child: CircularProgressIndicator(),
+              child: CircularProgressIndicator(
+                color: Colors.blue
+              ),
             );
           }
           var authCubit = AuthCubit.get(context);
@@ -100,7 +102,7 @@ class _VerifyAccountScreenState extends State<VerifyAccountScreen> {
                       'We have sent verification \n code to $idThanSendOTPTo',
                       style: TextStyle(
                         fontWeight: FontWeight.w300,
-                        fontSize: 13.sp,
+                        fontSize: 13,
                         color: Colors.black.withOpacity(.5),
                       ),
                       textAlign: TextAlign.center,

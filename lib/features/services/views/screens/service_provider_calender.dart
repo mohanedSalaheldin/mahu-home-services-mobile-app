@@ -83,7 +83,9 @@ class _ServiceProviderBookingsScreenState
         },
         builder: (context, state) {
           if (state is GetMyBookingsLoadingState) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator(
+                color: Colors.blue
+              ));
           }
           if (state is GetMyBookingsFailedState) {
             return Center(child: Text('Error: ${state.failure}'));
@@ -145,7 +147,7 @@ class _ServiceProviderBookingsScreenState
         Text(
           count.toString(),
           style: TextStyle(
-            fontSize: 16.sp,
+            fontSize: 16,
             fontWeight: FontWeight.w600,
             color: color,
           ),
@@ -153,7 +155,7 @@ class _ServiceProviderBookingsScreenState
         Text(
           label,
           style: TextStyle(
-            fontSize: 10.sp,
+            fontSize: 10,
             color: Colors.grey.shade600,
           ),
         ),
@@ -168,7 +170,7 @@ class _ServiceProviderBookingsScreenState
         children: [
           Icon(
             Icons.event_note_outlined,
-            size: 60.sp,
+            size: 60,
             color: Colors.grey.shade300,
           ),
           Gap(16.h),
@@ -177,7 +179,7 @@ class _ServiceProviderBookingsScreenState
                 ? "No bookings for this day"
                 : "No $_selectedFilter bookings",
             style: TextStyle(
-              fontSize: 18.sp,
+              fontSize: 18,
               fontWeight: FontWeight.w500,
               color: Colors.grey.shade600,
             ),
@@ -186,7 +188,7 @@ class _ServiceProviderBookingsScreenState
           Text(
             "You have no scheduled services for ${DateFormat('MMM d, yyyy').format(_selectedDate)}",
             style: TextStyle(
-              fontSize: 14.sp,
+              fontSize: 14,
               color: Colors.grey.shade400,
             ),
             textAlign: TextAlign.center,
@@ -258,7 +260,7 @@ class _ServiceProviderBookingsScreenState
                               child: Text(
                                 booking.service.name,
                                 style: TextStyle(
-                                  fontSize: 16.sp,
+                                  fontSize: 16,
                                   fontWeight: FontWeight.w600,
                                 ),
                                 overflow: TextOverflow.ellipsis,
@@ -276,7 +278,7 @@ class _ServiceProviderBookingsScreenState
                               child: Text(
                                 _formatStatus(booking.status),
                                 style: TextStyle(
-                                  fontSize: 11.sp,
+                                  fontSize: 11,
                                   color: _getStatusColor(booking.status),
                                 ),
                               ),
@@ -287,7 +289,7 @@ class _ServiceProviderBookingsScreenState
                         Text(
                           "with $clientName",
                           style: TextStyle(
-                            fontSize: 14.sp,
+                            fontSize: 14,
                             color: Colors.grey.shade600,
                           ),
                         ),
@@ -299,14 +301,14 @@ class _ServiceProviderBookingsScreenState
               Gap(16.h),
               Row(
                 children: [
-                  Icon(Icons.access_time, size: 16.sp, color: Colors.grey),
+                  Icon(Icons.access_time, size: 16, color: Colors.grey),
                   Gap(8.w),
                   Text(
                     DateFormat('h:mm a').format(bookingDate),
                     style: TextStyle(fontSize: 14.sp),
                   ),
                   Gap(16.w),
-                  Icon(Icons.phone, size: 16.sp, color: Colors.grey),
+                  Icon(Icons.phone, size: 16, color: Colors.grey),
                   Gap(8.w),
                   Expanded(
                     child: Text(
@@ -321,7 +323,7 @@ class _ServiceProviderBookingsScreenState
                 Gap(8.h),
                 Row(
                   children: [
-                    Icon(Icons.description, size: 16.sp, color: Colors.grey),
+                    Icon(Icons.description, size: 16, color: Colors.grey),
                     Gap(8.w),
                     Expanded(
                       child: Text(
@@ -340,7 +342,7 @@ class _ServiceProviderBookingsScreenState
                   Text(
                     "\$${booking.price.toStringAsFixed(2)}",
                     style: TextStyle(
-                      fontSize: 16.sp,
+                      fontSize: 16,
                       fontWeight: FontWeight.w600,
                       color: Colors.green,
                     ),
@@ -349,7 +351,7 @@ class _ServiceProviderBookingsScreenState
                   Text(
                     "Payment: ${_formatPaymentStatus(booking.paymentStatus)}",
                     style: TextStyle(
-                      fontSize: 12.sp,
+                      fontSize: 12,
                       color: _getPaymentStatusColor(booking.paymentStatus),
                     ),
                   ),
@@ -496,7 +498,7 @@ class _ServiceProviderBookingsScreenState
           Text(
             DateFormat('MMMM yyyy').format(_selectedDate),
             style: TextStyle(
-              fontSize: 18.sp,
+              fontSize: 18,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -516,7 +518,7 @@ class _ServiceProviderBookingsScreenState
                 child: Text(
                   'Today',
                   style: TextStyle(
-                    fontSize: 14.sp,
+                    fontSize: 14,
                     color: AppColors.blue,
                   ),
                 ),
@@ -593,7 +595,7 @@ class _ServiceProviderBookingsScreenState
                       Text(
                         day?.toString() ?? '',
                         style: TextStyle(
-                          fontSize: 14.sp,
+                          fontSize: 14,
                           color: day == null
                               ? Colors.transparent
                               : isSelected
@@ -637,7 +639,7 @@ class _ServiceProviderBookingsScreenState
             child: Text(
               day,
               style: TextStyle(
-                fontSize: 14.sp,
+                fontSize: 14,
                 fontWeight: FontWeight.w500,
                 color: Colors.grey,
               ),

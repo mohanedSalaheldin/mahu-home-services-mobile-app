@@ -1,0 +1,1 @@
+C:\nodejs-projects\mahu-app-version3\mahu-home-services-mobile-app\build\app\intermediates\cxx\Debug\5o6a2au6\obj\arm64-v8a

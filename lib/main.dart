@@ -32,7 +32,9 @@ class MyAppWrapper extends StatelessWidget {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const MaterialApp(
             home: Scaffold(
-              body: Center(child: CircularProgressIndicator()),
+              body: Center(child: CircularProgressIndicator(
+                color: Colors.blue
+              )),
             ),
           );
         } else if (snapshot.hasError) {
