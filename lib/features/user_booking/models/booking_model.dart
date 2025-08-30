@@ -1,28 +1,44 @@
-// Update your UserBookingModel
+// user_booking_model.dart
 class UserBookingModel {
   final String service;
+  final double price;
   final ScheduleModel schedule;
   final AddressModel address;
   final String? details;
-  final double price; // Add price field
+  final int duration;
+  final bool hasTools;
 
   UserBookingModel({
     required this.service,
+    required this.price,
     required this.schedule,
     required this.address,
     this.details,
-    required this.price, // Add price parameter
+    required this.duration, 
+    required this.hasTools,
   });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'service': service,
+      'price': price,
+      'duration': duration,
+      'schedule': schedule.toJson(),
+      'address': address.toJson(),
+      'hasTools': hasTools,
+      if (details != null) 'details': details,
+    };
+  }
 }
 
-// Update ScheduleModel
 class ScheduleModel {
   final String dayOfWeek;
   final String startTime;
   final String? endTime;
   final String? recurrence;
   final String? recurrenceEndDate;
-  final String? details;
+  final String? timezone;
+  final String? startDate;
 
   ScheduleModel({
     required this.dayOfWeek,
@@ -30,7 +46,8 @@ class ScheduleModel {
     this.endTime,
     this.recurrence,
     this.recurrenceEndDate,
-    this.details,
+    this.timezone,
+    this.startDate,
   });
 
   Map<String, dynamic> toJson() {
@@ -40,27 +57,27 @@ class ScheduleModel {
       if (endTime != null) 'endTime': endTime,
       if (recurrence != null) 'recurrence': recurrence,
       if (recurrenceEndDate != null) 'recurrenceEndDate': recurrenceEndDate,
-      if (details != null) 'details': details,
+      if (timezone != null) 'timezone': timezone,
+      if (startDate != null) 'startDate': startDate,
     };
   }
 }
 
-// Update AddressModel
 class AddressModel {
   final String street;
   final String city;
   final String state;
   final String? zipCode;
-  final double? latitude;
-  final double? longitude;
+  final double latitude;
+  final double longitude;
 
   AddressModel({
     required this.street,
     required this.city,
     required this.state,
     this.zipCode,
-    this.latitude,
-    this.longitude,
+    required this.latitude,
+    required this.longitude,
   });
 
   Map<String, dynamic> toJson() {
@@ -69,8 +86,8 @@ class AddressModel {
       'city': city,
       'state': state,
       if (zipCode != null) 'zipCode': zipCode,
-      if (latitude != null) 'latitude': latitude,
-      if (longitude != null) 'longitude': longitude,
+      'latitude': latitude,
+      'longitude': longitude,
     };
   }
 }

@@ -361,6 +361,8 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen> {
                             var service = widget.service;
                             final updatedService = ServiceModel(
                               id: service.id,
+                              averageRating: service.averageRating,
+                              totalReviews: service.totalReviews,
                               name: _serviceNameController.text,
                               description: _descriptionController.text,
                               category: service.category,
@@ -389,7 +391,7 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen> {
                               businessName: '',
                               firstName: '',
                               lastName: '',
-                              avatar: '',
+                              avatar: '', reviews: service.reviews,
                             );
 
                             // Call cubit to create service

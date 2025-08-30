@@ -1,55 +1,86 @@
+// action_buttons.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
+import 'package:mahu_home_services_app/core/constants/colors.dart';
 
 class ActionButtons extends StatelessWidget {
-  final VoidCallback onDelete;
+  final bool isActive;
+  // final VoidCallback onDelete;
   final VoidCallback onEdit;
+  final VoidCallback onToggleStatus;
 
-  const ActionButtons(
-      {super.key, required this.onDelete, required this.onEdit});
+  const ActionButtons({
+    super.key,
+    required this.isActive,
+    // required this.onDelete,
+    required this.onEdit,
+    required this.onToggleStatus,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Column(
       children: [
-        Expanded(
-          child: ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red.shade50,
-              foregroundColor: Colors.red,
-              padding: EdgeInsets.symmetric(vertical: 16.h),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8.r),
-                side: BorderSide(color: Colors.red.shade200),
+        // Toggle Status Button
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: onToggleStatus,
+            icon: Icon(
+              isActive ? Icons.pause_rounded : Icons.play_arrow_rounded,
+              size: 20.sp,
+            ),
+            label: Text(
+              isActive ? 'Deactivate Service' : 'Activate Service',
+              style: TextStyle(
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w600,
               ),
             ),
-            onPressed: onDelete,
-            child: Text(
-              "Delete Service",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: isActive ? AppColors.warning : AppColors.success,
+              foregroundColor: Colors.white,
+              padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 24.w),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
           ),
         ),
-        Gap(16.w),
-        Expanded(
-          child: ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue,
-              padding: EdgeInsets.symmetric(vertical: 16.h),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8.r),
+        Gap(12.h),
+        
+        // Edit and Delete Buttons
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: onEdit,
+                icon: Icon(
+                  Icons.edit_rounded,
+                  size: 18.sp,
+                  color: AppColors.primary,
+                ),
+                label: Text(
+                  'Edit',
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.primary,
+                  ),
+                ),
+                style: OutlinedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(vertical: 14.h),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  side: BorderSide(color: AppColors.primary, width: 1.5),
+                ),
               ),
             ),
-            onPressed: onEdit,
-            child: Text(
-              "Edit Service",
-              style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white),
-            ),
-          ),
+            Gap(12.w),
+            
+          ],
         ),
       ],
     );

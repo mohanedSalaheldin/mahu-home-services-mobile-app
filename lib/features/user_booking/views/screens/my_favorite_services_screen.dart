@@ -62,7 +62,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         },
         builder: (context, state) {
           final cubit = BlocProvider.of<UserBookingCubit>(context);
-          final favoriteServices = cubit.favoriteServices;
+          final favoriteServices = cubit.favoriteServices.where((service) => service.active == true).toList();
 
           if (state is FavoritesLoading) {
             return _buildLoadingState();

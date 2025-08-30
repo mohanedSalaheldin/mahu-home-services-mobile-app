@@ -4,8 +4,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
 import 'package:mahu_home_services_app/features/landing/views/screens/choose_rule_screen.dart';
+import 'package:mahu_home_services_app/features/services/views/screens/service_provider_jobs.dart';
 import 'package:mahu_home_services_app/features/user_booking/cubit/user_booking_cubit.dart';
 import 'package:mahu_home_services_app/features/user_booking/views/screens/service_category_screen.dart';
+import 'package:mahu_home_services_app/features/user_booking/views/screens/search_results_screen.dart';
 import 'package:mahu_home_services_app/features/user_booking/views/widgets/categories_widget.dart';
 import 'package:mahu_home_services_app/features/user_booking/views/widgets/popular_services_widget.dart';
 import 'package:mahu_home_services_app/features/user_booking/views/widgets/recommended_services_widget.dart';
@@ -124,16 +126,6 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          await CacheHelper.remove('token');
-          Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => const RoleSelectionScreen()));
-        },
-        child: const Icon(Icons.logout_outlined),
-      ),
       appBar: AppBar(
         leadingWidth: 150.w,
         leading: Padding(
@@ -198,10 +190,45 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                     _ProviderProfileCard(
                         profile: providerProfile!,
                         isLoading: isLoadingProviderProfile),
-                  SearchBarWidget(controller: _searchController)
+                  // In your CustomerHomeScreen, update the SearchBarWidget usage:
+                  SearchBarWidget(
+                    controller: _searchController,
+                    onSubmitted: (query) {
+                      if (query.trim().isEmpty) return;
+
+                      final userBookingCubit = UserBookingCubit.get(context);
+                      final results = userBookingCubit.availableServices
+                          .where((service) =>
+                              service.name
+                                  .toLowerCase()
+                                  .contains(query.toLowerCase()) ||
+                              service.description
+                                  .toLowerCase()
+                                  .contains(query.toLowerCase()) ||
+                              service.category
+                                  .toLowerCase()
+                                  .contains(query.toLowerCase()))
+                          .toList();
+
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => SearchResultsScreen(
+                            services: results,
+                            query: query,
+                          ),
+                        ),
+                      );
+                    },
+                    onTap: () {
+                      // Optional: Focus the search field when tapped
+                      FocusScope.of(context).requestFocus(FocusNode());
+                    },
+                  )
                       .animate()
                       .fadeIn(delay: 100.ms)
                       .slide(begin: const Offset(0, 0.1)),
+
                   Gap(24.h),
                   SpecialOffersBanner(controller: _bannerController).animate(),
                   Gap(24.h),
@@ -229,7 +256,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                               context,
                               MaterialPageRoute(
                                 builder: (context) => ServiceCategoryScreen(
-                                  categoryName: label,
+                                  categoryName: label.capitalize(),
                                   services: userBookingCubit.availableServices
                                       .where((s) => s.category == label)
                                       .toList()
@@ -336,17 +363,6 @@ class SpecialOffersBanner extends StatelessWidget {
                 fontSize: 20.sp,
                 fontWeight: FontWeight.bold,
                 color: Colors.grey.shade800,
-              ),
-            ),
-            TextButton(
-              onPressed: () {},
-              child: Text(
-                'View All',
-                style: TextStyle(
-                  color: AppColors.primary,
-                  fontSize: 12.sp,
-                  fontWeight: FontWeight.w600,
-                ),
               ),
             ),
           ],
@@ -533,21 +549,21 @@ class _OfferCard extends StatelessWidget {
                   Gap(12.h),
                   Container(
                     width: double.infinity,
-                    padding: EdgeInsets.symmetric(vertical: 10.h),
+                    padding: EdgeInsets.symmetric(vertical: 4.h),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Center(
-                      child: Text(
-                        'Claim Offer',
-                        style: TextStyle(
-                          color: offer.color,
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
+                    // child: Center(
+                    //   child: Text(
+                    //     'Claim Offer',
+                    //     style: TextStyle(
+                    //       color: offer.color,
+                    //       fontSize: 14.sp,
+                    //       fontWeight: FontWeight.bold,
+                    //     ),
+                    //   ),
+                    // ),
                   ),
                 ],
               ),

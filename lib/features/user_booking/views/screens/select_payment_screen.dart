@@ -68,7 +68,7 @@ class SelectPaymentMethodScreen extends StatelessWidget {
             const Spacer(),
             AppFilledButton(
               onPressed: () {
-                navigateTo(context, const ReviewBookingSummaryScreen());
+                // navigateTo(context, const ReviewBookingSummaryScreen());
               },
               fontSize: 15,
               text: "Continue",

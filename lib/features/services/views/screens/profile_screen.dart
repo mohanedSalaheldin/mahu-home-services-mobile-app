@@ -5,6 +5,7 @@ import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
 import 'package:mahu_home_services_app/core/utils/helpers/cache_helper.dart';
+import 'package:mahu_home_services_app/features/auth/client_auth/views/screens/login_screen.dart';
 import 'package:mahu_home_services_app/features/landing/views/screens/choose_rule_screen.dart';
 import 'package:mahu_home_services_app/features/services/cubit/services_cubit.dart';
 import 'package:mahu_home_services_app/features/services/cubit/services_state.dart';
@@ -98,12 +99,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Gap(24.h),
                   _buildResponseTimeSection(),
                   Gap(24.h),
-                  _buildSubscriptionSection(),
-                  Gap(24.h),
+                  // _buildSubscriptionSection(),
+                  // Gap(24.h),
                   _buildSettingsSection(user),
                   Gap(32.h),
-                  _buildUpgradeButton(user.id),
-                  Gap(40.h),
+                  // _buildUpgradeButton(user.id),
+                  // Gap(40.h),
                 ],
               ),
             ),
@@ -559,7 +560,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               // Navigate to ChooseRuleScreen and clear navigation stack
               Navigator.pushAndRemoveUntil(
                 context,
-                MaterialPageRoute(builder: (_) => const RoleSelectionScreen()),
+                MaterialPageRoute(builder: (_) => const LoginScreen()),
                 (Route<dynamic> route) => false, // Remove all previous routes
               );
             },

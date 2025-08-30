@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:mahu_home_services_app/core/errors/failures.dart';
 import 'package:mahu_home_services_app/core/utils/helpers/request_hundler.dart';
 import 'package:mahu_home_services_app/core/utils/helpers/cache_helper.dart';
@@ -12,11 +13,27 @@ class ManageProviderServices {
   Future<Either<Failure, Unit>> addService(ServiceModel service) async {
     String token = CacheHelper.getString('token') ?? '';
 
-    print('--------------------');
-    print(token);
-    print('--------------------');
-    String imageUrl =
-        await UploadMediaHelper.uploadImage(File(service.image)) ?? '';
+    print('Token: $token');
+
+    // Handle image upload
+    String imageUrl = service.image;
+
+    if (service.image.startsWith('file://') ||
+        (service.image.isNotEmpty && !service.image.startsWith('http'))) {
+      try {
+        final file = File(service.image);
+        if (await file.exists()) {
+          imageUrl = await UploadMediaHelper.uploadImage(file) ?? service.image;
+        } else {
+          print('Image file does not exist: ${service.image}');
+          imageUrl = '';
+        }
+      } catch (e) {
+        print('Error uploading image: $e');
+        imageUrl = service.image;
+      }
+    }
+
     return RequestHundler.handleRequest<Unit>(
       request: () => RequestHundler.dio.post(
         '/services',
@@ -26,12 +43,13 @@ class ManageProviderServices {
           "category": service.category,
           "serviceType": service.serviceType,
           "subType": service.subType,
-          "basePrice": service.basePrice, // per hour
-          "pricingModel": service.pricingModel, // hourly or fixed
-          "duration": service.duration, // minimum 1 hour
-          "image": imageUrl,
-          "active": true,
-          "isApproved": true,
+          "basePrice": service.basePrice,
+          "pricingModel": service.pricingModel,
+          "duration": service.duration,
+          "image": imageUrl, // Use the processed image URL
+          "active": service.active, // Use the service's active value
+          "isApproved":
+              service.isApproved, // Use the service's isApproved value
           "availableDays": service.availableDays,
           "availableSlots": service.availableSlots
               .map((slot) => {
@@ -54,13 +72,19 @@ class ManageProviderServices {
     );
   }
 
-  // Example method to delete a service
-  Future<Either<Failure, Unit>> deleteService(String serviceId) async {
-    String token = CacheHelper.getString('token') ?? '';
+  // Example method to change active servicevice
+  Future<Either<Failure, Unit>> toggleServiceStatus(
+    String serviceId, bool isActive) async {
+  final token = CacheHelper.getString('token') ?? '';
+
+  final String endpoint = isActive
+      ? '/services/unactive/$serviceId'
+      : '/services/active/$serviceId';
+
+  try {
     return RequestHundler.handleRequest<Unit>(
-      request: () => RequestHundler.dio.delete(
-        '/services/service/$serviceId',
-        // data: {},
+      request: () => RequestHundler.dio.put(
+        endpoint,
         options: Options(
           headers: {
             'Content-Type': 'application/json',
@@ -69,11 +93,17 @@ class ManageProviderServices {
         ),
       ),
       onSuccess: (data) {
-        print('Service added successfully: $data');
-        return unit; // Return unit if no specific data is expected
+        debugPrint(
+          'Service ${isActive ? "deactivated" : "activated"} successfully → $serviceId',
+        );
+        return unit; // No payload expected, just success
       },
     );
+  } catch (e, stack) {
+    debugPrint('Unexpected error while toggling service $serviceId: $e\n$stack');
+    return left(Failure('Unexpected error occurred'));
   }
+}
 
   Future<Either<Failure, Unit>> updateService(ServiceModel service) async {
     String token = CacheHelper.getString('token') ?? '';

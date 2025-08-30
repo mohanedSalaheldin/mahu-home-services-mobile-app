@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mahu_home_services_app/core/errors/failures.dart';
 import 'package:mahu_home_services_app/core/utils/helpers/cache_helper.dart';
+import 'package:mahu_home_services_app/features/services/models/new_booking_model.dart';
 import 'package:mahu_home_services_app/features/services/models/service_model.dart';
 import 'package:mahu_home_services_app/features/user_booking/models/booking_model.dart';
 import 'package:mahu_home_services_app/features/user_booking/services/user_booking_services.dart';
@@ -65,22 +66,28 @@ class UserBookingCubit extends Cubit<UserBookingState> {
     }
   }
 
-  Future<void> createBooking(UserBookingModel bookingMode) async {
-    print(bookingMode);
+  void createBooking(Map<String, dynamic> bookingData) {
     emit(CreateUserBookingLoading());
 
-    final availableServices = await _bookingServices.createBooking(bookingMode);
-    availableServices.fold(
-      (failure) {
-        emit(CreateUserBookingError(failure));
-      },
-      (_) {
-        emit(CreateUserBookingSuccess());
-      },
-    );
+    _bookingServices.createBooking(bookingData).then((result) {
+      result.fold(
+        (failure) {
+          emit(CreateUserBookingError(failure));
+        },
+        (_) {
+          emit(CreateUserBookingSuccess());
+          // Refresh bookings if needed
+          // getUser();
+        },
+      );
+    }).catchError((error) {
+      emit(CreateUserBookingError(Failure(error.toString())));
+    });
   }
 
-  List<UserBookingModel> myBookings = [];
+  List<BookingNewModel> myBookings = [];
+
+  get currentlyProcessingService => null;
 
   Future<void> getMyBookings() async {
     emit(UserGetMyBookingsLoadingState());
@@ -90,8 +97,8 @@ class UserBookingCubit extends Cubit<UserBookingState> {
     result.fold(
       (failure) => emit(UserGetMyBookingsErrorState(failure)),
       (bookings) {
-        myBookings = bookings.cast<UserBookingModel>();
-        emit(UserGetMyBookingsSuccessState(bookings.cast<UserBookingModel>()));
+        myBookings = bookings;
+        emit(UserGetMyBookingsSuccessState(bookings.cast<BookingNewModel>()));
       },
     );
   }
@@ -172,6 +179,8 @@ class UserBookingCubit extends Cubit<UserBookingState> {
           orElse: () => ServiceModel(
             id: '',
             name: '',
+            totalReviews: 0,
+            averageRating: 0,
             description: '',
             category: '',
             serviceType: '',
@@ -191,6 +200,7 @@ class UserBookingCubit extends Cubit<UserBookingState> {
             lastName: '',
             avatar: '',
             v: 0,
+            reviews: [],
           ),
         );
 

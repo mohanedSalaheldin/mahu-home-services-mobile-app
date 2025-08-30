@@ -10,7 +10,8 @@ import 'package:mahu_home_services_app/features/services/cubit/services_cubit.da
 import 'package:mahu_home_services_app/features/services/cubit/services_state.dart';
 import 'package:mahu_home_services_app/features/services/models/booking_model.dart';
 import 'package:mahu_home_services_app/features/services/views/screens/booking_details_screen.dart'
-as booking_details;
+    as booking_details;
+import 'package:url_launcher/url_launcher.dart';
 
 class ServiceProviderBookingsScreen extends StatefulWidget {
   const ServiceProviderBookingsScreen({super.key});
@@ -52,7 +53,8 @@ class _ServiceProviderBookingsScreenState
               const PopupMenuItem(value: 'All', child: Text('All Bookings')),
               const PopupMenuItem(value: 'pending', child: Text('Pending')),
               const PopupMenuItem(value: 'confirmed', child: Text('Confirmed')),
-              const PopupMenuItem(value: 'confirmed', child: Text('In Progress')),
+              const PopupMenuItem(
+                  value: 'confirmed', child: Text('In Progress')),
               const PopupMenuItem(value: 'completed', child: Text('Completed')),
               const PopupMenuItem(value: 'cancelled', child: Text('Cancelled')),
             ],
@@ -83,9 +85,8 @@ class _ServiceProviderBookingsScreenState
         },
         builder: (context, state) {
           if (state is GetMyBookingsLoadingState) {
-            return const Center(child: CircularProgressIndicator(
-                color: Colors.blue
-              ));
+            return const Center(
+                child: CircularProgressIndicator(color: Colors.blue));
           }
           if (state is GetMyBookingsFailedState) {
             return Center(child: Text('Error: ${state.failure}'));
@@ -99,11 +100,11 @@ class _ServiceProviderBookingsScreenState
               Expanded(
                 child: _selectedDayBookings.isNotEmpty
                     ? ListView.builder(
-                  padding: EdgeInsets.all(AppConst.appPadding.w),
-                  itemCount: _selectedDayBookings.length,
-                  itemBuilder: (context, index) =>
-                      _buildBookingCard(context, _selectedDayBookings[index]),
-                )
+                        padding: EdgeInsets.all(AppConst.appPadding.w),
+                        itemCount: _selectedDayBookings.length,
+                        itemBuilder: (context, index) => _buildBookingCard(
+                            context, _selectedDayBookings[index]),
+                      )
                     : _buildNoBookingsUI(),
               ),
             ],
@@ -115,9 +116,12 @@ class _ServiceProviderBookingsScreenState
 
   Widget _buildStatsBar() {
     final pendingCount = _bookings.where((b) => b.status == 'pending').length;
-    final confirmedCount = _bookings.where((b) => b.status == 'confirmed').length;
-    final completedCount = _bookings.where((b) => b.status == 'completed').length;
-    final cancelledCount = _bookings.where((b) => b.status == 'cancelled').length;
+    final confirmedCount =
+        _bookings.where((b) => b.status == 'confirmed').length;
+    final completedCount =
+        _bookings.where((b) => b.status == 'completed').length;
+    final cancelledCount =
+        _bookings.where((b) => b.status == 'cancelled').length;
 
     return Container(
       padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
@@ -139,6 +143,16 @@ class _ServiceProviderBookingsScreenState
         ],
       ),
     );
+  }
+
+  Future<void> _makePhoneCall(String phoneNumber) async {
+    final Uri launchUri = Uri(
+      scheme: 'tel',
+      path: phoneNumber,
+    );
+    if (!await launchUrl(launchUri)) {
+      throw Exception('Could not launch $phoneNumber');
+    }
   }
 
   Widget _buildStatItem(String label, int count, Color color) {
@@ -201,7 +215,8 @@ class _ServiceProviderBookingsScreenState
   Widget _buildBookingCard(BuildContext context, BookingModel booking) {
     // Get the booking date from schedule or use createdAt as fallback
     DateTime bookingDate = booking.schedule?.startDate ?? booking.createdAt;
-    String clientName = "${booking.user.profile.firstName} ${booking.user.profile.lastName}";
+    String clientName =
+        "${booking.user.profile.firstName} ${booking.user.profile.lastName}";
 
     return Card(
       margin: EdgeInsets.only(bottom: 16.h),
@@ -215,16 +230,23 @@ class _ServiceProviderBookingsScreenState
             context,
             MaterialPageRoute(
               builder: (context) => booking_details.BookingDetailsScreen(
-                booking: booking_details.Booking(
-                  serviceName: booking.service.name,
-                  clientName: clientName,
-                  rating: 4.5, // Default rating since it's not in BookingModel
-                  reviews: 0, // Default reviews since it's not in BookingModel
-                  address:  "${booking.address!.city} / ${booking.address!.state} / ${booking.address!.street}" ?? "No address provided",
-                  date: bookingDate,
+                booking: BookingModel(
+                  id: booking.id,
+                  service: booking.service,
+                  user: booking.user,
+                  provider: booking.provider,
+                  serviceType: booking.serviceType,
+                  schedule: booking.schedule,
+                  price: booking.price,
+                  bookingDate: booking.bookingDate,
+                  dayOfWeek: booking.dayOfWeek,
+                  createdAt: booking.createdAt,
+                  updatedAt: booking.updatedAt,
+                  option: booking.option,
+                  duration: booking.duration,
+                  address: booking.address,
                   status: _formatStatus(booking.status),
                   paymentStatus: booking.paymentStatus,
-                  amount: booking.price, id: booking.id,
                 ),
               ),
             ),
@@ -304,7 +326,7 @@ class _ServiceProviderBookingsScreenState
                   Icon(Icons.access_time, size: 16, color: Colors.grey),
                   Gap(8.w),
                   Text(
-                    DateFormat('h:mm a').format(bookingDate),
+                    booking.schedule!.startTime ?? '',
                     style: TextStyle(fontSize: 14.sp),
                   ),
                   Gap(16.w),
@@ -412,17 +434,7 @@ class _ServiceProviderBookingsScreenState
               title: Text('Call ${booking.user.profile.firstName}'),
               subtitle: Text(booking.user.phone),
               onTap: () {
-                Navigator.pop(context);
-                // Add phone call functionality
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.email),
-              title: Text('Email ${booking.user.profile.firstName}'),
-              subtitle: Text(booking.user.email),
-              onTap: () {
-                Navigator.pop(context);
-                // Add email functionality
+                _makePhoneCall(booking.user.phone);
               },
             ),
           ],
@@ -434,29 +446,39 @@ class _ServiceProviderBookingsScreenState
   void _handleStatusAction(BuildContext context, BookingModel booking) {
     switch (booking.status) {
       case 'pending':
-        _showStatusChangeDialog(context, booking, 'confirmed', 'Confirm this booking?');
+        _showStatusChangeDialog(
+            context, booking, 'confirmed', 'Confirm this booking?');
         break;
       case 'confirmed':
-        _showStatusChangeDialog(context, booking, 'in-progress', 'Start this job?');
+        _showStatusChangeDialog(
+            context, booking, 'in-progress', 'Start this job?');
         break;
       case 'in-progress':
-        _showStatusChangeDialog(context, booking, 'completed', 'Mark as completed?');
+        _showStatusChangeDialog(
+            context, booking, 'completed', 'Mark as completed?');
         break;
       case 'completed':
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => booking_details.BookingDetailsScreen(
-              booking: booking_details.Booking(
-                serviceName: booking.service.name,
-                clientName: "${booking.user.profile.firstName} ${booking.user.profile.lastName}",
-                rating: 4.5,
-                reviews: 0,
-                address: booking.details ?? "No address provided",
-                date: booking.schedule?.startDate ?? booking.createdAt,
+              booking: BookingModel(
+                id: booking.id,
+                service: booking.service,
+                user: booking.user,
+                provider: booking.provider,
+                serviceType: booking.serviceType,
+                schedule: booking.schedule,
+                price: booking.price,
+                bookingDate: booking.bookingDate,
+                dayOfWeek: booking.dayOfWeek,
+                createdAt: booking.createdAt,
+                updatedAt: booking.updatedAt,
+                option: booking.option,
+                duration: booking.duration,
+                address: booking.address,
                 status: _formatStatus(booking.status),
                 paymentStatus: booking.paymentStatus,
-                amount: booking.price, id: booking.id,
               ),
             ),
           ),
@@ -465,7 +487,8 @@ class _ServiceProviderBookingsScreenState
     }
   }
 
-  void _showStatusChangeDialog(BuildContext context, BookingModel booking, String newStatus, String message) {
+  void _showStatusChangeDialog(BuildContext context, BookingModel booking,
+      String newStatus, String message) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -479,7 +502,9 @@ class _ServiceProviderBookingsScreenState
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              context.read<ServiceCubit>().changeBookingStatus(booking.id, newStatus);
+              context
+                  .read<ServiceCubit>()
+                  .changeBookingStatus(booking.id, newStatus);
             },
             child: const Text('Confirm'),
           ),
@@ -536,9 +561,9 @@ class _ServiceProviderBookingsScreenState
 
   Widget _buildCalendar() {
     final firstDayOfMonth =
-    DateTime(_selectedDate.year, _selectedDate.month, 1);
+        DateTime(_selectedDate.year, _selectedDate.month, 1);
     final lastDayOfMonth =
-    DateTime(_selectedDate.year, _selectedDate.month + 1, 0);
+        DateTime(_selectedDate.year, _selectedDate.month + 1, 0);
     final daysInMonth = lastDayOfMonth.day;
     final startingWeekday = firstDayOfMonth.weekday;
 
@@ -561,7 +586,7 @@ class _ServiceProviderBookingsScreenState
             itemBuilder: (context, index) {
               final dayOffset = index - startingWeekday + 1;
               final day =
-              dayOffset > 0 && dayOffset <= daysInMonth ? dayOffset : null;
+                  dayOffset > 0 && dayOffset <= daysInMonth ? dayOffset : null;
               final date = day != null
                   ? DateTime(_selectedDate.year, _selectedDate.month, day)
                   : null;
@@ -570,7 +595,8 @@ class _ServiceProviderBookingsScreenState
               final isSelected = date?.isSameDate(_selectedDate) ?? false;
               final hasBooking = date != null &&
                   _bookings.any((booking) =>
-                      (booking.schedule?.startDate ?? booking.createdAt).isSameDate(date));
+                      (booking.schedule?.startDate ?? booking.createdAt)
+                          .isSameDate(date));
 
               return GestureDetector(
                 onTap: () {
@@ -599,12 +625,12 @@ class _ServiceProviderBookingsScreenState
                           color: day == null
                               ? Colors.transparent
                               : isSelected
-                              ? Colors.white
-                              : isToday
-                              ? AppColors.blue
-                              : Colors.black,
+                                  ? Colors.white
+                                  : isToday
+                                      ? AppColors.blue
+                                      : Colors.black,
                           fontWeight:
-                          isToday ? FontWeight.bold : FontWeight.normal,
+                              isToday ? FontWeight.bold : FontWeight.normal,
                         ),
                       ),
                       if (hasBooking)
@@ -633,20 +659,20 @@ class _ServiceProviderBookingsScreenState
       children: weekdays
           .map(
             (day) => Expanded(
-          child: Container(
-            alignment: Alignment.center,
-            padding: EdgeInsets.symmetric(vertical: 8.h),
-            child: Text(
-              day,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: Colors.grey,
+              child: Container(
+                alignment: Alignment.center,
+                padding: EdgeInsets.symmetric(vertical: 8.h),
+                child: Text(
+                  day,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey,
+                  ),
+                ),
               ),
             ),
-          ),
-        ),
-      )
+          )
           .toList(),
     );
   }
@@ -746,11 +772,15 @@ class _ServiceProviderBookingsScreenState
   }
 
   IconData _getServiceIcon(String serviceName) {
-    if (serviceName.toLowerCase().contains('cleaning')) return Icons.cleaning_services;
-    if (serviceName.toLowerCase().contains('ac') || serviceName.toLowerCase().contains('air')) return Icons.ac_unit;
+    if (serviceName.toLowerCase().contains('cleaning'))
+      return Icons.cleaning_services;
+    if (serviceName.toLowerCase().contains('ac') ||
+        serviceName.toLowerCase().contains('air')) return Icons.ac_unit;
     if (serviceName.toLowerCase().contains('plumb')) return Icons.plumbing;
-    if (serviceName.toLowerCase().contains('electric')) return Icons.electrical_services;
-    if (serviceName.toLowerCase().contains('garden') || serviceName.toLowerCase().contains('lawn')) return Icons.grass;
+    if (serviceName.toLowerCase().contains('electric'))
+      return Icons.electrical_services;
+    if (serviceName.toLowerCase().contains('garden') ||
+        serviceName.toLowerCase().contains('lawn')) return Icons.grass;
     if (serviceName.toLowerCase().contains('paint')) return Icons.format_paint;
     return Icons.home_repair_service;
   }

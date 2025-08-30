@@ -4,6 +4,7 @@ import 'package:mahu_home_services_app/core/errors/failures.dart';
 import 'package:mahu_home_services_app/core/utils/helpers/request_hundler.dart';
 import 'package:mahu_home_services_app/core/utils/helpers/cache_helper.dart';
 import 'package:mahu_home_services_app/features/services/models/booking_model.dart';
+import 'package:mahu_home_services_app/features/services/models/new_booking_model.dart';
 
 class BookingServices {
   Future<Either<Failure, List<BookingModel>>> getMyBookings() {
@@ -24,10 +25,10 @@ class BookingServices {
     );
   }
 
-  Future<Either<Failure, List<BookingModel>>> getUserPreviousBookings() {
+  Future<Either<Failure, List<BookingNewModel>>> getUserPreviousBookings() {
     String token = CacheHelper.getString('token') ?? '';
 
-    return RequestHundler.handleRequest<List<BookingModel>>(
+    return RequestHundler.handleRequest<List<BookingNewModel>>(
       request: () => RequestHundler.dio.get(
         '/users/me/bookings',
         queryParameters: {
@@ -41,7 +42,7 @@ class BookingServices {
       onSuccess: (data) {
         // { success: true, count: x, pagination: {...}, data: [ bookings ] }
         final bookingsJson = data['data'] as List;
-        return bookingsJson.map((book) => BookingModel.fromJson(book)).toList();
+        return bookingsJson.map((book) => BookingNewModel.fromJson(book)).toList();
       },
     );
   }

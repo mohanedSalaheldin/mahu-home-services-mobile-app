@@ -27,7 +27,7 @@ final class CreateUserBookingLoading extends UserBookingState {}
 class UserGetMyBookingsLoadingState extends UserBookingState {}
 
 class UserGetMyBookingsSuccessState extends UserBookingState {
-  final List<UserBookingModel> bookings;
+  final List<BookingNewModel> bookings;
   UserGetMyBookingsSuccessState(this.bookings);
 }
 

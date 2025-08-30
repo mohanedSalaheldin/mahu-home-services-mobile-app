@@ -26,7 +26,8 @@ class RecommendedServicesWidget extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        
+          Text('Recommended services for you',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         Gap(12.h),
         Column(
           children: services

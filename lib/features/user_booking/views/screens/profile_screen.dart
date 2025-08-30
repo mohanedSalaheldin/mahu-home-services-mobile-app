@@ -3,11 +3,13 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
+import 'package:mahu_home_services_app/features/auth/client_auth/views/screens/login_screen.dart';
 import 'package:mahu_home_services_app/features/landing/views/screens/choose_rule_screen.dart';
 import 'package:mahu_home_services_app/core/utils/helpers/cache_helper.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:mahu_home_services_app/features/services/services/profile_services.dart';
 import 'package:mahu_home_services_app/features/services/models/user_base_profile_model.dart';
+import 'package:mahu_home_services_app/features/user_booking/views/screens/edit_profile_screen.dart';
 import 'package:mahu_home_services_app/features/user_booking/views/screens/Help_center_screen.dart';
 import 'package:mahu_home_services_app/features/user_booking/views/screens/privacy_policy_screen.dart';
 import 'package:mahu_home_services_app/features/user_booking/views/screens/terms_of_service.dart';
@@ -66,7 +68,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               color: AppColors.primary,
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -77,91 +79,44 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           .fadeIn(delay: 100.ms),
                     if (_userProfile == null && _errorMessage == null)
                       _buildEmptyState(),
-                    Gap(24.h),
+                    Gap(32.h),
 
                     // Account Section
-                    Text(
-                      'ACCOUNT',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.grey.shade600,
-                        letterSpacing: 1.2,
-                      ),
-                    ).animate().fadeIn(delay: 200.ms),
-                    Gap(12.h),
+                    _sectionTitle('ACCOUNT', delay: 200.ms),
+                    Gap(16.h),
 
                     _ProfileOption(
                       icon: Icons.person_outline_rounded,
                       title: 'Personal Information',
                       subtitle: 'Update your personal details',
-                      onTap: () => _showComingSoon(context),
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              EditProfileScreen(user: _userProfile!),
+                        ),
+                      ).then((updatedProfile) {
+                        if (updatedProfile != null) {
+                          // setState(() {
+                          //   _userProfile = updatedProfile;
+                          // });
+                        }
+                      }),
                     ).animate().fadeIn(delay: 250.ms),
-                    Gap(12.h),
-
-                    _ProfileOption(
-                      icon: Icons.location_on_outlined,
-                      title: 'Address Book',
-                      subtitle: 'Manage your addresses',
-                      onTap: () => _showComingSoon(context),
-                    ).animate().fadeIn(delay: 300.ms),
-                    Gap(12.h),
+                    Gap(16.h),
 
                     // _ProfileOption(
-                    //   icon: Icons.notifications_outlined,
-                    //   title: 'Notifications',
-                    //   subtitle: 'Manage your preferences',
+                    //   icon: Icons.location_on_outlined,
+                    //   title: 'Address Book',
+                    //   subtitle: 'Manage your addresses',
                     //   onTap: () => _showComingSoon(context),
-                    // ).animate().fadeIn(delay: 350.ms),
+                    // ).animate().fadeIn(delay: 300.ms),
 
-                    // // Services Section
-                    // Text(
-                    //   'SERVICES',
-                    //   style: TextStyle(
-                    //     fontSize: 12,
-                    //     fontWeight: FontWeight.w600,
-                    //     color: Colors.grey.shade600,
-                    //     letterSpacing: 1.2,
-                    //   ),
-                    // ).animate().fadeIn(delay: 400.ms),
-                    // Gap(12.h),
-
-                    // _ProfileOption(
-                    //   icon: Icons.history_rounded,
-                    //   title: 'Booking History',
-                    //   subtitle: 'View your past bookings',
-                    //   onTap: () => _showComingSoon(context),
-                    // ).animate().fadeIn(delay: 450.ms),
-                    // Gap(12.h),
-
-                    // _ProfileOption(
-                    //   icon: Icons.favorite_outline_rounded,
-                    //   title: 'Favorites',
-                    //   subtitle: 'Your saved services',
-                    //   onTap: () => _showComingSoon(context),
-                    // ).animate().fadeIn(delay: 500.ms),
-                    // Gap(12.h),
-
-                    // _ProfileOption(
-                    //   icon: Icons.star_outline_rounded,
-                    //   title: 'Reviews',
-                    //   subtitle: 'Your service reviews',
-                    //   onTap: () => _showComingSoon(context),
-                    // ).animate().fadeIn(delay: 550.ms),
-
-                    Gap(24.h),
+                    // Gap(32.h),
 
                     // Support Section
-                    Text(
-                      'SUPPORT',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.grey.shade600,
-                        letterSpacing: 1.2,
-                      ),
-                    ).animate().fadeIn(delay: 600.ms),
-                    Gap(12.h),
+                    _sectionTitle('SUPPORT', delay: 600.ms),
+                    Gap(16.h),
 
                     _ProfileOption(
                       icon: Icons.help_outline_rounded,
@@ -173,7 +128,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             builder: (context) => const HelpCenterScreen()),
                       ),
                     ).animate().fadeIn(delay: 650.ms),
-                    Gap(12.h),
+                    Gap(16.h),
 
                     _ProfileOption(
                       icon: Icons.security_outlined,
@@ -185,7 +140,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             builder: (context) => const PrivacyPolicyScreen()),
                       ),
                     ).animate().fadeIn(delay: 700.ms),
-                    Gap(12.h),
+                    Gap(16.h),
 
                     _ProfileOption(
                       icon: Icons.description_outlined,
@@ -198,7 +153,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ).animate().fadeIn(delay: 750.ms),
 
-                    Gap(24.h),
+                    Gap(32.h),
 
                     // Logout Section
                     _ProfileOption(
@@ -209,12 +164,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       color: Colors.red,
                     ).animate().fadeIn(delay: 800.ms),
 
-                    Gap(32.h),
+                    Gap(40.h),
                   ],
                 ),
               ),
             ),
     );
+  }
+
+  Widget _sectionTitle(String title, {Duration? delay}) {
+    return Text(
+      title,
+      style: TextStyle(
+        fontSize: 13,
+        fontWeight: FontWeight.w600,
+        color: Colors.grey.shade600,
+        letterSpacing: 1.3,
+      ),
+    ).animate().fadeIn(delay: delay ?? 0.ms);
   }
 
   Widget _buildLoadingState() {
@@ -223,14 +190,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           SizedBox(
-            width: 60.w,
-            height: 60.w,
+            width: 70.w,
+            height: 70.w,
             child: CircularProgressIndicator(
-              strokeWidth: 3,
+              strokeWidth: 4,
               color: AppColors.primary,
             ),
           ),
-          Gap(24.h),
+          Gap(28.h),
           Text(
             'Loading your profile...',
             style: TextStyle(
@@ -245,28 +212,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildErrorState() {
     return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
-      margin: EdgeInsets.only(bottom: 16.h),
+      elevation: 3,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18.r)),
+      margin: EdgeInsets.only(bottom: 20.h),
       child: Padding(
-        padding: EdgeInsets.all(20.w),
+        padding: EdgeInsets.all(24.w),
         child: Column(
           children: [
             Icon(
               Icons.error_outline_rounded,
-              size: 48,
+              size: 52,
               color: Colors.red.shade400,
             ),
-            Gap(12.h),
+            Gap(14.h),
             Text(
               'Failed to load profile',
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 17,
                 fontWeight: FontWeight.bold,
                 color: Colors.grey.shade800,
               ),
             ),
-            Gap(8.h),
+            Gap(10.h),
             Text(
               _errorMessage ?? 'Please try again later',
               style: TextStyle(
@@ -275,13 +242,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               textAlign: TextAlign.center,
             ),
-            Gap(16.h),
+            Gap(18.h),
             ElevatedButton(
               onPressed: _loadUserProfile,
               style: ElevatedButton.styleFrom(
+                padding: EdgeInsets.symmetric(horizontal: 28.w, vertical: 12.h),
                 backgroundColor: AppColors.primary,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(14.r),
                 ),
               ),
               child: Text(
@@ -300,27 +268,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildEmptyState() {
     return Card(
-      elevation: 2,
+      elevation: 3,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
       margin: EdgeInsets.zero,
       child: Padding(
-        padding: EdgeInsets.all(20.w),
+        padding: EdgeInsets.all(24.w),
         child: Row(
           children: [
             Container(
-              width: 80.w,
-              height: 80.w,
+              width: 85.w,
+              height: 85.w,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: Colors.grey.shade200,
               ),
               child: Icon(
                 Icons.person,
-                size: 32,
+                size: 36,
                 color: Colors.grey.shade400,
               ),
             ),
-            Gap(16.w),
+            Gap(18.w),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -333,7 +301,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       color: Colors.grey.shade800,
                     ),
                   ),
-                  Gap(4.h),
+                  Gap(6.h),
                   Text(
                     'No profile information available',
                     style: TextStyle(
@@ -389,7 +357,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text(
+            child: const Text(
               'Log Out',
               style: TextStyle(
                 color: Colors.red,
@@ -406,7 +374,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => const RoleSelectionScreen(),
+          builder: (context) => const LoginScreen(),
         ),
       );
     }
@@ -421,24 +389,26 @@ class _ProfileHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final name = '${user.firstName ?? ''} ${user.lastName ?? ''}'.trim();
-    final displayName = name.isNotEmpty ? name : 'User';
-    final email = user.email ?? 'user@example.com';
-    final phone = user.phone ?? 'No phone number';
-    final avatar = user.avatar;
+    final displayName = name.isNotEmpty
+        ? name
+        : '${user.firstName ?? ''} ${user.lastName ?? ''}'.trim();
+    final email = user.email ?? (user.email ?? '').trim();
+    final phone = user.phone ?? (user.phone ?? '').trim();
+    final avatar = user.avatar ?? (user.avatar ?? '').trim();
     final businessName = user.businessName;
 
     return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
-      margin: EdgeInsets.all(10.w),
+      elevation: 3,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18.r)),
+      margin: EdgeInsets.symmetric(vertical: 12.h),
       child: Padding(
-        padding: EdgeInsets.all(20.h),
+        padding: EdgeInsets.all(24.w),
         child: Row(
           children: [
             // Profile Avatar
             Container(
-              width: 80.w,
-              height: 80.w,
+              width: 85.w,
+              height: 85.w,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
@@ -473,7 +443,7 @@ class _ProfileHeader extends StatelessWidget {
                       ),
               ),
             ),
-            Gap(16.w),
+            Gap(20.w),
 
             // User Info
             Expanded(
@@ -484,26 +454,26 @@ class _ProfileHeader extends StatelessWidget {
                     Text(
                       businessName,
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 17,
                         fontWeight: FontWeight.bold,
                         color: Colors.grey.shade800,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    Gap(2.h),
+                    Gap(4.h),
                   ],
                   Text(
                     displayName,
                     style: TextStyle(
-                      fontSize: businessName != null ? 14 : 16,
+                      fontSize: businessName != null ? 15 : 17,
                       fontWeight: FontWeight.bold,
                       color: Colors.grey.shade800,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  Gap(4.h),
+                  Gap(6.h),
                   Text(
                     email,
                     style: TextStyle(
@@ -513,7 +483,7 @@ class _ProfileHeader extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  Gap(2.h),
+                  Gap(4.h),
                   Text(
                     phone,
                     style: TextStyle(
@@ -526,16 +496,6 @@ class _ProfileHeader extends StatelessWidget {
                 ],
               ),
             ),
-
-            // Edit Button
-            // IconButton(
-            //   onPressed: () => _showComingSoon(context),
-            //   icon: Icon(
-            //     Icons.edit_outlined,
-            //     color: AppColors.primary,
-            //     size: 20,
-            //   ),
-            // ),
           ],
         ),
       ),
@@ -564,36 +524,37 @@ class _ProfileOption extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(14.r),
         child: Container(
-          padding: EdgeInsets.all(16.w),
+          margin: EdgeInsets.only(bottom: 6.h),
+          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 18.h),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(12.r),
+            borderRadius: BorderRadius.circular(14.r),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.05),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
               ),
             ],
           ),
           child: Row(
             children: [
               Container(
-                width: 40.w,
-                height: 40.w,
+                width: 44.w,
+                height: 44.w,
                 decoration: BoxDecoration(
-                  color: (color ?? AppColors.primary).withOpacity(0.1),
+                  color: (color ?? AppColors.primary).withOpacity(0.12),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   icon,
-                  size: 20,
+                  size: 22,
                   color: color ?? AppColors.primary,
                 ),
               ),
-              Gap(16.w),
+              Gap(18.w),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -602,15 +563,15 @@ class _ProfileOption extends StatelessWidget {
                       title,
                       style: TextStyle(
                         fontSize: 16,
-                        fontWeight: FontWeight.w500,
+                        fontWeight: FontWeight.w600,
                         color: color ?? Colors.grey.shade800,
                       ),
                     ),
-                    Gap(2.h),
+                    Gap(4.h),
                     Text(
                       subtitle,
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 13,
                         color: Colors.grey.shade600,
                       ),
                     ),

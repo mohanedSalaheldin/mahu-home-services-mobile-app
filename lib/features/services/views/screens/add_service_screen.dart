@@ -124,9 +124,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
         builder: (context, state) {
           if (state is ServiceCreationLoadingState) {
             return const Center(
-              child: CircularProgressIndicator(
-                color: Colors.blue
-              ),
+              child: CircularProgressIndicator(color: Colors.blue),
             );
           }
           return Padding(
@@ -364,41 +362,46 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
 
                             // Create service model
                             final service = ServiceModel(
-                              id: '',
-                              name: _serviceNameController.text,
-                              description: _descriptionController.text,
-                              category: CacheHelper.getString("serviceProviderCategory") ?? " ",
-                              serviceType: _isServiceTypeRecurring
-                                  ? 'recurring'
-                                  : 'one-time',
-                              subType: _serviceSubType,
-                              basePrice:
-                                  double.parse(_basePriceController.text),
-                              pricingModel:
-                                  _isPricingModelHourly ? 'hourly' : 'fixed',
-                              duration: int.parse(_durationController.text),
-                              image: _selectedImage?.path ?? '',
-                              active: _isActiveImmediately,
-                              provider:
-                                  CacheHelper.getProviderData(), // Replace with actual ProviderData object
-                              isApproved: _isActiveImmediately,
-                              createdAt: DateTime.now(),
-                              availableDays: _selectedDays,
-                              availableSlots: _timeSlots
-                                  .map(
-                                    (slot) => TimeSlot(
-                                      id: '1',
-                                      startTime: slot['startTime']!,
-                                      endTime: slot['endTime']!,
-                                    ),
-                                  )
-                                  .toList(),
-                              v: 1, 
-                              businessName: '',
-                              firstName: '',
-                              lastName: '',
-                              avatar: '',
-                            );
+                                id: '',
+                                name: _serviceNameController.text,
+                                description: _descriptionController.text,
+                                category: CacheHelper.getString(
+                                        "serviceProviderCategory") ??
+                                    " ",
+                                serviceType: _isServiceTypeRecurring
+                                    ? 'recurring'
+                                    : 'one-time',
+                                subType: _serviceSubType,
+                                basePrice:
+                                    double.parse(_basePriceController.text),
+                                pricingModel:
+                                    _isPricingModelHourly ? 'hourly' : 'fixed',
+                                duration: int.parse(_durationController.text),
+                                image: _selectedImage?.path ?? '',
+                                active: _isActiveImmediately,
+                                provider:
+                                    CacheHelper.getString("providerId") ?? "",
+                                // Replace with actual ProviderData object
+                                isApproved: _isActiveImmediately,
+                                createdAt: DateTime.now(),
+                                availableDays: _selectedDays,
+                                availableSlots: _timeSlots
+                                    .map(
+                                      (slot) => TimeSlot(
+                                        id: '1',
+                                        startTime: slot['startTime']!,
+                                        endTime: slot['endTime']!,
+                                      ),
+                                    )
+                                    .toList(),
+                                v: 1,
+                                businessName: '',
+                                firstName: '',
+                                lastName: '',
+                                avatar: '',
+                                totalReviews: 0,
+                                averageRating: 0.0,
+                                reviews: []);
 
                             // Call cubit to create service
                             ServiceCubit.get(context).createService(service);

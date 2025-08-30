@@ -6,6 +6,7 @@ import 'package:mahu_home_services_app/core/models/cleaning_service.dart'
     as models;
 import 'package:mahu_home_services_app/features/services/models/service_model.dart';
 import 'package:mahu_home_services_app/features/user_booking/views/widgets/service_card.dart';
+import 'package:mahu_home_services_app/features/user_booking/views/screens/all_services_screen.dart';
 
 class PopularServicesWidget extends StatelessWidget {
   final List<ServiceModel> services;
@@ -32,10 +33,17 @@ class PopularServicesWidget extends StatelessWidget {
             Text('Popular Services',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             TextButton(
-                onPressed: () {},
-                child: Text('View All',
-                    style:
-                        TextStyle(color: AppColors.primary, fontSize: 12.sp))),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => AllServicesScreen(services: services),
+                  ),
+                );
+              },
+              child: Text('View All',
+                  style: TextStyle(color: AppColors.primary, fontSize: 12.sp)),
+            ),
           ],
         ),
         Gap(12.h),

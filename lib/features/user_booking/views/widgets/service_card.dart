@@ -1,15 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:gap/gap.dart';
-import 'package:mahu_home_services_app/core/models/cleaning_service.dart'
-    as models;
 import 'package:mahu_home_services_app/features/services/models/service_model.dart';
 import 'package:mahu_home_services_app/features/user_booking/views/screens/service_details_screen.dart';
-import 'package:mahu_home_services_app/features/services/services/profile_services.dart';
-import 'package:mahu_home_services_app/features/services/models/user_base_profile_model.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mahu_home_services_app/features/user_booking/cubit/user_booking_cubit.dart';
 
 class ServiceCard extends StatelessWidget {
   final ServiceModel service;
@@ -25,15 +18,6 @@ class ServiceCard extends StatelessWidget {
     required this.onFavoritePressed,
   });
 
-  Future<UserBaseProfileModel?> _getProviderProfile() async {
-    if (service.provider.isNotEmpty) {
-      final result =
-          await ProfileServices().getProviderProfile(service.provider);
-      return result.fold((failure) => null, (profile) => profile);
-    }
-    return null;
-  }
-
   @override
   Widget build(BuildContext context) {
     return InkWell(
@@ -45,144 +29,130 @@ class ServiceCard extends StatelessWidget {
           ),
         );
       },
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(16),
       child: Container(
         width: 160.w,
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(.05),
-              blurRadius: 10,
-              offset: const Offset(0, 5),
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ClipRRect(
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(12)),
-              child: Stack(
-                children: [
-                  CachedNetworkImage(
+            // Image + Favorite Button
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(16)),
+                  child: CachedNetworkImage(
                     height: 120.h,
                     width: double.infinity,
                     imageUrl: service.image,
                     fit: BoxFit.cover,
                     placeholder: (context, url) => Container(
-                      color: Colors.grey.shade200,
+                      color: Colors.grey.shade100,
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation(
+                              Theme.of(context).primaryColor),
+                        ),
+                      ),
                     ),
                     errorWidget: (context, url, error) => Container(
-                      color: Colors.grey.shade200,
+                      color: Colors.grey.shade100,
                       child: Icon(
-                        Icons.error,
+                        Icons.image_not_supported,
                         color: Colors.grey.shade400,
                         size: 32,
                       ),
                     ),
                   ),
-                  // Positioned(
-                  //   top: 8.w,
-                  //   right: 8.w,
-                  //   child: FavoriteButton(
-                  //     isFavorite: isFavorite,
-                  //     isLoading: isLoading,
-                  //     onPressed: onFavoritePressed,
-                  //   ),
-                  // ),
-                ],
-              ),
+                ),
+                Positioned(
+                  top: 8.w,
+                  right: 8.w,
+                  child: FavoriteButton(
+                    isFavorite: isFavorite,
+                    isLoading: isLoading,
+                    onPressed: onFavoritePressed,
+                  ),
+                ),
+              ],
             ),
+
+            // Service Info
             Padding(
-              padding: EdgeInsets.all(8.w),
+              padding: EdgeInsets.all(12.w),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    service.name,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  Gap(4.h),
-                  Text(
-                    '${service.duration} hrs • \$${service.basePrice}',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
-                  Gap(4.h),
-                  FutureBuilder<UserBaseProfileModel?>(
-                    future: _getProviderProfile(),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return SizedBox(
-                          height: 18,
-                          child: Center(
-                            child: SizedBox(
-                              width: 12,
-                              height: 12,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.blue,
-                              ),
-                            ),
+                  // Title + Price
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          service.name,
+                          style: TextStyle(
+                            fontSize: 13.sp,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey.shade800,
                           ),
-                        );
-                      }
-                      if (snapshot.hasData && snapshot.data != null) {
-                        return Row(
-                          children: [
-                            ClipOval(
-                              child: CachedNetworkImage(
-                                imageUrl: snapshot.data!.avatar,
-                                height: 18,
-                                width: 18,
-                                fit: BoxFit.cover,
-                                placeholder: (_, __) => Container(
-                                  height: 18,
-                                  width: 18,
-                                  color: Colors.grey.shade200,
-                                ),
-                                errorWidget: (context, url, error) => Container(
-                                  height: 18,
-                                  width: 18,
-                                  color: Colors.grey.shade200,
-                                  child: Icon(
-                                    Icons.person,
-                                    size: 12,
-                                    color: Colors.grey.shade400,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Gap(6.w),
-                            Expanded(
-                              child: Text(
-                                snapshot.data!.businessName,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        );
-                      }
-                      return const SizedBox();
-                    },
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      SizedBox(width: 4.w),
+                      Text(
+                        '\$${service.basePrice}',
+                        style: TextStyle(
+                          fontSize: 13.sp,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  SizedBox(height: 6.h),
+
+                  // Duration
+                  Row(
+                    children: [
+                      Icon(Icons.access_time,
+                          size: 14, color: Colors.grey.shade600),
+                      SizedBox(width: 4.w),
+                      Text(
+                        'Min Duration: ',
+                        style: TextStyle(
+                          fontSize: 7.sp,
+                          color: Colors.grey.shade600,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      Flexible(
+                        child: Text(
+                          '${service.duration} hours',
+                          style: TextStyle(
+                            fontSize: 11.sp,
+                            color: Colors.grey.shade600,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
-            )
+            ),
           ],
         ),
       ),
@@ -210,110 +180,40 @@ class FavoriteButton extends StatelessWidget {
         width: 28.w,
         height: 28.w,
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.9),
+          color: Colors.white,
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withOpacity(0.15),
               blurRadius: 6,
               offset: const Offset(0, 2),
             ),
           ],
         ),
         child: Center(
-          child: isLoading
-              ? SizedBox(
-                  width: 12.w,
-                  height: 12.w,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 1.5,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      isFavorite ? Colors.red : Colors.grey.shade600,
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            child: isLoading
+                ? SizedBox(
+                    width: 14.w,
+                    height: 14.w,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 1.5,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        isFavorite ? Colors.red : Colors.grey.shade600,
+                      ),
                     ),
+                  )
+                : Icon(
+                    isFavorite ? Icons.favorite : Icons.favorite_border,
+                    color: isFavorite
+                        ? Colors.red
+                        : Colors.grey.shade600.withOpacity(0.8),
+                    size: 16,
                   ),
-                )
-              : Icon(
-                  isFavorite ? Icons.favorite : Icons.favorite_border,
-                  color: isFavorite ? Colors.red : Colors.grey.shade600,
-                  size: 16,
-                ),
+          ),
         ),
       ),
-    );
-  }
-}
-
-// Usage example in a parent widget:
-class ServiceGrid extends StatelessWidget {
-  final List<ServiceModel> services;
-
-  const ServiceGrid({super.key, required this.services});
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<UserBookingCubit, UserBookingState>(
-      builder: (context, state) {
-        final cubit = BlocProvider.of<UserBookingCubit>(context);
-        final isFavoriteOperationLoading = state is FavoriteOperationLoading;
-
-        return GridView.builder(
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
-            childAspectRatio: 0.7,
-          ),
-          itemCount: services.length,
-          itemBuilder: (context, index) {
-            final service = services[index];
-            final isFavorite = cubit.isServiceFavorited(service.id);
-            final isLoading = isFavoriteOperationLoading;
-
-            return ServiceCard(
-              service: service,
-              isFavorite: isFavorite,
-              isLoading: isLoading,
-              onFavoritePressed: () {
-                cubit.toggleFavorite(service.id);
-              },
-            );
-          },
-        );
-      },
-    );
-  }
-}
-
-// Alternative usage with Consumer for simpler cases:
-class ServiceList extends StatelessWidget {
-  final List<ServiceModel> services;
-
-  const ServiceList({super.key, required this.services});
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView.builder(
-      itemCount: services.length,
-      itemBuilder: (context, index) {
-        final service = services[index];
-
-        return BlocBuilder<UserBookingCubit, UserBookingState>(
-          builder: (context, state) {
-            final cubit = BlocProvider.of<UserBookingCubit>(context);
-            final isFavorite = cubit.isServiceFavorited(service.id);
-            final isLoading = state is FavoriteOperationLoading;
-
-            return ServiceCard(
-              service: service,
-              isFavorite: isFavorite,
-              isLoading: isLoading,
-              onFavoritePressed: () {
-                cubit.toggleFavorite(service.id);
-              },
-            );
-          },
-        );
-      },
     );
   }
 }

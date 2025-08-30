@@ -5,6 +5,7 @@ import 'package:mahu_home_services_app/core/utils/app_users_configs.dart';
 import 'package:mahu_home_services_app/core/utils/helpers/cache_helper.dart';
 import 'package:mahu_home_services_app/core/utils/helpers/request_hundler.dart';
 import 'package:mahu_home_services_app/features/services/models/booking_model.dart';
+import 'package:mahu_home_services_app/features/services/models/new_booking_model.dart';
 import 'package:mahu_home_services_app/features/services/models/service_model.dart';
 import 'package:mahu_home_services_app/features/user_booking/models/booking_model.dart';
 
@@ -50,49 +51,88 @@ class UserBookingServices {
     );
   }
 
-  Future<Either<Failure, Unit>> createBooking(UserBookingModel model) {
+  Future<Either<Failure, bool>> cancelBooking(String bookingId, String token) {
+    print('Cancelling booking: $bookingId');
+    return RequestHundler.handleRequest<bool>(
+      request: () => RequestHundler.dio.delete(
+        '/bookings/${bookingId}/cancel',
+        data: {},
+        options: Options(
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+        ),
+      ),
+      onSuccess: (data) {
+        print('API Response: $data'); // Debug print
+
+        // Handle different response formats
+        if (data is Map<String, dynamic>) {
+          // Check if response has 'success' field
+          if (data.containsKey('success')) {
+            final success = data['success'] as bool?;
+            return success ?? false;
+          }
+          // If no 'success' field but response exists, assume success
+          return true;
+        }
+
+        // If response is not a map but exists, assume success
+        return true;
+      },
+    );
+  }
+
+  // booking_service.dart
+  Future<Either<Failure, Unit>> createBooking(
+      Map<String, dynamic> bookingData) {
     String token = CacheHelper.getString('token') ?? '';
+
+    print('Sending booking request: $bookingData');
 
     return RequestHundler.handleRequest<Unit>(
       request: () => RequestHundler.dio.post(
         '/bookings',
-        data: {
-          "service": model.service,
-          "price": model.price, // Include price
-          "schedule": model.schedule.toJson(),
-          "address": model.address.toJson(),
-          if (model.details != null) "details": model.details,
-        },
-        options: Options(headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        }),
+        data: bookingData,
+        options: Options(
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+        ),
       ),
       onSuccess: (data) {
-        print(data);
+        print('Booking created successfully: $data');
         return unit;
       },
     );
   }
 
-  Future<Either<Failure, List<BookingModel>>> getUserPreviousBookings() {
+  // booking_service.dart
+  Future<Either<Failure, List<BookingNewModel>>> getUserPreviousBookings() {
     String token = CacheHelper.getString('token') ?? '';
 
-    return RequestHundler.handleRequest<List<BookingModel>>(
+    return RequestHundler.handleRequest<List<BookingNewModel>>(
       request: () => RequestHundler.dio.get(
         '/users/me/bookings',
-        queryParameters: {
-          'previous': 'true', // مهم عشان يجيب البوكينجات السابقة فقط
-        },
         options: Options(headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
         }),
       ),
       onSuccess: (data) {
-        // { success: true, count: x, pagination: {...}, data: [ bookings ] }
-        final bookingsJson = data['data'] as List;
-        return bookingsJson.map((book) => BookingModel.fromJson(book)).toList();
+        // Handle the API response structure
+        if (data is Map<String, dynamic> && data.containsKey('data')) {
+          final bookingsJson = data['data'] as List;
+          return bookingsJson
+              .map((book) => BookingNewModel.fromJson(book))
+              .toList();
+        } else if (data is List) {
+          // Handle case where response is directly a list
+          return data.map((book) => BookingNewModel.fromJson(book)).toList();
+        }
+        return [];
       },
     );
   }

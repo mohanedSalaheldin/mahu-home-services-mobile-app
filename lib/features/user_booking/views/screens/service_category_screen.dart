@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
 import 'package:mahu_home_services_app/features/services/models/service_model.dart';
+import 'package:mahu_home_services_app/features/services/views/screens/service_provider_jobs.dart';
 import 'package:mahu_home_services_app/features/user_booking/views/screens/service_details_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -39,7 +40,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          widget.categoryName,
+          widget.categoryName.capitalize(),
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -108,7 +109,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
             'https://images.unsplash.com/photo-1512917774080-9991f1c4c750';
         break;
       default:
-        description = 'Browse our cleaning services in this category.';
+        description = 'Browse our ${widget.categoryName} services in this category.';
         imageUrl = 'https://images.unsplash.com/photo-1556911220-bff31c812dba';
     }
 
@@ -250,12 +251,6 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                     // Rating + Price
                     Row(
                       children: [
-                        Icon(Icons.star, color: Colors.amber, size: 16.sp),
-                        Gap(4.w),
-                        Text(
-                          '0 Reviews',
-                          style: TextStyle(fontSize: 12.sp),
-                        ),
                         const Spacer(),
                         Text(
                           '\$${service.basePrice}',
@@ -271,7 +266,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                 ),
               ),
             ),
-          ],
+        ],
         ),
       ),
     ).animate().fadeIn().slide(begin: const Offset(0, 0.1));

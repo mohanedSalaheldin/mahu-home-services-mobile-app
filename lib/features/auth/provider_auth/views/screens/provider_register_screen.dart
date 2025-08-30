@@ -22,6 +22,7 @@ import 'package:mahu_home_services_app/features/landing/views/widgets/app_filled
 import 'package:mahu_home_services_app/features/landing/views/widgets/app_text_button.dart';
 import 'package:mahu_home_services_app/features/landing/views/widgets/have_or_not_an_account_row.dart';
 import 'package:mahu_home_services_app/features/services/views/widgets/image_picker_container.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ProviderRegisterScreen extends StatefulWidget {
   const ProviderRegisterScreen({super.key});
@@ -44,6 +45,8 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
   bool agreedToTerms = false;
   bool showTermsError = false;
   OtpChannel _otpChannel = OtpChannel.phone;
+  String phoneNumber = '';
+  String countryCode = '+20'; // default
 
   XFile? _selectedImage;
   final ImagePicker _picker = ImagePicker();
@@ -62,6 +65,21 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
     }
   }
 
+  Future<void> _loadSavedCountry() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedCode = prefs.getString('selected_country_code') ?? '+20';
+    setState(() {
+      countryCode = savedCode;
+      AppUserConfig.selectedCountryCode = savedCode;
+    });
+  }
+
+  Future<void> _saveCountry(String code) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('selected_country_code', code);
+    AppUserConfig.selectedCountryCode = code;
+  }
+
   @override
   void dispose() {
     emailController.dispose();
@@ -75,7 +93,6 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
     super.dispose();
   }
 
-  String countryCode = '20';
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -114,6 +131,7 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
                     IntlPhoneField(
                       decoration: InputDecoration(
                         labelText: 'Phone Number',
+                        labelStyle: TextStyle(color: Colors.blue),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8.r),
                         ),
@@ -127,37 +145,21 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
                               const BorderSide(color: AppColors.blue, width: 2),
                         ),
                       ),
-                      initialCountryCode: 'EG', // default to Egypt
-                      countries: const [
-                        Country(
-                          code: 'EG',
-                          name: 'Egypt',
-                          dialCode: '20',
-                          flag: '🇪🇬',
-                          nameTranslations: const {'en': 'Egypt', 'ar': 'مصر'},
-                          minLength: 10,
-                          maxLength: 10,
-                        ),
-                        Country(
-                          code: 'AE',
-                          name: 'United Arab Emirates',
-                          dialCode: '971',
-                          flag: '🇦🇪',
-                          nameTranslations: const {
-                            'en': 'United Arab Emirates',
-                            'ar': 'الإمارات العربية المتحدة'
-                          },
-                          minLength: 9,
-                          maxLength: 9,
-                        ),
-                      ], // Only Egypt and UAE
+                      // Use saved country code or fallback to Egypt if none
+                      initialCountryCode: countryCode.isNotEmpty
+                          ? CountryCodeHelper.getCountryCodeFromDial(
+                              countryCode)
+                          : 'EG',
+                      countries: countries, // full country list
                       controller: phoneController,
                       onChanged: (phone) {
-                        countryCode = '${phone.countryCode}';
+                        phoneNumber = phone.completeNumber;
+                        countryCode = phone.countryCode;
+                        _saveCountry(countryCode); // persist selection
                       },
                       onCountryChanged: (country) {
-                        countryCode = '${country.dialCode}';
-                        AppUserConfig.selectedCountryCode = countryCode;
+                        countryCode = '+${country.dialCode}';
+                        _saveCountry(countryCode); // persist selection
                       },
                       validator: (value) {
                         if (value == null || value.number.isEmpty) {
@@ -165,7 +167,14 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
                         }
                         return null;
                       },
+                      dropdownIcon: const Icon(
+                        Icons.arrow_drop_down,
+                        color: AppColors.blue,
+                      ),
+                      style: const TextStyle(color: AppColors.blue),
+                      dropdownTextStyle: const TextStyle(color: AppColors.blue),
                     ),
+
                     Gap(10.h),
                     CustomTextField(
                       label: 'Email',
@@ -414,4 +423,16 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
 
 class AppUserConfig {
   static String selectedCountryCode = '+20'; // default Egypt
+}
+
+class CountryCodeHelper {
+  // Convert '+20' -> 'EG', '+971' -> 'AE', etc.
+  static String getCountryCodeFromDial(String dialCode) {
+    for (var c in countries) {
+      if ('+${c.dialCode}' == dialCode) {
+        return c.code;
+      }
+    }
+    return 'EG'; // fallback if not found
+  }
 }

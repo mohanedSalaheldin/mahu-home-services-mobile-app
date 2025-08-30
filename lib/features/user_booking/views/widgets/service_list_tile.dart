@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 // import 'package:mahu_home_services_app/core/constants/colors.dart';
 import 'package:mahu_home_services_app/features/services/models/service_model.dart';
+import 'package:mahu_home_services_app/features/services/views/screens/service_provider_jobs.dart';
 import 'package:mahu_home_services_app/features/user_booking/views/widgets/favorite_button.dart';
 import 'package:mahu_home_services_app/features/user_booking/views/screens/service_details_screen.dart';
 
@@ -91,7 +92,7 @@ class ServiceListTile extends StatelessWidget {
                     ),
                     Gap(4.h),
                     Text(
-                      service.category,
+                      service.category.capitalize(),
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.grey.shade500,

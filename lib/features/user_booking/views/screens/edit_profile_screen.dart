@@ -26,7 +26,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   late TextEditingController _phoneController;
   late TextEditingController _firstNameController;
   late TextEditingController _lastNameController;
-  late TextEditingController _businessNameController;
+  // late TextEditingController _businessNameController;
 
   File? _avatarImageFile;
   String? _avatarUrl;
@@ -41,7 +41,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _phoneController = TextEditingController(text: widget.user.phone ?? '');
     _firstNameController = TextEditingController(text: widget.user.firstName);
     _lastNameController = TextEditingController(text: widget.user.lastName);
-    _businessNameController = TextEditingController(text: widget.user.businessName);
     _avatarUrl = widget.user.avatar;
   }
 
@@ -139,12 +138,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
 
     final service = ProfileServices();
-    final result = await service.editProviderProfile(
+    final result = await service.editUserProfile(
       email: _emailController.text.trim(),
       phone: _phoneController.text.trim(),
       firstName: _firstNameController.text.trim(),
       lastName: _lastNameController.text.trim(),
-      businessName: _businessNameController.text.trim(),
       avatar: avatarUrl,
     );
 
@@ -391,20 +389,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   controller: _lastNameController,
                   label: 'Last Name',
                   hintText: 'Enter your last name',
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Last name is required';
-                    }
-                    return null;
-                  },
-                ),
-
-
-                Gap(16.h),
-                _buildFormField(
-                  controller: _businessNameController,
-                  label: 'Business Name',
-                  hintText: 'Enter your Business Name',
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Last name is required';

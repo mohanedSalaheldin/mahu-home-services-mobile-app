@@ -1,8 +1,12 @@
+import 'package:mahu_home_services_app/features/user_booking/models/review.dart';
+
 class ServiceModel {
   final String id;
   final String name;
   final String description;
   final String category;
+  double averageRating;
+  int totalReviews;
   final String serviceType;
   final String subType;
   final double basePrice;
@@ -19,17 +23,21 @@ class ServiceModel {
   final String? lastName;
   final String? avatar;
   final String? businessName;
+  final List<Review> reviews;
   final int v;
 
   ServiceModel({
     required this.id,
     required this.name,
+    required this.totalReviews,
+    required this.averageRating,
     required this.description,
     required this.category,
     required this.serviceType,
     required this.subType,
     required this.basePrice,
     required this.pricingModel,
+    required this.reviews,
     required this.duration,
     required this.image,
     required this.active,
@@ -44,6 +52,39 @@ class ServiceModel {
     required this.avatar,
     required this.v,
   });
+
+  // In your ServiceModel class
+  ServiceModel copyWith({
+    bool? active,
+    // Add other fields as needed
+  }) {
+    return ServiceModel(
+      id: id,
+      name: name,
+      description: description,
+      category: category,
+      serviceType: serviceType,
+      subType: subType,
+      basePrice: basePrice,
+      pricingModel: pricingModel,
+      duration: duration,
+      image: image,
+      active: active ?? this.active,
+      provider: provider,
+      isApproved: isApproved,
+      availableDays: availableDays,
+      availableSlots: availableSlots,
+      createdAt: createdAt,
+      v: v,
+      averageRating: averageRating,
+      reviews: reviews,
+      totalReviews: totalReviews,
+      businessName: businessName,
+      firstName: firstName,
+      lastName: lastName,
+      avatar: avatar,
+    );
+  }
 
   factory ServiceModel.fromJson(Map<String, dynamic> json) {
     // Handle provider data based on the actual response structure
@@ -89,6 +130,8 @@ class ServiceModel {
       pricingModel: json['pricingModel'] ?? 'fixed',
       duration: json['duration'] ?? 1,
       image: json['image'] ?? '',
+      averageRating: (json['averageRating'] ?? 0).toDouble(),
+      totalReviews: json['totalReviews'] ?? 0,
       avatar: avatar, // Use the extracted avatar
       businessName: businessName, // Use the extracted businessName
       firstName: firstName, // Use the extracted firstName
@@ -102,7 +145,7 @@ class ServiceModel {
               ?.map((slot) => TimeSlot.fromJson(slot))
               .toList() ??
           [],
-      v: json['__v'] ?? 0,
+      v: json['__v'] ?? 0, reviews: [],
     );
   }
 }
