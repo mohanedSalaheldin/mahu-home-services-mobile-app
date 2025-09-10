@@ -44,4 +44,17 @@ class CacheHelper {
   static Future<bool> clear() async => await _prefs.clear();
 
   static getProviderData() {}
+
+  /// ---------- USER ROLE ----------
+  static Future<void> saveRole(String role) async {
+    await _prefs.setString('user_role', role);
+  }
+
+  static String? getRole() {
+    return _prefs.getString('user_role');
+  }
+
+  static Future<void> clearRole() async {
+    await _prefs.remove('user_role');
+  }
 }

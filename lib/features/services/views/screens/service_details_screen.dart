@@ -39,7 +39,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Navigator.pop(context, true),
         ),
         title: const Text("Service Details"),
         centerTitle: false,

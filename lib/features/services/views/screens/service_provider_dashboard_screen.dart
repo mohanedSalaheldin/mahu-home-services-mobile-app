@@ -27,7 +27,11 @@ class _ServiceProviderDashboardScreenState
   @override
   void initState() {
     super.initState();
-    _loadData();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final cubit = ServiceCubit.get(context);
+      cubit.fetchServices();
+      cubit.fetchDashboardData();
+    });
   }
 
   void _loadData() {
@@ -58,7 +62,6 @@ class _ServiceProviderDashboardScreenState
         elevation: 0,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
-        actions: const [],
       ),
       body: BlocConsumer<ServiceCubit, ServiceState>(
         listener: (context, state) {
@@ -75,15 +78,20 @@ class _ServiceProviderDashboardScreenState
         builder: (context, state) {
           final cubit = ServiceCubit.get(context);
 
-          if (state is ServiceGetAllLoadingState || state is DashboardLoading) {
+          // ✅ حالة التحميل لما الشاشة تفتح
+          if (state is ServiceGetAllLoadingState ||
+              state is DashboardLoading ||
+              cubit.services.isEmpty && cubit.profile.firstName.isEmpty) {
             return _buildLoadingState();
-          } else if (state is ServiceGetAllFailedState || state is DashboardError) {
+          }
+
+          if (state is ServiceGetAllFailedState || state is DashboardError) {
             return _buildErrorState(state);
           }
 
           return RefreshIndicator(
             onRefresh: () async {
-              cubit.fetchServices();
+              await cubit.fetchServices();
               cubit.fetchDashboardData();
             },
             child: LayoutBuilder(
@@ -95,22 +103,17 @@ class _ServiceProviderDashboardScreenState
                     SliverToBoxAdapter(
                       child: _buildHeaderSection(cubit),
                     ),
-
                     // Statistics Section
                     SliverToBoxAdapter(
                       child: _buildStatisticsSection(cubit),
                     ),
-
                     // Services Header
                     SliverToBoxAdapter(
                       child: _buildServicesHeader(cubit),
                     ),
-
                     // Services List
                     if (cubit.services.isEmpty)
-                      SliverToBoxAdapter(
-                        child: _buildEmptyState(),
-                      )
+                      SliverToBoxAdapter(child: _buildEmptyState())
                     else
                       SliverList(
                         delegate: SliverChildBuilderDelegate(
@@ -118,19 +121,29 @@ class _ServiceProviderDashboardScreenState
                             final service = cubit.services[index];
                             return ServiceListItem(
                               service: service,
-                              onTap: () {
-                                navigateTo(
+                              onTap: () async {
+                                final shouldReload = await Navigator.push(
                                   context,
-                                  ServiceDetailsScreen(service: service),
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        ServiceDetailsScreen(service: service),
+                                  ),
                                 );
+
+                                if (shouldReload == true) {
+                                  // _loadData(); // 👈 أعد تحميل البيانات بعد الرجوع
+                                  final cubit = ServiceCubit.get(context);
+                                  cubit.fetchServices();
+                                  cubit.fetchDashboardData();
+                                }
+// reload after coming back
                               },
                             );
                           },
                           childCount: cubit.services.length,
                         ),
                       ),
-
-                    // Action Buttons with flexible padding based on screen size
+                    // Action Buttons
                     SliverToBoxAdapter(
                       child: Container(
                         padding: EdgeInsets.only(
@@ -256,7 +269,8 @@ class _ServiceProviderDashboardScreenState
               Expanded(
                 child: DashboardStatisticsCard(
                   icon: Icons.star_rounded,
-                  value: cubit.performanceModel.averageRating.toStringAsFixed(1),
+                  value:
+                      cubit.performanceModel.averageRating.toStringAsFixed(1),
                   title: 'Rating',
                   color: AppColors.warning,
                 ),
@@ -379,8 +393,9 @@ class _ServiceProviderDashboardScreenState
       children: [
         Expanded(
           child: DashboardActionButton(
-            onPressed: () {
+            onPressed: () async {
               navigateTo(context, const AddServiceScreen());
+              _loadData();
             },
             text: 'Add Service',
             icon: Icons.add_rounded,
@@ -538,7 +553,6 @@ class DashboardStatisticsCard extends StatelessWidget {
     );
   }
 }
-
 
 class ServiceListItem extends StatelessWidget {
   final ServiceModel service;

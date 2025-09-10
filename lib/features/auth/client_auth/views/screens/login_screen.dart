@@ -5,6 +5,7 @@ import 'package:gap/gap.dart';
 import 'package:mahu_home_services_app/core/constants/app_const.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
 import 'package:mahu_home_services_app/core/models/user_type_enum.dart';
+import 'package:mahu_home_services_app/core/utils/helpers/cache_helper.dart';
 import 'package:mahu_home_services_app/core/utils/helpers/form_validation_method.dart';
 import 'package:mahu_home_services_app/core/utils/navigation_utils.dart';
 import 'package:mahu_home_services_app/features/auth/client_auth/cubit/auth_cubit.dart';
@@ -50,6 +51,8 @@ class _LoginScreenState extends State<LoginScreen> {
         listener: (context, state) {
           if (state is LoginSucessededState) {
             final role = state.userModel.role;
+            print("The role of user: "+role);
+            CacheHelper.saveString('user_role', role);
             if (role == 'provider') {
               navigateToAndKill(context, ProviderLayoutScreen());
             } else {

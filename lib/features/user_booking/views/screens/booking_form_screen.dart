@@ -48,6 +48,7 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
   bool _isLoadingLocation = false;
   bool _locationError = false;
   bool _showMap = false;
+  String _locationAddress = '';
 
   int _selectedDuration = 1;
   double _totalPrice = 0.0;
@@ -64,10 +65,10 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
   @override
   void initState() {
     super.initState();
-    _selectedRecurrence =
-        widget.service.serviceType.toLowerCase() == 'recurring'
-            ? 'weekly'
-            : null;
+    _selectedRecurrence = widget.service.serviceType.toLowerCase() ==
+            'recurring'
+        ? widget.service.subType // Use the service's subtype (weekly/monthly)
+        : null;
     _selectedDuration = widget.service.duration.toInt();
     _selectedTimezone = 'Africa/Cairo';
     _calculateTotalPrice();
@@ -152,7 +153,8 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
     setState(() {
       _isLoadingLocation = true;
       _locationError = false;
-      _showMap = false; // hide map until location is fetched
+      _showMap = false;
+      _locationAddress = '';
     });
 
     try {
@@ -161,6 +163,16 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
       if (position != null) {
         _currentPosition = position;
 
+        // Get address from coordinates
+        final address = await LocationService.getAddressFromCoordinates(
+          position.latitude,
+          position.longitude,
+        );
+
+        setState(() {
+          _locationAddress = address ?? 'Current Location';
+        });
+
         // Small delay to ensure FlutterMap has been built
         WidgetsBinding.instance.addPostFrameCallback((_) {
           _mapController.move(
@@ -168,7 +180,7 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
             15.0,
           );
           setState(() {
-            _showMap = true; // show map after centering
+            _showMap = true;
           });
         });
       } else {
@@ -191,6 +203,9 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
       appBar: AppBar(
         title: const Text('Create Booking'),
         centerTitle: true,
+        elevation: 0,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
       ),
       body: BlocConsumer<UserBookingCubit, UserBookingState>(
         listener: (context, state) {
@@ -255,13 +270,13 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                     return null;
                   },
                 ),
-                Gap(12.h),
+                Gap(16.h),
 
                 // Schedule Section
                 Text(
                   'Schedule Details',
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: 18.sp,
                     fontWeight: FontWeight.bold,
                     color: Colors.grey.shade800,
                   ),
@@ -278,7 +293,7 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                       value: day,
                       child: Text(
                         _capitalizeFirstLetter(day),
-                        style: TextStyle(fontSize: 14),
+                        style: TextStyle(fontSize: 14.sp),
                       ),
                     );
                   }).toList(),
@@ -347,32 +362,45 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                 if (widget.service.serviceType.toLowerCase() ==
                     'recurring') ...[
                   const AppFieledLabelText(label: 'Recurrence Type'),
-                  DropdownButtonFormField<String>(
-                    decoration: _inputDecoration(),
-                    value: _selectedRecurrence,
-                    items: const [
-                      DropdownMenuItem(value: 'weekly', child: Text('Weekly')),
-                      DropdownMenuItem(
-                          value: 'monthly', child: Text('Monthly')),
-                    ],
-                    onChanged: (val) =>
-                        setState(() => _selectedRecurrence = val),
-                    validator: (value) {
-                      if (value == null) {
-                        return 'Please select recurrence type';
-                      }
-                      return null;
-                    },
+                  Container(
+                    padding: EdgeInsets.all(16.w),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade50,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.repeat,
+                            color: AppColors.primary, size: 20.w),
+                        Gap(8.w),
+                        Expanded(
+                          child: Text(
+                            _capitalizeFirstLetter(_selectedRecurrence ?? ''),
+                            style: TextStyle(
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.grey.shade800,
+                            ),
+                          ),
+                        ),
+                        Icon(Icons.lock,
+                            color: Colors.grey.shade400, size: 18.w),
+                      ],
+                    ),
                   ),
                   Gap(12.h),
 
-                  // Start and End Dates for recurrence
+                  // Start Date for recurrence
+                  // Start Date Picker (shown for both one-time and recurring)
                   GestureDetector(
                     onTap: () => _pickDate(_startDateController, 'Start Date'),
                     child: AbsorbPointer(
                       child: CustomTextField(
                         label: 'Start Date',
-                        hint: 'Select start date for recurrence',
+                        hint: widget.service.serviceType.toLowerCase() ==
+                                'recurring'
+                            ? 'Select start date for recurrence'
+                            : 'Select booking date',
                         controller: _startDateController,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
@@ -390,7 +418,7 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                 Text(
                   'Address Details',
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: 18.sp,
                     fontWeight: FontWeight.bold,
                     color: Colors.grey.shade800,
                   ),
@@ -456,7 +484,7 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                 Text(
                   'Additional Information',
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: 18.sp,
                     fontWeight: FontWeight.bold,
                     color: Colors.grey.shade800,
                   ),
@@ -474,9 +502,8 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                       _hasTools = val;
                     });
                   },
-                  title: const Text('I have the required tools'),
-                  subtitle:
-                      const Text('If not, the provider will bring their own'),
+                  title: Text('I have the required tools'),
+                  subtitle: Text('If not, the provider will bring their own'),
                 ),
                 Gap(16.h),
 
@@ -527,13 +554,6 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                 LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
             zoom: 15.0,
             interactiveFlags: InteractiveFlag.all & ~InteractiveFlag.rotate,
-            onMapReady: () {
-              // Ensure map is centered after ready
-              _mapController.move(
-                LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
-                15.0,
-              );
-            },
           ),
           children: [
             TileLayer(
@@ -581,14 +601,14 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
               Text(
                 'Select Start Time:',
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 16.sp,
                   fontWeight: FontWeight.w600,
                 ),
               ),
               Text(
                 _formatTime(_selectedStartTime),
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 18.sp,
                   fontWeight: FontWeight.bold,
                   color: AppColors.primary,
                 ),
@@ -626,7 +646,7 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                     _formatTime(_selectedStartTime),
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 16.sp,
                       fontWeight: FontWeight.bold,
                       color: AppColors.primary,
                     ),
@@ -650,14 +670,14 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
             Text(
               'Available time slot: ${_formatTime(_slotStartTime!)} - ${_formatTime(_slotEndTime!)}',
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 12.sp,
                 color: Colors.grey.shade600,
               ),
             ),
             Text(
               '30-minute intervals',
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 12.sp,
                 color: Colors.grey.shade600,
               ),
             ),
@@ -665,7 +685,7 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
             Text(
               'No available time steps in this slot',
               style: TextStyle(
-                fontSize: 14,
+                fontSize: 14.sp,
                 color: Colors.grey.shade600,
               ),
             ),
@@ -684,7 +704,7 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
         shape: BoxShape.circle,
       ),
       child: IconButton(
-        icon: Icon(icon, color: Colors.white),
+        icon: Icon(icon, color: Colors.white, size: 20.w),
         onPressed: onPressed,
         splashRadius: 24.w,
       ),
@@ -710,14 +730,14 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                   Text(
                     'Select Duration:',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 16.sp,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                   Text(
                     '$_selectedDuration hours',
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 18.sp,
                       fontWeight: FontWeight.bold,
                       color: AppColors.primary,
                     ),
@@ -755,7 +775,7 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                       '$_selectedDuration',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: 18.sp,
                         fontWeight: FontWeight.bold,
                         color: AppColors.primary,
                       ),
@@ -778,7 +798,7 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
               Text(
                 'Minimum: ${widget.service.duration} hours',
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 12.sp,
                   color: Colors.grey.shade600,
                 ),
               ),
@@ -799,7 +819,7 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
         shape: BoxShape.circle,
       ),
       child: IconButton(
-        icon: Icon(icon, color: Colors.white),
+        icon: Icon(icon, color: Colors.white, size: 20.w),
         onPressed: onPressed,
         splashRadius: 24.w,
       ),
@@ -812,6 +832,10 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
       decoration: BoxDecoration(
         color: _locationError ? Colors.red.shade50 : Colors.blue.shade50,
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: _locationError ? Colors.red.shade300 : Colors.blue.shade300,
+          width: 1,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -820,34 +844,38 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
             children: [
               Icon(
                 _locationError ? Icons.error_outline : Icons.location_on,
-                color: _locationError ? Colors.red : Colors.blue,
+                color: _locationError ? Colors.red : AppColors.primary,
+                size: 24.w,
               ),
               Gap(8.w),
-              Text(
-                'Your Location',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: _locationError ? Colors.red : Colors.blue.shade800,
+              Expanded(
+                child: Text(
+                  'Your Location',
+                  style: TextStyle(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.bold,
+                    color: _locationError ? Colors.red : Colors.blue.shade800,
+                  ),
                 ),
               ),
-              Spacer(),
               if (_isLoadingLocation)
                 SizedBox(
-                  width: 16.w,
-                  height: 16.w,
+                  width: 20.w,
+                  height: 20.w,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 ),
               if (!_isLoadingLocation && _locationError)
                 IconButton(
-                  icon: Icon(Icons.refresh, size: 20),
+                  icon: Icon(Icons.refresh, size: 20.w),
                   onPressed: _getCurrentLocation,
+                  color: Colors.red,
                 ),
               if (!_isLoadingLocation && !_locationError)
                 IconButton(
                   icon: Icon(
                     _showMap ? Icons.map_outlined : Icons.map,
                     color: AppColors.primary,
+                    size: 20.w,
                   ),
                   onPressed: () {
                     setState(() {
@@ -859,22 +887,26 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
           ),
           Gap(8.h),
           if (_isLoadingLocation)
-            Text('Getting your location...', style: TextStyle(fontSize: 14)),
+            Text('Getting your location...', style: TextStyle(fontSize: 14.sp)),
           if (!_isLoadingLocation && _currentPosition != null)
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                if (_locationAddress.isNotEmpty) ...[
+                  Text(
+                    _locationAddress,
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey.shade800,
+                    ),
+                  ),
+                  Gap(4.h),
+                ],
                 Text(
-                  'Latitude: ${_currentPosition!.latitude.toStringAsFixed(6)}',
-                  style: TextStyle(fontSize: 14),
-                ),
-                Text(
-                  'Longitude: ${_currentPosition!.longitude.toStringAsFixed(6)}',
-                  style: TextStyle(fontSize: 14),
-                ),
-                Text(
-                  'Accuracy: ±${_currentPosition!.accuracy.toStringAsFixed(2)} meters',
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                  'Location accuracy: ±${_currentPosition!.accuracy.toStringAsFixed(2)} meters',
+                  style:
+                      TextStyle(fontSize: 12.sp, color: Colors.grey.shade600),
                 ),
                 if (!_showMap)
                   TextButton(
@@ -885,7 +917,10 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                     },
                     child: Text(
                       'Show on map',
-                      style: TextStyle(color: AppColors.primary),
+                      style: TextStyle(
+                        color: AppColors.primary,
+                        fontSize: 12.sp,
+                      ),
                     ),
                   ),
               ],
@@ -896,12 +931,13 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
               children: [
                 Text(
                   'Unable to get your location. Please enable location services.',
-                  style: TextStyle(fontSize: 14, color: Colors.red.shade700),
+                  style: TextStyle(fontSize: 14.sp, color: Colors.red.shade700),
                 ),
                 Gap(8.h),
                 Text(
                   'Location is required for service booking.',
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                  style:
+                      TextStyle(fontSize: 12.sp, color: Colors.grey.shade600),
                 ),
               ],
             ),
@@ -916,49 +952,81 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
       decoration: BoxDecoration(
         color: Colors.green.shade50,
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.green.shade300),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            widget.service.name,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.green.shade800,
-            ),
-          ),
-          Gap(8.h),
-          Text(
-            'Category: ${_capitalizeFirstLetter(widget.service.category)}',
-            style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
-          ),
-          Gap(4.h),
-          Text(
-            'Type: ${_capitalizeFirstLetter(widget.service.serviceType)}',
-            style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
-          ),
-          Gap(4.h),
-          Text(
-            'Pricing: \$${widget.service.basePrice.toStringAsFixed(2)}/${widget.service.pricingModel == 'hourly' ? 'hour' : 'service'}',
-            style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
-          ),
-          Gap(4.h),
-          Text(
-            'Minimum Duration: ${widget.service.duration} hours',
-            style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
-          ),
-          if (widget.service.pricingModel == 'fixed') ...[
-            Gap(4.h),
-            Text(
-              '⚠️ Fixed price - duration cannot be changed',
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.orange.shade700,
-                fontWeight: FontWeight.bold,
+          Row(
+            children: [
+              Icon(Icons.construction,
+                  color: Colors.green.shade700, size: 24.w),
+              Gap(8.w),
+              Expanded(
+                child: Text(
+                  widget.service.name,
+                  style: TextStyle(
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green.shade800,
+                  ),
+                ),
               ),
+            ],
+          ),
+          Gap(12.h),
+          _buildServiceDetailRow(
+              'Category', _capitalizeFirstLetter(widget.service.category)),
+          _buildServiceDetailRow(
+              'Type', _capitalizeFirstLetter(widget.service.serviceType)),
+          _buildServiceDetailRow('Pricing',
+              '\$${widget.service.basePrice.toStringAsFixed(2)}/${widget.service.pricingModel == 'hourly' ? 'hour' : 'service'}'),
+          _buildServiceDetailRow(
+              'Minimum Duration', '${widget.service.duration} hours'),
+          if (widget.service.pricingModel == 'fixed') ...[
+            Gap(8.h),
+            Row(
+              children: [
+                Icon(Icons.info, size: 16.w, color: Colors.orange.shade700),
+                Gap(4.w),
+                Expanded(
+                  child: Text(
+                    'Fixed price - duration cannot be changed',
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      color: Colors.orange.shade700,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildServiceDetailRow(String label, String value) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 2.h),
+      child: Row(
+        children: [
+          Text(
+            '$label: ',
+            style: TextStyle(
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w500,
+              color: Colors.grey.shade700,
+            ),
+          ),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 14.sp,
+              color: Colors.grey.shade800,
+            ),
+          ),
         ],
       ),
     );
@@ -975,13 +1043,20 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Pricing Details',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Colors.orange.shade800,
-            ),
+          Row(
+            children: [
+              Icon(Icons.attach_money,
+                  color: Colors.orange.shade700, size: 24.w),
+              Gap(8.w),
+              Text(
+                'Pricing Details',
+                style: TextStyle(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.orange.shade800,
+                ),
+              ),
+            ],
           ),
           Gap(12.h),
           if (widget.service.pricingModel == 'hourly') ...[
@@ -1000,7 +1075,7 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
             Text(
               '* Fixed price for the entire service',
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 12.sp,
                 color: Colors.grey.shade600,
                 fontStyle: FontStyle.italic,
               ),
@@ -1020,7 +1095,7 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
           Text(
             label,
             style: TextStyle(
-              fontSize: isTotal ? 16 : 14,
+              fontSize: isTotal ? 16.sp : 14.sp,
               color: isTotal ? Colors.orange.shade800 : Colors.grey.shade700,
               fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
             ),
@@ -1028,7 +1103,7 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
           Text(
             value,
             style: TextStyle(
-              fontSize: isTotal ? 18 : 14,
+              fontSize: isTotal ? 18.sp : 14.sp,
               color: isTotal ? Colors.orange.shade800 : Colors.grey.shade700,
               fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
             ),

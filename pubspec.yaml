@@ -1,7 +1,7 @@
 name: mahu_home_services_app
 description: "MAHU Booking Platform"
 
-publish_to: "none" # Remove this line if you wish to publish to pub.dev
+publish_to: "none"
 
 version: 1.0.13+13
 
@@ -21,6 +21,9 @@ dependencies:
   firebase_core: ^3.14.0
   flutter:
     sdk: flutter
+  flutter_localizations: 
+    sdk: flutter
+  intl: ^0.19.0
   flutter_animate: ^1.0.0
   shimmer: ^2.0.0
   flutter_bloc: ^9.1.1
@@ -58,21 +61,11 @@ flutter_icons:
 
 flutter:
   uses-material-design: true
-  # To add assets to your application, add an assets section, like this:
   assets:
     - assets/imgs/landing/
     - assets/imgs/
     - assets/icons/
 
-  # An image asset can refer to one or more resolution-specific "variants", see
-  # https://flutter.dev/to/resolution-aware-images
-  # For details regarding adding assets from package dependencies, see
-  # https://flutter.dev/to/asset-from-package
-  # To add custom fonts to your application, add a fonts section here,
-  # in this "flutter" section. Each entry in this list should have a
-  # "family" key with the font family name, and a "fonts" key with a
-  # list giving the asset and other descriptors for the font. For
-  # example:
   fonts:
     - family: Poppins
       fonts:
@@ -82,5 +75,15 @@ flutter:
           weight: 600
         - asset: assets/fonts/Poppins-Bold.ttf
           weight: 700
-  # For details regarding fonts from package dependencies,
-  # see https://flutter.dev/to/font-from-package
+
+
+flutter_intl:
+  enabled: true
+
+
+gen-l10n:
+  arb-dir: lib/l10n
+  template-arb-file: app_en.arb
+  output-localization-file: l10n.dart
+  output-class: S
+  output-dir: lib/generated

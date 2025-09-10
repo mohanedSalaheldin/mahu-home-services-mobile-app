@@ -3,6 +3,7 @@ class UserModel {
   final String email;
   final String phone;
   final String role;
+  // final String token;
   final bool isVerified;
   final UserProfile profile;
 
@@ -11,6 +12,7 @@ class UserModel {
     required this.email,
     required this.phone,
     required this.role,
+    // required this.token,
     required this.isVerified,
     required this.profile,
   });
@@ -21,6 +23,7 @@ class UserModel {
       email: json['email'],
       phone: json['phone'],
       role: json['role'],
+      // token: json['token'],
       isVerified: json['isVerified'],
       profile: UserProfile.fromJson(json['profile']),
     );
@@ -32,6 +35,7 @@ class UserModel {
       'email': email,
       'phone': phone,
       'role': role,
+      // 'token': token,
       'isVerified': isVerified,
       'profile': profile.toJson(),
     };

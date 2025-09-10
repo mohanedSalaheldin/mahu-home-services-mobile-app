@@ -24,7 +24,7 @@ class DetailSection extends StatelessWidget {
         DetailRow(label: "Sub-Type", value: service.subType),
         DetailRow(label: "Pricing Model", value: service.pricingModel),
         DetailRow(
-            label: "Price of each hour", value: '\$${service.basePrice.toStringAsFixed(2)}'),
+            label: service.serviceType == "recurring" ? "Price of service" : "Price of each hour", value: '\$${service.basePrice.toStringAsFixed(2)}'),
         DetailRow(
           label: "Duration",
           value:

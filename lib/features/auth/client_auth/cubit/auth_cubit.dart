@@ -19,6 +19,7 @@ class AuthCubit extends Cubit<AuthState> {
       email: 'email',
       phone: 'phone',
       role: 'role',
+      // token: 'token',
       isVerified: false,
       profile: UserProfile(firstName: 'firstName', lastName: 'lastName'));
 
