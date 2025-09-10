@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:intl_phone_field/countries.dart';
+import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:gap/gap.dart';
 import 'package:mahu_home_services_app/core/constants/app_const.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
@@ -12,11 +14,10 @@ import 'package:mahu_home_services_app/features/auth/client_auth/views/screens/l
 import 'package:mahu_home_services_app/features/auth/client_auth/views/screens/verify_account_screen.dart';
 import 'package:mahu_home_services_app/features/auth/client_auth/views/widgets/custom_snack_bar.dart';
 import 'package:mahu_home_services_app/features/auth/client_auth/views/widgets/custom_text_field.dart';
-import 'package:mahu_home_services_app/features/auth/client_auth/views/widgets/phone_text_field.dart';
 import 'package:mahu_home_services_app/features/auth/client_auth/views/widgets/terms_checkbox.dart';
 import 'package:mahu_home_services_app/features/landing/views/widgets/app_filled_button.dart';
 import 'package:mahu_home_services_app/features/landing/views/widgets/have_or_not_an_account_row.dart';
-import 'package:mahu_home_services_app/features/services/views/widgets/bool_radio_group.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ClientRegisterScreen extends StatefulWidget {
   const ClientRegisterScreen({super.key});
@@ -38,6 +39,29 @@ class _ClientRegisterScreenState extends State<ClientRegisterScreen> {
   bool agreedToTerms = false;
   bool showTermsError = false;
   OtpChannel _otpChannel = OtpChannel.phone;
+  String phoneNumber = '';
+  String countryCode = '+20'; // default
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedCountry();
+  }
+
+  Future<void> _loadSavedCountry() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedCode = prefs.getString('selected_country_code') ?? '+20';
+    setState(() {
+      countryCode = savedCode;
+      AppUserConfig.selectedCountryCode = savedCode;
+    });
+  }
+
+  Future<void> _saveCountry(String code) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('selected_country_code', code);
+    AppUserConfig.selectedCountryCode = code;
+  }
 
   @override
   void dispose() {
@@ -51,7 +75,6 @@ class _ClientRegisterScreenState extends State<ClientRegisterScreen> {
     super.dispose();
   }
 
-  String countryCode = '+20';
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -76,7 +99,7 @@ class _ClientRegisterScreenState extends State<ClientRegisterScreen> {
         builder: (context, state) {
           if (state is RegisterLoadingState) {
             return const Center(
-              child: CircularProgressIndicator(),
+              child: CircularProgressIndicator(color: Colors.blue),
             );
           }
           return SafeArea(
@@ -86,7 +109,55 @@ class _ClientRegisterScreenState extends State<ClientRegisterScreen> {
                 key: _formKey,
                 child: ListView(
                   children: [
-                    // Gap(20.h),
+                    Gap(20.h),
+                    IntlPhoneField(
+                      decoration: InputDecoration(
+                        labelText: 'Phone Number',
+                        labelStyle: TextStyle(color: Colors.blue),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.r),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.r),
+                          borderSide: const BorderSide(color: AppColors.blue),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.r),
+                          borderSide:
+                              const BorderSide(color: AppColors.blue, width: 2),
+                        ),
+                      ),
+                      // Use saved country code or fallback to Egypt if none
+                      initialCountryCode: countryCode.isNotEmpty
+                          ? CountryCodeHelper.getCountryCodeFromDial(
+                              countryCode)
+                          : 'EG',
+                      countries: countries, // full country list
+                      controller: phoneController,
+                      onChanged: (phone) {
+                        phoneNumber = phone.completeNumber;
+                        countryCode = phone.countryCode;
+                        _saveCountry(countryCode); // persist selection
+                      },
+                      onCountryChanged: (country) {
+                        countryCode = '+${country.dialCode}';
+                        _saveCountry(countryCode); // persist selection
+                      },
+                      validator: (value) {
+                        if (value == null || value.number.isEmpty) {
+                          return 'Please enter a phone number';
+                        }
+                        return null;
+                      },
+                      dropdownIcon: const Icon(
+                        Icons.arrow_drop_down,
+                        color: AppColors.blue,
+                      ),
+                      style: const TextStyle(color: AppColors.blue),
+                      dropdownTextStyle: const TextStyle(color: AppColors.blue),
+                    ),
+                    
+                    Gap(10.h),
                     CustomTextField(
                       label: 'Email',
                       hint: 'Enter Email Address',
@@ -94,16 +165,6 @@ class _ClientRegisterScreenState extends State<ClientRegisterScreen> {
                       controller: emailController,
                       validator: FormValidationMethod.validateEmail,
                     ),
-                    Gap(10.h),
-                    PhoneTextField(
-                      label: 'Phone Number',
-                      controller: phoneController,
-                      onCountryCodeChanged: (code) {
-                        countryCode = code;
-                        // print("Selected code: ${}");
-                      },
-                    ),
-
                     Gap(10.h),
                     CustomTextField(
                       label: 'First Name',
@@ -154,7 +215,6 @@ class _ClientRegisterScreenState extends State<ClientRegisterScreen> {
                       controller: refrenceIdController,
                       isPassword: false,
                       validator: (value) {
-                        
                         if (value == null || value.isEmpty) return null;
 
                         if (!RegExp(r'^[0-9]+$').hasMatch(value)) {
@@ -166,17 +226,14 @@ class _ClientRegisterScreenState extends State<ClientRegisterScreen> {
                       lines: 1,
                     ),
                     Gap(10.h),
-                    // NEW: OTP channel section
                     Text(
                       'Receive OTP via',
                       style: TextStyle(
-                        fontSize: 14.sp,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     Gap(6.h),
-
-// WhatsApp option
                     RadioListTile<OtpChannel>(
                       contentPadding: EdgeInsets.zero,
                       value: OtpChannel.phone,
@@ -188,8 +245,6 @@ class _ClientRegisterScreenState extends State<ClientRegisterScreen> {
                       secondary: const Icon(Icons.message),
                       dense: true,
                     ),
-
-// Email option
                     RadioListTile<OtpChannel>(
                       contentPadding: EdgeInsets.zero,
                       value: OtpChannel.email,
@@ -201,7 +256,6 @@ class _ClientRegisterScreenState extends State<ClientRegisterScreen> {
                       secondary: const Icon(Icons.email),
                       dense: true,
                     ),
-
                     Gap(10.h),
                     TermsCheckbox(
                       value: agreedToTerms,
@@ -211,59 +265,36 @@ class _ClientRegisterScreenState extends State<ClientRegisterScreen> {
                           if (agreedToTerms) showTermsError = false;
                         });
                       },
-                      onTapTerms: () {
-                        // Show terms or navigate to terms screen
-                      },
+                      onTapTerms: () {},
                     ),
-
                     Gap(5.h),
                     AppFilledButton(
                       onPressed: () {
-                        // First: validate form
                         if (_formKey.currentState!.validate()) {
-                          // Then: check if terms are agreed
                           if (!agreedToTerms) {
                             showCustomSnackBar(
                                 context: context,
                                 message:
                                     'You must agree to the terms before registering.',
                                 type: SnackBarType.failure);
-
                             return;
+                          }
+                          String formattedPhone = phoneNumber;
+                          if (!formattedPhone.startsWith('+')) {
+                            formattedPhone = '+$formattedPhone';
                           }
                           AuthCubit.get(context).registerAsClient(
                               email: emailController.text,
                               firstName: fNameController.text,
                               lastName: lNameController.text,
                               password: passwordController.text,
-                              phone: countryCode + phoneController.text,
+                              phone: formattedPhone,
                               refrenceId: refrenceIdController.text,
                               otpMethod: _otpChannel.name);
-                          print("Form is valid");
                         }
                       },
                       text: 'Sign Up',
                     ),
-                    // Gap(3.h),
-                    // Text(
-                    //   "Or",
-                    //   style: TextStyle(
-                    //     fontWeight: FontWeight.w300,
-                    //     fontSize: 16.sp,
-                    //     color: Colors.black,
-                    //   ),
-                    // ),
-                    // Gap(3.h),
-                    // Row(
-                    //   mainAxisAlignment: MainAxisAlignment.center,
-                    //   children: [
-                    //     const OtherWayToSigninItem(img: 'assets/icons/google.png'),
-                    //     Gap(22.w),
-                    //     const OtherWayToSigninItem(
-                    //         img: 'assets/icons/facebook.png'),
-                    //   ],
-                    // ),
-                    // const Spacer(),
                     HaveOrNotAnAccountRow(
                       questionTxt: 'Already have an account ?',
                       buttonTxt: 'Login',
@@ -283,3 +314,19 @@ class _ClientRegisterScreenState extends State<ClientRegisterScreen> {
 }
 
 enum OtpChannel { phone, email }
+
+class AppUserConfig {
+  static String selectedCountryCode = '+20'; // default Egypt
+}
+
+class CountryCodeHelper {
+  // Convert '+20' -> 'EG', '+971' -> 'AE', etc.
+  static String getCountryCodeFromDial(String dialCode) {
+    for (var c in countries) {
+      if ('+${c.dialCode}' == dialCode) {
+        return c.code;
+      }
+    }
+    return 'EG'; // fallback if not found
+  }
+}

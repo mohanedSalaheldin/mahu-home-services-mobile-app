@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
-import 'package:mahu_home_services_app/features/user_booking/views/widgets/favorite_button.dart';
 
 class PopularServiceCard extends StatelessWidget {
   const PopularServiceCard({
@@ -23,7 +22,6 @@ class PopularServiceCard extends StatelessWidget {
         height: 165.h,
         width: 190.w,
         padding: EdgeInsets.fromLTRB(10.w, 10.w, 10.w, 0.w),
-        // color: AppColors.greyBack,
         decoration: const BoxDecoration(
           color: AppColors.greyBack,
           borderRadius: BorderRadius.all(Radius.circular(10)),
@@ -51,13 +49,8 @@ class PopularServiceCard extends StatelessWidget {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                FavoriteButton(
-                  initialValue: false,
-                  onChanged: (value) {
-                    // Do something if needed
-                    // print('Favorite is: $value');
-                  },
-                ),
+                // Removed FavoriteButton as it's not needed for category cards
+                const SizedBox(width: 24), // Placeholder for alignment
               ],
             ),
           ],

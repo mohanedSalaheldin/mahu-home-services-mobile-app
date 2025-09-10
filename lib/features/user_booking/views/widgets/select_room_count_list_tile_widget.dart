@@ -63,7 +63,7 @@ class _SelectRoomCountListTileWidgetState
           Text(
             widget.label,
             style: TextStyle(
-              fontSize: 14.sp,
+              fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -78,7 +78,7 @@ class _SelectRoomCountListTileWidgetState
               Text(
                 '$_count',
                 style: TextStyle(
-                  fontSize: 16.sp,
+                  fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
               ),

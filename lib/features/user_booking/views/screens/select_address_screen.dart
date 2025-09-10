@@ -85,14 +85,14 @@ class AddressCardWidget extends StatelessWidget {
               Text(
                 'Home',
                 style: TextStyle(
-                  fontSize: 14.sp,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
               ),
               Text(
                 '7421 Ajman Street, Ajman ,\n floor 3 , UAE',
                 style: TextStyle(
-                  fontSize: 12.sp,
+                  fontSize: 12,
                   fontWeight: FontWeight.w300,
                 ),
               ),

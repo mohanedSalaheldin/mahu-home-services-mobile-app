@@ -33,7 +33,7 @@ class _PhoneTextFieldState extends State<PhoneTextField> {
           widget.label,
           style: TextStyle(
             fontWeight: FontWeight.w500,
-            fontSize: 16.sp,
+            fontSize: 16,
             color: Colors.black,
           ),
         ),
@@ -87,7 +87,7 @@ class _PhoneTextFieldState extends State<PhoneTextField> {
                     hintStyle: TextStyle(
                       color: Colors.grey,
                       fontWeight: FontWeight.w400,
-                      fontSize: 13.sp,
+                      fontSize: 13,
                       height: 4,
                     ),
                     border: InputBorder.none,

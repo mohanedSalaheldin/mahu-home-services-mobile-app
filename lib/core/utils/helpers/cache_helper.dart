@@ -8,44 +8,53 @@ class CacheHelper {
     _prefs = await SharedPreferences.getInstance();
   }
 
-  // Save string
-  static Future<bool> saveString(String key, String value) async {
-    return await _prefs.setString(key, value);
+  /// ---------- SAVE ----------
+  static Future<bool> saveString(String key, String value) async =>
+      await _prefs.setString(key, value);
+
+  static Future<bool> saveBool(String key, bool value) async =>
+      await _prefs.setBool(key, value);
+
+  static Future<bool> saveInt(String key, int value) async =>
+      await _prefs.setInt(key, value);
+
+  static Future<bool> saveDouble(String key, double value) async =>
+      await _prefs.setDouble(key, value);
+
+  static Future<bool> saveStringList(String key, List<String> value) async =>
+      await _prefs.setStringList(key, value);
+
+  /// ---------- GET ----------
+  static String? getString(String key) => _prefs.getString(key);
+
+  static bool? getBool(String key) => _prefs.getBool(key);
+
+  static int? getInt(String key) => _prefs.getInt(key);
+
+  static double? getDouble(String key) => _prefs.getDouble(key);
+
+  static List<String>? getStringList(String key) => _prefs.getStringList(key);
+
+  /// ---------- CHECK ----------
+  static bool contains(String key) => _prefs.containsKey(key);
+
+  /// ---------- REMOVE / CLEAR ----------
+  static Future<bool> remove(String key) async => await _prefs.remove(key);
+
+  static Future<bool> clear() async => await _prefs.clear();
+
+  static getProviderData() {}
+
+  /// ---------- USER ROLE ----------
+  static Future<void> saveRole(String role) async {
+    await _prefs.setString('user_role', role);
   }
 
-  // Save bool
-  static Future<bool> saveBool(String key, bool value) async {
-    return await _prefs.setBool(key, value);
+  static String? getRole() {
+    return _prefs.getString('user_role');
   }
 
-  // Save int
-  static Future<bool> saveInt(String key, int value) async {
-    return await _prefs.setInt(key, value);
-  }
-
-  // Get string
-  static String? getString(String key) {
-    return _prefs.getString(key);
-  }
-  
-
-  // Get bool
-  static bool? getBool(String key) {
-    return _prefs.getBool(key);
-  }
-
-  // Get int
-  static int? getInt(String key) {
-    return _prefs.getInt(key);
-  }
-
-  // Remove key
-  static Future<bool> remove(String key) async {
-    return await _prefs.remove(key);
-  }
-
-  // Clear all
-  static Future<bool> clear() async {
-    return await _prefs.clear();
+  static Future<void> clearRole() async {
+    await _prefs.remove('user_role');
   }
 }

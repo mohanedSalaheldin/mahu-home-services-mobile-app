@@ -29,7 +29,7 @@ class TermsCheckbox extends StatelessWidget {
           'I agree the ',
           style: TextStyle(
             fontWeight: FontWeight.w400,
-            fontSize: 14.sp,
+            fontSize: 14,
             color: Colors.black,
             
           ),

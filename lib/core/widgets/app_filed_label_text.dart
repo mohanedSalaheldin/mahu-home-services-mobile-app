@@ -24,7 +24,7 @@ class AppFieledLabelText extends StatelessWidget {
       label,
       style: TextStyle(
         fontWeight: FontWeight.w500,
-        fontSize: (fontSize ?? 16).sp,
+        fontSize: (fontSize ?? 16).toDouble(),
         color: Colors.black,
       ),
     );

@@ -15,13 +15,13 @@ class AvailabilitySection extends StatelessWidget {
       children: [
         Text(
           'Available Areas',
-          style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         Gap(8.h),
         // if (service.availableAreas.isEmpty)
         //   Text(
         //     'No specific areas specified',
-        //     style: TextStyle(fontSize: 16.sp, color: Colors.grey.shade600),
+        //     style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
         //   )
         // else
         //   Wrap(

@@ -19,6 +19,7 @@ class AuthCubit extends Cubit<AuthState> {
       email: 'email',
       phone: 'phone',
       role: 'role',
+      // token: 'token',
       isVerified: false,
       profile: UserProfile(firstName: 'firstName', lastName: 'lastName'));
 
@@ -104,11 +105,12 @@ class AuthCubit extends Cubit<AuthState> {
         emit(LoginFailedState(failure: failure));
       },
       (loginResponse) async {
-        
         await CacheHelper.saveString('token', loginResponse.token);
+        await CacheHelper.saveString('serviceProviderCategory', loginResponse.serviceProviderCategory);
         await CacheHelper.saveString(
             'referenceId', loginResponse.businessRegistration.toString());
-        emit(LoginSucessededState());
+        await CacheHelper.saveString('userId', loginResponse.user.id);
+        emit(LoginSucessededState(userModel: loginResponse.user));
       },
     );
   }

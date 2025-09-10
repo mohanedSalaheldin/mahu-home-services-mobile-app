@@ -55,7 +55,9 @@ class MyApp extends StatelessWidget {
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Scaffold(
-                  body: Center(child: CircularProgressIndicator()),
+                  body: Center(child: CircularProgressIndicator(
+                color: Colors.blue
+              )),
                 );
               } else if (snapshot.hasError) {
                 return const Scaffold(
@@ -75,7 +77,7 @@ class MyApp extends StatelessWidget {
 Future<Widget> getInitialScreen() async {
   final bool? isFirstTime = CacheHelper.getBool('first_time');
   final String? userRole =
-      CacheHelper.getString('user_role'); // client أو provider
+      CacheHelper.getString('user_role'); // user أو provider
   final String? token = CacheHelper.getString('token');
 
   // الحالة 1: أول مرة يفتح التطبيق
@@ -93,8 +95,9 @@ Future<Widget> getInitialScreen() async {
     return const LoginScreen();
   }
 
+  // print("The role of user: "+userRole);
   // الحالة 4: اختار دور وسجّل دخول
-  if (userRole == 'client') {
+  if (userRole == 'user') {
     return ClientLayoutScreen();
   } else if (userRole == 'provider') {
     return ProviderLayoutScreen();

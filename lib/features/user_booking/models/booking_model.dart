@@ -1,61 +1,65 @@
+// user_booking_model.dart
 class UserBookingModel {
   final String service;
+  final double price;
   final ScheduleModel schedule;
   final AddressModel address;
-  final String details;
+  final String? details;
+  final int duration;
+  final bool hasTools;
 
   UserBookingModel({
     required this.service,
+    required this.price,
     required this.schedule,
     required this.address,
-    required this.details,
+    this.details,
+    required this.duration, 
+    required this.hasTools,
   });
-
-  factory UserBookingModel.fromJson(Map<String, dynamic> json) {
-    return UserBookingModel(
-      service: json['service'],
-      schedule: ScheduleModel.fromJson(json['schedule']),
-      address: AddressModel.fromJson(json['address']),
-      details: json['details'],
-    );
-  }
 
   Map<String, dynamic> toJson() {
     return {
       'service': service,
+      'price': price,
+      'duration': duration,
       'schedule': schedule.toJson(),
       'address': address.toJson(),
-      'details': details,
+      'hasTools': hasTools,
+      if (details != null) 'details': details,
     };
   }
 }
 
 class ScheduleModel {
-  final String startDate;
-  final String? endDate;
+  final String dayOfWeek;
+  final String startTime;
+  final String? endTime;
   final String? recurrence;
+  final String? recurrenceEndDate;
+  final String? timezone;
+  final String? startDate;
 
   ScheduleModel({
-    required this.startDate,
-    this.endDate,
+    required this.dayOfWeek,
+    required this.startTime,
+    this.endTime,
     this.recurrence,
+    this.recurrenceEndDate,
+    this.timezone,
+    this.startDate,
   });
 
-  factory ScheduleModel.fromJson(Map<String, dynamic> json) {
-    return ScheduleModel(
-      startDate: json['startDate'],
-      endDate: json['endDate'],
-      recurrence: json['recurrence'],
-    );
-  }
-
   Map<String, dynamic> toJson() {
-    final map = {
-      'startDate': startDate,
+    return {
+      'dayOfWeek': dayOfWeek,
+      'startTime': startTime,
+      if (endTime != null) 'endTime': endTime,
+      if (recurrence != null) 'recurrence': recurrence,
+      if (recurrenceEndDate != null) 'recurrenceEndDate': recurrenceEndDate,
+      if (timezone != null) 'timezone': timezone,
+      if (startDate != null) 'startDate': startDate,
     };
-    if (endDate != null) map['endDate'] = endDate!;
-    if (recurrence != null) map['recurrence'] = recurrence!;
-    return map;
   }
 }
 
@@ -64,30 +68,26 @@ class AddressModel {
   final String city;
   final String state;
   final String? zipCode;
+  final double latitude;
+  final double longitude;
 
   AddressModel({
     required this.street,
     required this.city,
     required this.state,
     this.zipCode,
+    required this.latitude,
+    required this.longitude,
   });
 
-  factory AddressModel.fromJson(Map<String, dynamic> json) {
-    return AddressModel(
-      street: json['street'],
-      city: json['city'],
-      state: json['state'],
-      zipCode: json['zipCode'],
-    );
-  }
-
   Map<String, dynamic> toJson() {
-    final map = {
+    return {
       'street': street,
       'city': city,
       'state': state,
+      if (zipCode != null) 'zipCode': zipCode,
+      'latitude': latitude,
+      'longitude': longitude,
     };
-    if (zipCode != null) map['zipCode'] = zipCode!;
-    return map;
   }
 }

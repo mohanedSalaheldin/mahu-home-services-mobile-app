@@ -36,7 +36,7 @@ class CustomDropdown<T> extends StatelessWidget {
             value: value,
             items: items,
             style: TextStyle(
-              fontSize: 14.sp,
+              fontSize: 14,
               color: Colors.white,
             ),
             onChanged: onChanged,

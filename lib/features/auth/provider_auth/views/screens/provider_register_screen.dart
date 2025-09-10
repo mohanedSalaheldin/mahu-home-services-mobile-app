@@ -16,11 +16,13 @@ import 'package:mahu_home_services_app/features/auth/client_auth/views/screens/v
 import 'package:mahu_home_services_app/features/auth/client_auth/views/widgets/app_back_button.dart';
 import 'package:mahu_home_services_app/features/auth/client_auth/views/widgets/custom_snack_bar.dart';
 import 'package:mahu_home_services_app/features/auth/client_auth/views/widgets/custom_text_field.dart';
-import 'package:mahu_home_services_app/features/auth/client_auth/views/widgets/phone_text_field.dart';
+import 'package:intl_phone_field/intl_phone_field.dart';
+import 'package:intl_phone_field/countries.dart';
 import 'package:mahu_home_services_app/features/landing/views/widgets/app_filled_button.dart';
 import 'package:mahu_home_services_app/features/landing/views/widgets/app_text_button.dart';
 import 'package:mahu_home_services_app/features/landing/views/widgets/have_or_not_an_account_row.dart';
 import 'package:mahu_home_services_app/features/services/views/widgets/image_picker_container.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ProviderRegisterScreen extends StatefulWidget {
   const ProviderRegisterScreen({super.key});
@@ -43,10 +45,17 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
   bool agreedToTerms = false;
   bool showTermsError = false;
   OtpChannel _otpChannel = OtpChannel.phone;
+  String phoneNumber = '';
+  String countryCode = '+20'; // default
 
   XFile? _selectedImage;
   final ImagePicker _picker = ImagePicker();
-  final List<String> categories = ['cleaning', 'repair', 'painting', 'electrical'];
+  final List<String> categories = [
+    'cleaning',
+    'repair',
+    'painting',
+    'electrical'
+  ];
   String? selectedCategory;
 
   Future<void> _pickImage() async {
@@ -54,6 +63,21 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
     if (picked != null) {
       setState(() => _selectedImage = picked);
     }
+  }
+
+  Future<void> _loadSavedCountry() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedCode = prefs.getString('selected_country_code') ?? '+20';
+    setState(() {
+      countryCode = savedCode;
+      AppUserConfig.selectedCountryCode = savedCode;
+    });
+  }
+
+  Future<void> _saveCountry(String code) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('selected_country_code', code);
+    AppUserConfig.selectedCountryCode = code;
   }
 
   @override
@@ -69,7 +93,6 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
     super.dispose();
   }
 
-  String countryCode = '+20';
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -94,7 +117,7 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
         builder: (context, state) {
           if (state is RegisterLoadingState) {
             return const Center(
-              child: CircularProgressIndicator(),
+              child: CircularProgressIndicator(color: Colors.blue),
             );
           }
           return SafeArea(
@@ -104,21 +127,61 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
                 key: _formKey,
                 child: ListView(
                   children: [
+                    Gap(20.h),
+                    IntlPhoneField(
+                      decoration: InputDecoration(
+                        labelText: 'Phone Number',
+                        labelStyle: TextStyle(color: Colors.blue),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.r),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.r),
+                          borderSide: const BorderSide(color: AppColors.blue),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.r),
+                          borderSide:
+                              const BorderSide(color: AppColors.blue, width: 2),
+                        ),
+                      ),
+                      // Use saved country code or fallback to Egypt if none
+                      initialCountryCode: countryCode.isNotEmpty
+                          ? CountryCodeHelper.getCountryCodeFromDial(
+                              countryCode)
+                          : 'EG',
+                      countries: countries, // full country list
+                      controller: phoneController,
+                      onChanged: (phone) {
+                        phoneNumber = phone.completeNumber;
+                        countryCode = phone.countryCode;
+                        _saveCountry(countryCode); // persist selection
+                      },
+                      onCountryChanged: (country) {
+                        countryCode = '+${country.dialCode}';
+                        _saveCountry(countryCode); // persist selection
+                      },
+                      validator: (value) {
+                        if (value == null || value.number.isEmpty) {
+                          return 'Please enter a phone number';
+                        }
+                        return null;
+                      },
+                      dropdownIcon: const Icon(
+                        Icons.arrow_drop_down,
+                        color: AppColors.blue,
+                      ),
+                      style: const TextStyle(color: AppColors.blue),
+                      dropdownTextStyle: const TextStyle(color: AppColors.blue),
+                    ),
+
+                    Gap(10.h),
                     CustomTextField(
                       label: 'Email',
                       hint: 'Enter Email Address',
                       keyboardType: TextInputType.emailAddress,
                       controller: emailController,
                       validator: FormValidationMethod.validateEmail,
-                    ),
-                    Gap(10.h),
-                    PhoneTextField(
-                      label: 'Phone Number',
-                      controller: phoneController,
-                      onCountryCodeChanged: (code) {
-                        countryCode = code;
-                        // print("Selected code: ${}");
-                      },
                     ),
 
                     Gap(10.h),
@@ -228,7 +291,7 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
                     Text(
                       'Receive OTP via',
                       style: TextStyle(
-                        fontSize: 14.sp,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -279,7 +342,7 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
                           'I agree the ',
                           style: TextStyle(
                             fontWeight: FontWeight.w400,
-                            fontSize: 14.sp,
+                            fontSize: 14,
                             color: Colors.black,
                           ),
                         ),
@@ -307,7 +370,9 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
                             firstName: fNameController.text,
                             lastName: lNameController.text,
                             password: passwordController.text,
-                            phone: countryCode + phoneController.text,
+                            phone: countryCode +
+                                phoneController.text
+                                    .replaceAll(RegExp(r'^\\+'), ''),
                             avatarPath: _selectedImage?.path ?? '',
                             businessName: businessNameController.text,
                             businessCategory: selectedCategory ?? '',
@@ -323,7 +388,7 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
                     //   "Or",
                     //   style: TextStyle(
                     //     fontWeight: FontWeight.w300,
-                    //     fontSize: 16.sp,
+                    //     fontSize: 16,
                     //     color: Colors.black,
                     //   ),
                     // ),
@@ -353,5 +418,21 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
         },
       ),
     );
+  }
+}
+
+class AppUserConfig {
+  static String selectedCountryCode = '+20'; // default Egypt
+}
+
+class CountryCodeHelper {
+  // Convert '+20' -> 'EG', '+971' -> 'AE', etc.
+  static String getCountryCodeFromDial(String dialCode) {
+    for (var c in countries) {
+      if ('+${c.dialCode}' == dialCode) {
+        return c.code;
+      }
+    }
+    return 'EG'; // fallback if not found
   }
 }

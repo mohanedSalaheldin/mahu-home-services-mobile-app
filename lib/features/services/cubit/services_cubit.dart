@@ -1,4 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mahu_home_services_app/core/errors/failures.dart';
+import 'package:mahu_home_services_app/features/services/cubit/services_cubit.dart'
+    as _serviceRepository;
 import 'package:mahu_home_services_app/features/services/cubit/services_state.dart';
 import 'package:mahu_home_services_app/features/services/models/booking_model.dart';
 import 'package:mahu_home_services_app/features/services/models/provider_performance.dart';
@@ -55,24 +58,29 @@ class ServiceCubit extends Cubit<ServiceState> {
   }
 
   void createService(ServiceModel service) {
+    print('Creating service: ${service.name}');
     emit(ServiceCreationLoadingState());
 
     _manageProviderServices.addService(service).then(
       (result) {
         result.fold(
           (failure) {
+            print('Service creation failed: ${failure.message}');
             emit(ServiceCreationFailedState(failure));
           },
           (_) {
+            print('Service created successfully');
             // _services.add(service);
             emit(ServiceCreationSuccessState());
             fetchServices();
           },
         );
       },
-    );
+    ).catchError((error) {
+      print('Error in createService: $error');
+      emit(ServiceCreationFailedState(Failure(error.toString())));
+    });
   }
-
 
   void updateService(ServiceModel service) {
     emit(ServiceUpdateLoadingState());
@@ -102,7 +110,7 @@ class ServiceCubit extends Cubit<ServiceState> {
   }) async {
     emit(ProfileUpdateLoadingState());
 
-    final result = await _profileServices.editProfile(
+    final result = await _profileServices.editProviderProfile(
       email: email,
       phone: phone,
       firstName: firstName,
@@ -111,34 +119,12 @@ class ServiceCubit extends Cubit<ServiceState> {
     );
 
     result.fold(
-          (failure) {
+      (failure) {
         emit(ProfileUpdateFailedState(failure.message));
       },
-          (updatedProfile) {
+      (updatedProfile) {
         _profile = updatedProfile;
         emit(ProfileUpdateSuccessState());
-      },
-    );
-  }
-
-
-
-  void deleteService(String serviceId) async {
-    emit(ServiceDeletionLoadingState());
-    _manageProviderServices.deleteService(serviceId).then(
-      (result) {
-        result.fold(
-          (failure) {
-            emit(ServiceDeletionFailedState(failure));
-          },
-          (_) {
-            ServiceModel deletedService =
-                _services.firstWhere((element) => element.id == serviceId);
-            _services.remove(deletedService);
-            emit(ServiceDeletionSuccessState());
-            // fetchServices();
-          },
-        );
       },
     );
   }
@@ -174,13 +160,12 @@ class ServiceCubit extends Cubit<ServiceState> {
     serviceProviderCategory: '',
   );
   ProviderPerformanceModel _performanceModel = ProviderPerformanceModel(
-    totalBookings: 0,
-    completed: 0,
-    cancelled: 0,
-    completionRate: 0.0,
-    averageRating: 0.0,
-      totalEarnings: 0.0
-  );
+      totalBookings: 0,
+      completed: 0,
+      cancelled: 0,
+      completionRate: 0.0,
+      averageRating: 0.0,
+      totalEarnings: 0.0);
 
   UserBaseProfileModel get profile => _profile;
   ProviderPerformanceModel get performanceModel => _performanceModel;
@@ -218,4 +203,21 @@ class ServiceCubit extends Cubit<ServiceState> {
 
     emit(DashboardSuccess());
   }
+
+  Future<void> updateServiceStatus(String serviceId, bool isActive) async {
+    emit(ServiceStatusUpdateLoadingState());
+    try {
+      // Call your API to update service status
+      await _manageProviderServices.toggleServiceStatus(serviceId, isActive);
+      emit(ServiceStatusUpdateSuccessState());
+    } catch (e) {
+      emit(ServiceStatusUpdateFailedState(e.toString()));
+    }
+  }
 }
+
+// Add these to your ServiceCubit
+
+
+// Add these states to your ServiceState
+

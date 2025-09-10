@@ -16,7 +16,7 @@ class DetailSection extends StatelessWidget {
       children: [
         Text(
           'Service Details',
-          style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         Gap(16.h),
         DetailRow(label: "Category", value: service.category),
@@ -24,7 +24,7 @@ class DetailSection extends StatelessWidget {
         DetailRow(label: "Sub-Type", value: service.subType),
         DetailRow(label: "Pricing Model", value: service.pricingModel),
         DetailRow(
-            label: "Price", value: '\$${service.basePrice.toStringAsFixed(2)}'),
+            label: service.serviceType == "recurring" ? "Price of service" : "Price of each hour", value: '\$${service.basePrice.toStringAsFixed(2)}'),
         DetailRow(
           label: "Duration",
           value:
@@ -53,7 +53,7 @@ class DetailRow extends StatelessWidget {
             child: Text(
               label,
               style: TextStyle(
-                fontSize: 16.sp,
+                fontSize: 16,
                 fontWeight: FontWeight.w500,
                 color: Colors.grey.shade600,
               ),
@@ -63,7 +63,7 @@ class DetailRow extends StatelessWidget {
             child: Text(
               value,
               style: TextStyle(
-                fontSize: 16.sp,
+                fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),
             ),

@@ -8,7 +8,7 @@ import 'package:mahu_home_services_app/features/services/cubit/services_cubit.da
 import 'package:mahu_home_services_app/features/services/cubit/services_state.dart';
 import 'package:mahu_home_services_app/features/services/models/booking_model.dart';
 import 'package:mahu_home_services_app/features/services/views/screens/booking_details_screen.dart'
-as booking_details;
+    as booking_details;
 
 // ---------------------------- MAIN SCREEN ----------------------------
 
@@ -16,7 +16,8 @@ class ServiceProviderJobsScreen extends StatefulWidget {
   const ServiceProviderJobsScreen({super.key});
 
   @override
-  State<ServiceProviderJobsScreen> createState() => _ServiceProviderJobsScreenState();
+  State<ServiceProviderJobsScreen> createState() =>
+      _ServiceProviderJobsScreenState();
 }
 
 class _ServiceProviderJobsScreenState extends State<ServiceProviderJobsScreen> {
@@ -45,12 +46,13 @@ class _ServiceProviderJobsScreenState extends State<ServiceProviderJobsScreen> {
         listener: (context, state) {},
         builder: (context, state) {
           if (state is GetMyBookingsLoadingState) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(
+                child: CircularProgressIndicator(color: Colors.blue));
           } else if (state is GetMyBookingsFailedState) {
             return Center(
               child: Text(
                 state.failure.msg,
-                style: TextStyle(fontSize: 16.sp, color: Colors.red),
+                style: TextStyle(fontSize: 16, color: Colors.red),
               ),
             );
           }
@@ -68,41 +70,38 @@ class _ServiceProviderJobsScreenState extends State<ServiceProviderJobsScreen> {
                 },
                 initialSelectedDate: _selectedDate,
               ),
-
               _buildStatsOverview(cubit.myBooking),
-
               Expanded(
                 child: filteredBookings.isEmpty
                     ? _buildEmptyState()
                     : ListView.separated(
-                  padding: EdgeInsets.all(16.w),
-                  itemCount: filteredBookings.length,
-                  separatorBuilder: (_, __) => Gap(16.h),
-                  itemBuilder: (_, index) {
-                    BookingModel bookingModel = filteredBookings[index];
-                    return _buildBookingCard(
-                      Booking(
-                        schedule: bookingModel.schedule,
-                        id: bookingModel.id,
-                        serviceName: bookingModel.service.name,
-                        serviceType: bookingModel.service.serviceType,
-                        clientName:
-                        "${bookingModel.user.profile.firstName} ${bookingModel.user.profile.lastName}",
-                        clientImage: bookingModel.user.profile.avatar ??
-                            "https://www.freepik.com/free-vector/blue-circle-with-white-user_145857007.htm#fromView=keyword&page=1&position=0&uuid=44698d99-7990-4bc6-b044-b070b4af0344&query=No+Profile",
-                        rating: 0.0,
-                        reviews: 0,
-                        address: "${bookingModel.address!.city} / ${bookingModel.address!.state} / ${bookingModel.address!.street}",
-                        startTime: bookingModel.schedule!.startDate.toString(),
-                        endTime: bookingModel.schedule!.endDate.toString(),
-                        status: bookingModel.status ,
-                        paymentStatus: PaymentStatus.pending,
-                        amount: bookingModel.price,
-
+                        padding: EdgeInsets.all(16.w),
+                        itemCount: filteredBookings.length,
+                        separatorBuilder: (_, __) => Gap(16.h),
+                        itemBuilder: (_, index) {
+                          BookingModel bookingModel = filteredBookings[index];
+                          return _buildBookingCard(
+                            BookingModel(
+                              id: bookingModel.id,
+                              service: bookingModel.service,
+                              user: bookingModel.user,
+                              provider: bookingModel.provider,
+                              serviceType: bookingModel.serviceType,
+                              schedule: bookingModel.schedule,
+                              price: bookingModel.price,
+                              bookingDate: bookingModel.bookingDate,
+                              dayOfWeek: bookingModel.dayOfWeek,
+                              createdAt: bookingModel.createdAt,
+                              updatedAt: bookingModel.updatedAt,
+                              option: bookingModel.option,
+                              duration: bookingModel.duration,
+                              address: bookingModel.address,
+                              status: _formatStatus(bookingModel.status),
+                              paymentStatus: bookingModel.paymentStatus,
+                            ),
+                          );
+                        },
                       ),
-                    );
-                  },
-                ),
               ),
             ],
           );
@@ -136,12 +135,11 @@ class _ServiceProviderJobsScreenState extends State<ServiceProviderJobsScreen> {
   Widget _buildStatsOverview(List<BookingModel> bookings) {
     final stats = {
       'Upcoming':
-      bookings.where((b) => b.status.toLowerCase() == 'upcoming').length,
-      'Today': bookings
-          .where((b) => b.createdAt.isSameDate(DateTime.now()))
-          .length,
+          bookings.where((b) => b.status.toLowerCase() == 'upcoming').length,
+      'Today':
+          bookings.where((b) => b.createdAt.isSameDate(DateTime.now())).length,
       'Completed':
-      bookings.where((b) => b.status.toLowerCase() == 'completed').length,
+          bookings.where((b) => b.status.toLowerCase() == 'completed').length,
     };
 
     return Container(
@@ -166,7 +164,7 @@ class _ServiceProviderJobsScreenState extends State<ServiceProviderJobsScreen> {
         Text(
           count.toString(),
           style: TextStyle(
-            fontSize: 18.sp,
+            fontSize: 18,
             fontWeight: FontWeight.bold,
             color: _getStatusColor(label),
           ),
@@ -174,7 +172,7 @@ class _ServiceProviderJobsScreenState extends State<ServiceProviderJobsScreen> {
         Text(
           label,
           style: TextStyle(
-            fontSize: 12.sp,
+            fontSize: 12,
             color: Colors.grey.shade600,
           ),
         ),
@@ -182,7 +180,7 @@ class _ServiceProviderJobsScreenState extends State<ServiceProviderJobsScreen> {
     );
   }
 
-  Widget _buildBookingCard(Booking booking) {
+  Widget _buildBookingCard(BookingModel booking) {
     return Card(
       elevation: 1,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -216,19 +214,22 @@ class _ServiceProviderJobsScreenState extends State<ServiceProviderJobsScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          booking.serviceName,
-                          style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
+                          booking.service.name,
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                         Gap(4.h),
                         Text(
                           booking.serviceType,
-                          style: TextStyle(fontSize: 12.sp, color: Colors.grey.shade600),
+                          style: TextStyle(
+                              fontSize: 12, color: Colors.grey.shade600),
                         ),
                       ],
                     ),
                   ),
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                     decoration: BoxDecoration(
                       color: _getStatusColor(booking.status).withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
@@ -236,7 +237,7 @@ class _ServiceProviderJobsScreenState extends State<ServiceProviderJobsScreen> {
                     child: Text(
                       booking.status.capitalize(),
                       style: TextStyle(
-                        fontSize: 12.sp,
+                        fontSize: 12,
                         color: _getStatusColor(booking.status),
                       ),
                     ),
@@ -249,23 +250,26 @@ class _ServiceProviderJobsScreenState extends State<ServiceProviderJobsScreen> {
               // Client info
               Row(
                 children: [
-                  booking.clientImage.isEmpty || booking.clientImage.contains('freepik')
+                  booking.user.profile.avatar!.isEmpty ||
+                          booking.user.profile.avatar!.contains('freepik')
                       ? CircleAvatar(
-                    radius: 20.w,
-                    backgroundColor: Colors.grey.shade200,
-                    child: Icon(Icons.person, color: Colors.grey.shade600),
-                  )
+                          radius: 20.w,
+                          backgroundColor: Colors.grey.shade200,
+                          child:
+                              Icon(Icons.person, color: Colors.grey.shade600),
+                        )
                       : CircleAvatar(
-                    radius: 20.w,
-                    backgroundImage: NetworkImage(booking.clientImage),
-                  ),
+                          radius: 20.w,
+                          backgroundImage: NetworkImage(booking.user.profile.avatar!),
+                        ),
                   Gap(12.w),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        booking.clientName,
-                        style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w500),
+                        booking.user.profile.firstName + booking.user.profile.lastName,
+                        style: TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.w500),
                       ),
                       Gap(2.h),
                       Row(
@@ -273,8 +277,9 @@ class _ServiceProviderJobsScreenState extends State<ServiceProviderJobsScreen> {
                           Icon(Icons.star, color: Colors.amber, size: 14.sp),
                           Gap(4.w),
                           Text(
-                            '${booking.rating} (${booking.reviews})',
-                            style: TextStyle(fontSize: 12.sp, color: Colors.grey.shade600),
+                            '${booking.service.averageRating} (${booking.service.totalReviews})',
+                            style: TextStyle(
+                                fontSize: 12, color: Colors.grey.shade600),
                           ),
                         ],
                       ),
@@ -290,12 +295,12 @@ class _ServiceProviderJobsScreenState extends State<ServiceProviderJobsScreen> {
                 children: [
                   _buildDetailChip(
                     icon: Icons.access_time,
-                    text: '${booking.startTime} - ${booking.endTime}',
+                    text: '${booking.schedule!.startTime} - ${booking.schedule!.endTime}',
                   ),
                   Gap(8.w),
                   _buildDetailChip(
                     icon: Icons.location_on_outlined,
-                    text: booking.address.split(',').take(2).join(','),
+                    text: booking.address.street.split(',').take(2).join(','),
                   ),
                 ],
               ),
@@ -305,6 +310,7 @@ class _ServiceProviderJobsScreenState extends State<ServiceProviderJobsScreen> {
       ),
     );
   }
+
   Widget _buildDetailChip({required IconData icon, required String text}) {
     return Expanded(
       child: Container(
@@ -315,7 +321,7 @@ class _ServiceProviderJobsScreenState extends State<ServiceProviderJobsScreen> {
         ),
         child: Row(
           children: [
-            Icon(icon, size: 14.sp, color: Colors.grey.shade600),
+            Icon(icon, size: 14, color: Colors.grey.shade600),
             Gap(4.w),
             Expanded(
               child: Text(
@@ -335,16 +341,17 @@ class _ServiceProviderJobsScreenState extends State<ServiceProviderJobsScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.event_note_outlined, size: 60.sp, color: Colors.grey.shade300),
+          Icon(Icons.event_note_outlined,
+              size: 60, color: Colors.grey.shade300),
           Gap(16.h),
           Text(
             'No bookings found',
-            style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w500),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
           ),
           Gap(8.h),
           Text(
             'No bookings on ${DateFormat('MMM d, yyyy').format(_selectedDate)}',
-            style: TextStyle(fontSize: 14.sp, color: Colors.grey.shade600),
+            style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
           ),
         ],
       ),
@@ -352,21 +359,28 @@ class _ServiceProviderJobsScreenState extends State<ServiceProviderJobsScreen> {
   }
 
   // Navigation to BookingDetailsScreen
-  void _navigateToBookingDetails(Booking booking) {
+  void _navigateToBookingDetails(BookingModel booking) {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => booking_details.BookingDetailsScreen(
-          booking: booking_details.Booking(
-            serviceName: booking.serviceName,
-            clientName: booking.clientName,
-            rating: booking.rating,
-            reviews: booking.reviews,
+          booking: BookingModel(
+            id: booking.id,
+            service: booking.service,
+            user: booking.user,
+            provider: booking.provider,
+            serviceType: booking.serviceType,
+            schedule: booking.schedule,
+            price: booking.price,
+            bookingDate: booking.bookingDate,
+            dayOfWeek: booking.dayOfWeek,
+            createdAt: booking.createdAt,
+            updatedAt: booking.updatedAt,
+            option: booking.option,
+            duration: booking.duration,
             address: booking.address,
-            date: booking.schedule!.startDate,
             status: _formatStatus(booking.status),
-            paymentStatus: _formatPaymentStatus(booking.paymentStatus.name),
-            amount: booking.amount, id: booking.id,
+            paymentStatus: booking.paymentStatus,
           ),
         ),
       ),
@@ -427,6 +441,7 @@ class _ServiceProviderJobsScreenState extends State<ServiceProviderJobsScreen> {
 // ---------------------------- MODELS & EXTENSIONS ----------------------------
 
 enum BookingStatus { upcoming, inProgress, completed, cancelled }
+
 enum PaymentStatus { pending, paid, failed }
 
 class Booking {
@@ -434,6 +449,7 @@ class Booking {
   final String serviceName;
   final String serviceType;
   final String clientName;
+  final String clientPhone;
   final String clientImage;
   final double rating;
   final Schedule? schedule;
@@ -445,22 +461,22 @@ class Booking {
   final PaymentStatus paymentStatus;
   final double amount;
 
-  Booking({
-    required this.id,
-    required this.serviceName,
-    required this.serviceType,
-    required this.clientName,
-    required this.clientImage,
-    required this.rating,
-    required this.reviews,
-    required this.address,
-    required this.startTime,
-    required this.endTime,
-    required this.status,
-    required this.paymentStatus,
-    required this.amount,
-    this.schedule
-  });
+  Booking(
+      {required this.id,
+      required this.serviceName,
+      required this.serviceType,
+      required this.clientName,
+      required this.clientPhone,
+      required this.clientImage,
+      required this.rating,
+      required this.reviews,
+      required this.address,
+      required this.startTime,
+      required this.endTime,
+      required this.status,
+      required this.paymentStatus,
+      required this.amount,
+      this.schedule});
 }
 
 extension DateUtils on DateTime {
@@ -517,8 +533,18 @@ class _DateSelectorWidgetState extends State<DateSelectorWidget> {
 
   String _getMonthName(DateTime date) {
     const months = [
-      'JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
-      'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'
+      'JAN',
+      'FEB',
+      'MAR',
+      'APR',
+      'MAY',
+      'JUN',
+      'JUL',
+      'AUG',
+      'SEP',
+      'OCT',
+      'NOV',
+      'DEC'
     ];
     return months[date.month - 1];
   }
@@ -547,7 +573,8 @@ class _DateSelectorWidgetState extends State<DateSelectorWidget> {
               width: 70,
               margin: const EdgeInsets.only(right: 12),
               decoration: BoxDecoration(
-                color: isSelected ? const Color(0xFF4DD0E1) : Colors.grey.shade100,
+                color:
+                    isSelected ? const Color(0xFF4DD0E1) : Colors.grey.shade100,
                 borderRadius: BorderRadius.circular(12),
                 border: isSelected
                     ? Border.all(color: const Color(0xFF4DD0E1), width: 2)

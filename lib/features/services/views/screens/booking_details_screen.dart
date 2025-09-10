@@ -7,11 +7,13 @@ import 'package:latlong2/latlong.dart' as latlng;
 import 'package:intl/intl.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
 import 'package:geocoding/geocoding.dart' as geo;
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../cubit/services_cubit.dart';
+import '../../models/booking_model.dart'; // Import your updated BookingModel
 
 class BookingDetailsScreen extends StatefulWidget {
-  final Booking booking;
+  final BookingModel booking;
   const BookingDetailsScreen({super.key, required this.booking});
   @override
   State<BookingDetailsScreen> createState() => _BookingDetailsScreenState();
@@ -21,41 +23,151 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
   latlng.LatLng? _serviceLocation;
   bool _isMapLoading = true;
   String? _mapError;
+  final MapController _mapController = MapController();
+  String? _detectedCountry;
 
   @override
   void initState() {
     super.initState();
-    _convertAddressToLatLng();
+    _determineLocation();
   }
 
-  Future<void> _convertAddressToLatLng() async {
+  Future<void> _determineLocation() async {
     try {
-      final address = "${widget.booking.address}, Egypt";
+      // Use coordinates from address
+      if (widget.booking.address.coordinates.isNotEmpty &&
+          widget.booking.address.coordinates.length >= 2) {
+        _setLocationWithCoordinates();
+        return;
+      }
+
+      // If coordinates not available, try to geocode the address
+      await _geocodeAddress();
+    } catch (e) {
+      print("Error determining location: $e");
+      _setFallbackLocation();
+    }
+  }
+
+  void _setLocationWithCoordinates() {
+    setState(() {
+      _serviceLocation = latlng.LatLng(
+        widget.booking.address.coordinates[1], // latitude
+        widget.booking.address.coordinates[0], // longitude
+      );
+      _detectedCountry = widget.booking.address.state;
+      _isMapLoading = false;
+    });
+  }
+
+  Future<void> _geocodeAddress() async {
+    try {
+      final address = _getFullAddress();
       final locations = await geo.locationFromAddress(address);
 
       if (locations.isNotEmpty) {
+        final location = locations.first;
+
+        // Reverse geocode to get country information
+        final places = await geo.placemarkFromCoordinates(
+          location.latitude,
+          location.longitude,
+        );
+
+        final country = places.isNotEmpty ? places.first.country : null;
+
         setState(() {
           _serviceLocation = latlng.LatLng(
-              locations.first.latitude, locations.first.longitude);
+            location.latitude,
+            location.longitude,
+          );
+          _detectedCountry = country;
           _isMapLoading = false;
           _mapError = null;
         });
       } else {
-        setState(() {
-          _mapError = "Could not determine location";
-          _serviceLocation =
-              const latlng.LatLng(30.0444, 31.2357); // Cairo fallback
-          _isMapLoading = false;
-        });
+        _setFallbackLocation();
       }
     } catch (e) {
-      print("Error converting address: $e");
-      setState(() {
-        _mapError = "Location service unavailable";
-        _serviceLocation =
-            const latlng.LatLng(30.0444, 31.2357); // Cairo fallback
-        _isMapLoading = false;
-      });
+      print("Geocoding error: $e");
+      _setFallbackLocation();
+    }
+  }
+
+  String _getFullAddress() {
+    return '${widget.booking.address.street}, ${widget.booking.address.city}, ${widget.booking.address.state} ${widget.booking.address.zipCode}';
+  }
+
+  void _setFallbackLocation() {
+    // Determine fallback based on booking state or default to Egypt
+    final fallbackState = widget.booking.address.state?.toLowerCase();
+    latlng.LatLng fallbackLocation;
+
+    if (fallbackState == 'dubai' || fallbackState == 'uae') {
+      fallbackLocation = const latlng.LatLng(25.276987, 55.296249); // Dubai
+      _detectedCountry = 'UAE';
+    } else {
+      fallbackLocation = const latlng.LatLng(30.0444, 31.2357); // Cairo
+      _detectedCountry = 'Egypt';
+    }
+
+    setState(() {
+      _serviceLocation = fallbackLocation;
+      _isMapLoading = false;
+      _mapError = "Showing approximate location";
+    });
+  }
+
+  Future<void> _makePhoneCall(String phoneNumber) async {
+    final Uri launchUri = Uri(
+      scheme: 'tel',
+      path: phoneNumber,
+    );
+    if (!await launchUrl(launchUri)) {
+      throw Exception('Could not launch $phoneNumber');
+    }
+  }
+
+  Future<void> _openMapsApp() async {
+    if (_serviceLocation == null) return;
+
+    final String mapsUrl;
+    final country = _detectedCountry?.toLowerCase();
+
+    if (country == 'uae' || country == 'united arab emirates') {
+      mapsUrl =
+          'https://www.google.com/maps/dir/?api=1&destination=${_serviceLocation!.latitude},${_serviceLocation!.longitude}&travelmode=driving';
+    } else {
+      mapsUrl =
+          'https://www.google.com/maps/dir/?api=1&destination=${_serviceLocation!.latitude},${_serviceLocation!.longitude}&travelmode=driving';
+    }
+
+    final uri = Uri.parse(mapsUrl);
+
+    if (!await launchUrl(uri)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not open maps app')),
+      );
+    }
+  }
+
+  String _getMapProviderUrl() {
+    final country = _detectedCountry?.toLowerCase();
+
+    if (country == 'uae' || country == 'united arab emirates') {
+      return 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+    } else {
+      return 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+    }
+  }
+
+  double _getInitialZoom() {
+    final country = _detectedCountry?.toLowerCase();
+
+    if (country == 'uae' || country == 'united arab emirates') {
+      return 12.0;
+    } else {
+      return 10.0;
     }
   }
 
@@ -66,6 +178,8 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
         title: const Text("Booking Details"),
         centerTitle: false,
         elevation: 0,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16.w),
@@ -78,13 +192,10 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
             Gap(24.h),
             _buildServiceDetailsSection(),
             Gap(24.h),
-            _buildPaymentSection(),
-            Gap(24.h),
-
-            // Add the Map Section
             _buildMapSection(),
             Gap(24.h),
-
+            _buildPaymentSection(),
+            Gap(24.h),
             _buildActionButtons(),
           ],
         ),
@@ -92,144 +203,318 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
     );
   }
 
-  Widget _buildHeaderSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          widget.booking.serviceName,
-          style: TextStyle(
-            fontSize: 24.sp,
-            fontWeight: FontWeight.w700,
+  Widget _buildMapSection() {
+    return Container(
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
-        ),
-        Gap(8.h),
-        Row(
-          children: [
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-              decoration: BoxDecoration(
-                color: _getStatusColor(widget.booking.status).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                widget.booking.status,
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "📍 Service Location",
                 style: TextStyle(
-                  fontSize: 12.sp,
-                  color: _getStatusColor(widget.booking.status),
-                  fontWeight: FontWeight.w600,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.grey.shade800,
                 ),
               ),
+              IconButton(
+                icon: Icon(Icons.directions, color: AppColors.primary),
+                onPressed: _openMapsApp,
+                tooltip: 'Open in Maps',
+              ),
+            ],
+          ),
+          Gap(12.h),
+          Container(
+            height: 250.h,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey.shade300, width: 1),
             ),
-            Gap(8.w),
-            if (widget.booking.rating > 0)
-              Row(
-                children: [
-                  Icon(Icons.star, color: Colors.amber, size: 16.sp),
-                  Gap(4.w),
-                  Text(
-                    "${widget.booking.rating} (${widget.booking.reviews} reviews)",
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      color: Colors.grey.shade600,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: _isMapLoading
+                  ? _buildLoadingState()
+                  : _serviceLocation == null
+                      ? _buildErrorState()
+                      : _buildMapContent(),
+            ),
+          ),
+          if (_mapError != null) ...[
+            Gap(12.h),
+            _buildWarningMessage(),
+          ],
+          Gap(16.h),
+          _buildAddressInfo(),
+          Gap(12.h),
+          _buildDirectionsButton(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoadingState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircularProgressIndicator(
+            color: AppColors.primary,
+            strokeWidth: 2,
+          ),
+          Gap(12.h),
+          Text(
+            'Loading map...',
+            style: TextStyle(
+              color: Colors.grey.shade600,
+              fontSize: 14,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.error_outline, color: Colors.red, size: 40),
+          Gap(8.h),
+          Text(
+            'Location not available',
+            style: TextStyle(color: Colors.red),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMapContent() {
+    return Stack(
+      children: [
+        FlutterMap(
+          mapController: _mapController,
+          options: MapOptions(
+            initialCenter: _serviceLocation!,
+            initialZoom: _getInitialZoom(),
+            interactionOptions: const InteractionOptions(
+              flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
+            ),
+          ),
+          children: [
+            TileLayer(
+              urlTemplate: _getMapProviderUrl(),
+              subdomains: const ['a', 'b', 'c'],
+              userAgentPackageName: 'com.example.mahu_home_services_app',
+            ),
+            MarkerLayer(
+              markers: [
+                Marker(
+                  width: 50.w,
+                  height: 50.h,
+                  point: _serviceLocation!,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.3),
+                          blurRadius: 10,
+                          spreadRadius: 2,
+                        ),
+                      ],
+                    ),
+                    child: Icon(
+                      Icons.location_pin,
+                      color: Colors.white,
+                      size: 30.w,
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
+            ),
           ],
+        ),
+        Positioned(
+          bottom: 12.h,
+          right: 12.w,
+          child: FloatingActionButton(
+            mini: true,
+            backgroundColor: Colors.white,
+            onPressed: () {
+              _mapController.move(_serviceLocation!, _getInitialZoom());
+            },
+            child: Icon(Icons.my_location, color: AppColors.primary, size: 20),
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildMapSection() {
+  Widget _buildWarningMessage() {
+    return Container(
+      padding: EdgeInsets.all(12.w),
+      decoration: BoxDecoration(
+        color: Colors.orange.shade50,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.orange.shade200),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.warning_amber, color: Colors.orange.shade600, size: 16),
+          Gap(8.w),
+          Expanded(
+            child: Text(
+              _mapError!,
+              style: TextStyle(
+                color: Colors.orange.shade800,
+                fontSize: 12,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAddressInfo() {
+    return Container(
+      padding: EdgeInsets.all(12.w),
+      decoration: BoxDecoration(
+        color: Colors.blue.shade50,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.info_outline, color: Colors.blue.shade600, size: 16),
+          Gap(8.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (_detectedCountry != null)
+                  Text(
+                    'Location: $_detectedCountry',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.blue.shade800,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                Text(
+                  _getFullAddress(),
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey.shade700,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDirectionsButton() {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        icon: Icon(Icons.directions, size: 20),
+        label: Text('Get Directions'),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: AppColors.primary,
+          side: BorderSide(color: AppColors.primary),
+          padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+        onPressed: _openMapsApp,
+      ),
+    );
+  }
+
+  Widget _buildHeaderSection() {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(12),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Service Location",
+            widget.booking.service.name,
             style: TextStyle(
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w600,
+              fontSize: 24,
+              fontWeight: FontWeight.w700,
+              color: Colors.grey.shade800,
             ),
           ),
-          Gap(16.h),
-          Container(
-            height: 200.h,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey.shade300),
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: _isMapLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : _mapError != null
-                      ? Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(Icons.error_outline,
-                                  color: Colors.red),
-                              Gap(8.h),
-                              Text(
-                                _mapError!,
-                                style: const TextStyle(color: Colors.red),
-                              ),
-                            ],
-                          ),
-                        )
-                      : FlutterMap(
-                          options: MapOptions(
-                            initialCenter: _serviceLocation!,
-                            initialZoom: 13.0,
-                          ),
-                          children: [
-                            TileLayer(
-                              urlTemplate:
-                                  'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                              userAgentPackageName: 'com.example.app',
-                            ),
-                            MarkerLayer(
-                              markers: [
-                                Marker(
-                                  width: 40.0,
-                                  height: 40.0,
-                                  point: _serviceLocation!,
-                                  child: const Icon(
-                                    Icons.location_pin,
-                                    color: Colors.red,
-                                    size: 40,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-            ),
-          ),
-          if (_mapError != null) Gap(12.h),
-          if (_mapError != null)
-            Text(
-              "Showing approximate location",
-              style: TextStyle(
-                fontSize: 12.sp,
-                color: Colors.orange,
-              ),
-            ),
           Gap(12.h),
-          Text(
-            widget.booking.address,
-            style: TextStyle(
-              fontSize: 14.sp,
-              color: Colors.grey.shade600,
-            ),
+          Row(
+            children: [
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                decoration: BoxDecoration(
+                  color:
+                      _getStatusColor(widget.booking.status).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  widget.booking.status.toUpperCase(),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: _getStatusColor(widget.booking.status),
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+              Gap(8.w),
+              if (widget.booking.service.averageRating > 0)
+                Row(
+                  children: [
+                    Icon(Icons.star, color: Colors.amber, size: 16.sp),
+                    Gap(4.w),
+                    Text(
+                      "${widget.booking.service.averageRating}",
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade600,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+            ],
           ),
         ],
       ),
@@ -240,34 +525,61 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(12),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Client Information",
+            "👤 Client Information",
             style: TextStyle(
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w600,
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: Colors.grey.shade800,
             ),
           ),
           Gap(16.h),
           Row(
             children: [
               Container(
-                width: 48.w,
-                height: 48.w,
+                width: 56.w,
+                height: 56.w,
                 decoration: BoxDecoration(
-                  color: AppColors.blue.withOpacity(0.1),
+                  color: AppColors.primary.withOpacity(0.1),
                   shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.primary.withOpacity(0.2),
+                      AppColors.primary.withOpacity(0.1),
+                    ],
+                  ),
                 ),
-                child: Icon(
-                  Icons.person,
-                  color: AppColors.blue,
-                  size: 24.sp,
-                ),
+                child: widget.booking.user.profile.avatar != null
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(28.w),
+                        child: Image.network(
+                          widget.booking.user.profile.avatar!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Icon(
+                            Icons.person,
+                            color: AppColors.primary,
+                            size: 28,
+                          ),
+                        ),
+                      )
+                    : Icon(
+                        Icons.person,
+                        color: AppColors.primary,
+                        size: 28,
+                      ),
               ),
               Gap(16.w),
               Expanded(
@@ -275,97 +587,141 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      widget.booking.clientName,
+                      '${widget.booking.user.profile.firstName} ${widget.booking.user.profile.lastName}',
                       style: TextStyle(
-                        fontSize: 16.sp,
+                        fontSize: 18,
                         fontWeight: FontWeight.w600,
+                        color: Colors.grey.shade800,
                       ),
                     ),
                     Gap(4.h),
-                    Text(
-                      "Client since ${DateFormat('MMM yyyy').format(DateTime.now().subtract(const Duration(days: 90)))}",
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        color: Colors.grey.shade600,
+                    if (widget.booking.service.averageRating > 0)
+                      Row(
+                        children: [
+                          Icon(Icons.star, color: Colors.amber, size: 16),
+                          Gap(4.w),
+                          Text(
+                            "${widget.booking.service.averageRating} (${widget.booking.service.totalReviews} reviews)",
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
                   ],
                 ),
               ),
             ],
           ),
-          Gap(16.h),
-          Divider(color: Colors.grey.shade200, height: 1),
+          Gap(20.h),
+          const Divider(color: Colors.grey, height: 1),
           Gap(16.h),
           _buildInfoRow(
             icon: Icons.phone,
             title: "Phone Number",
-            value: "Tap to call",
+            value: widget.booking.user.phone,
             isClickable: true,
-            onTap: () {
-              // Implement call functionality
-            },
+            onTap: () => _makePhoneCall(widget.booking.user.phone),
           ),
           Gap(12.h),
           _buildInfoRow(
             icon: Icons.email,
-            title: "Email Address",
-            value: "Tap to email",
+            title: "Email",
+            value: widget.booking.user.email,
             isClickable: true,
-            onTap: () {
-              // Implement email functionality
-            },
-          ),
-          Gap(12.h),
-          _buildInfoRow(
-            icon: Icons.location_on,
-            title: "Service Address",
-            value: widget.booking.address,
-            isClickable: false,
+            onTap: () => _launchEmail(widget.booking.user.email),
           ),
         ],
       ),
     );
   }
 
+  Future<void> _launchEmail(String email) async {
+    final Uri emailUri = Uri(
+      scheme: 'mailto',
+      path: email,
+    );
+    if (!await launchUrl(emailUri)) {
+      throw Exception('Could not launch email');
+    }
+  }
+
   Widget _buildServiceDetailsSection() {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(12),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Service Details",
+            "🛠️ Service Details",
             style: TextStyle(
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w600,
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: Colors.grey.shade800,
             ),
           ),
           Gap(16.h),
+          if (widget.booking.schedule?.startDate != null)
           _buildInfoRow(
             icon: Icons.calendar_today,
-            title: "Date & Time",
-            value:
-                DateFormat('MMM d, yyyy • h:mm a').format(widget.booking.date),
+            title: "Scheduled Date",
+            value: DateFormat('MMM d, yyyy')
+                .format(widget.booking.schedule!.startDate ?? DateTime.now()),
             isClickable: false,
           ),
+          if (widget.booking.schedule?.startTime != null && widget.booking.schedule?.endTime != null) ...[
           Gap(12.h),
           _buildInfoRow(
             icon: Icons.access_time,
-            title: "Duration",
+            title: "Time Slot",
             value:
-                "2 hours (estimated)", // You might want to add duration to your Booking model
+                '${widget.booking.schedule!.startTime} - ${widget.booking.schedule!.endTime}',
+            isClickable: false,
+          ),
+          ],
+          Gap(12.h),
+          _buildInfoRow(
+            icon: Icons.timer,
+            title: "Duration",
+            value: "${widget.booking.duration / 60} hours",
             isClickable: false,
           ),
           Gap(12.h),
           _buildInfoRow(
             icon: Icons.description,
-            title: "Special Instructions",
-            value: widget.booking.details ?? "No special instructions",
+            title: "Service Description",
+            value: widget.booking.service.description,
+            isClickable: false,
+          ),
+          if (widget.booking.details != null &&
+              widget.booking.details!.isNotEmpty) ...[
+            Gap(12.h),
+            _buildInfoRow(
+              icon: Icons.note,
+              title: "Special Instructions",
+              value: widget.booking.details!,
+              isClickable: false,
+            ),
+          ],
+          Gap(12.h),
+          _buildInfoRow(
+            icon: Icons.build,
+            title: "Tools Required",
+            value: widget.booking.option.hasTools
+                ? "Client has tools"
+                : "Bring your own tools",
             isClickable: false,
           ),
         ],
@@ -377,17 +733,25 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(12),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Payment Information",
+            "💰 Payment Information",
             style: TextStyle(
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w600,
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: Colors.grey.shade800,
             ),
           ),
           Gap(16.h),
@@ -397,14 +761,14 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
               Text(
                 "Service Fee",
                 style: TextStyle(
-                  fontSize: 14.sp,
+                  fontSize: 14,
                   color: Colors.grey.shade600,
                 ),
               ),
               Text(
-                "\$${widget.booking.amount.toStringAsFixed(2)}",
+                "\$${widget.booking.price.toStringAsFixed(2)}",
                 style: TextStyle(
-                  fontSize: 14.sp,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -417,21 +781,21 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
               Text(
                 "Tax",
                 style: TextStyle(
-                  fontSize: 14.sp,
+                  fontSize: 14,
                   color: Colors.grey.shade600,
                 ),
               ),
-              Text(
-                "\$${(widget.booking.amount * 0.1).toStringAsFixed(2)}", // Assuming 10% tax
+              const Text(
+                "\$0.00",
                 style: TextStyle(
-                  fontSize: 14.sp,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
               ),
             ],
           ),
           Gap(12.h),
-          Divider(color: Colors.grey.shade200, height: 1),
+          const Divider(color: Colors.grey, height: 1),
           Gap(12.h),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -439,16 +803,16 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
               Text(
                 "Total Amount",
                 style: TextStyle(
-                  fontSize: 16.sp,
+                  fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
               ),
               Text(
-                "\$${(widget.booking.amount * 1.1).toStringAsFixed(2)}", // Total with tax
+                "\$${widget.booking.price.toStringAsFixed(2)}",
                 style: TextStyle(
-                  fontSize: 16.sp,
+                  fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.blue,
+                  color: AppColors.primary,
                 ),
               ),
             ],
@@ -460,7 +824,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
               Text(
                 "Payment Status",
                 style: TextStyle(
-                  fontSize: 14.sp,
+                  fontSize: 14,
                   color: Colors.grey.shade600,
                 ),
               ),
@@ -472,9 +836,9 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  widget.booking.paymentStatus,
+                  widget.booking.paymentStatus.toUpperCase(),
                   style: TextStyle(
-                    fontSize: 12.sp,
+                    fontSize: 12,
                     color: _getPaymentStatusColor(widget.booking.paymentStatus),
                     fontWeight: FontWeight.w600,
                   ),
@@ -492,22 +856,6 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
       children: [
         Row(
           children: [
-            Expanded(
-              child: OutlinedButton(
-                style: OutlinedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: 14.h),
-                  side: const BorderSide(color: AppColors.blue),
-                ),
-                onPressed: () {
-                  _showContactOptions(context);
-                },
-                child: const Text(
-                  "Contact Client",
-                  style: TextStyle(color: AppColors.blue),
-                ),
-              ),
-            ),
-            Gap(16.w),
             Expanded(
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
@@ -550,6 +898,76 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
     );
   }
 
+  Widget _buildInfoRow({
+    required IconData icon,
+    required String title,
+    required String value,
+    required bool isClickable,
+    VoidCallback? onTap,
+  }) {
+    return InkWell(
+      onTap: isClickable ? onTap : null,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: 12.h),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 36.w,
+              height: 36.w,
+              decoration: BoxDecoration(
+                color: isClickable
+                    ? AppColors.primary.withOpacity(0.1)
+                    : Colors.grey.shade100,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                size: 18,
+                color: isClickable ? AppColors.primary : Colors.grey.shade600,
+              ),
+            ),
+            Gap(12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade600,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  Gap(4.h),
+                  Text(
+                    value,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight:
+                          isClickable ? FontWeight.w600 : FontWeight.normal,
+                      color: isClickable
+                          ? AppColors.primary
+                          : Colors.grey.shade800,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (isClickable)
+              Icon(
+                Icons.chevron_right,
+                size: 20,
+                color: Colors.grey.shade400,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
   void _showConfirmationDialog(
       BuildContext context, String title, String message, String newStatus) {
     showDialog(
@@ -565,11 +983,10 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              // Update the booking status in the cubit
               context
                   .read<ServiceCubit>()
                   .changeBookingStatus(widget.booking.id, newStatus);
-              // Update local state for UI
+              // Update the booking status locally
               setState(() {
                 widget.booking.status = newStatus;
               });
@@ -603,11 +1020,9 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () {
               Navigator.pop(context);
-              // Update the booking status in the cubit
               context
                   .read<ServiceCubit>()
                   .changeBookingStatus(widget.booking.id, 'cancelled');
-              // Update local state for UI
               setState(() {
                 widget.booking.status = 'cancelled';
               });
@@ -617,7 +1032,6 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                   backgroundColor: Colors.red,
                 ),
               );
-              // Navigate back after cancellation
               Future.delayed(const Duration(seconds: 1), () {
                 Navigator.pop(context);
               });
@@ -626,153 +1040,6 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                 style: TextStyle(color: Colors.white)),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildInfoRow({
-    required IconData icon,
-    required String title,
-    required String value,
-    required bool isClickable,
-    VoidCallback? onTap,
-  }) {
-    return InkWell(
-      onTap: isClickable ? onTap : null,
-      child: Padding(
-        padding: EdgeInsets.symmetric(vertical: 8.h),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(
-              icon,
-              size: 20.sp,
-              color: Colors.grey.shade500,
-            ),
-            Gap(12.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
-                  Gap(4.h),
-                  Text(
-                    value,
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      fontWeight:
-                          isClickable ? FontWeight.w600 : FontWeight.normal,
-                      color: isClickable ? AppColors.blue : Colors.black,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            if (isClickable)
-              Icon(
-                Icons.chevron_right,
-                size: 20.sp,
-                color: Colors.grey.shade400,
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showContactOptions(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => Container(
-        padding: EdgeInsets.all(16.w),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              "Contact Client",
-              style: TextStyle(
-                fontSize: 18.sp,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            Gap(16.h),
-            ListTile(
-              leading: Container(
-                width: 40.w,
-                height: 40.w,
-                decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.phone,
-                  color: Colors.green,
-                ),
-              ),
-              title: const Text('Call Client'),
-              subtitle: const Text('Initiate a phone call'),
-              onTap: () {
-                Navigator.pop(context);
-                // Implement call functionality
-              },
-            ),
-            ListTile(
-              leading: Container(
-                width: 40.w,
-                height: 40.w,
-                decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.message,
-                  color: Colors.blue,
-                ),
-              ),
-              title: const Text('Send Message'),
-              subtitle: const Text('Send SMS or WhatsApp message'),
-              onTap: () {
-                Navigator.pop(context);
-                // Implement messaging functionality
-              },
-            ),
-            ListTile(
-              leading: Container(
-                width: 40.w,
-                height: 40.w,
-                decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.email,
-                  color: Colors.red,
-                ),
-              ),
-              title: const Text('Send Email'),
-              subtitle: const Text('Compose an email'),
-              onTap: () {
-                Navigator.pop(context);
-                // Implement email functionality
-              },
-            ),
-            Gap(16.h),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel'),
-              ),
-            ),
-            Gap(8.h),
-          ],
-        ),
       ),
     );
   }
@@ -792,20 +1059,18 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
             'Have you completed all the work?', 'completed');
         break;
       case 'completed':
-        // Already handled by viewing details
         break;
       default:
         break;
     }
   }
 
-  // Helper methods (same as in your original code)
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
       case 'pending':
         return Colors.orange;
       case 'confirmed':
-        return AppColors.blue;
+        return AppColors.primary;
       case 'in-progress':
         return Colors.purple;
       case 'completed':
@@ -835,7 +1100,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
       case 'pending':
         return Colors.orange;
       case 'confirmed':
-        return AppColors.blue;
+        return AppColors.primary;
       case 'in-progress':
         return Colors.purple;
       case 'completed':
@@ -843,7 +1108,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
       case 'cancelled':
         return Colors.grey;
       default:
-        return AppColors.blue;
+        return AppColors.primary;
     }
   }
 
@@ -880,32 +1145,4 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
         return status;
     }
   }
-}
-
-class Booking {
-  final String id;
-  final String serviceName;
-  final String clientName;
-  final double rating;
-  final int reviews;
-  final String address;
-  final String details;
-  final DateTime date;
-  String status;
-  final String paymentStatus;
-  final double amount;
-
-  Booking({
-    required this.id, // Add this
-    required this.serviceName,
-    required this.clientName,
-    required this.rating,
-    required this.reviews,
-    required this.address,
-    required this.date,
-    required this.status,
-    required this.paymentStatus,
-    required this.amount,
-    this.details = '',
-  });
 }

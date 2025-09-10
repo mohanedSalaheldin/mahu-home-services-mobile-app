@@ -53,7 +53,9 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
         builder: (context, state) {
           if (state is ForgotPasswordLoadingState) {
             return const Center(
-              child: CircularProgressIndicator(),
+              child: CircularProgressIndicator(
+                color: Colors.blue
+              ),
             );
           }
           return SafeArea(
@@ -72,7 +74,7 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
                       style: TextStyle(
                         height: 0.7,
                         fontWeight: FontWeight.w600,
-                        fontSize: 30.sp,
+                        fontSize: 30,
                         color: Colors.black,
                       ),
                     ),

@@ -22,7 +22,7 @@ class HaveOrNotAnAccountRow extends StatelessWidget {
           questionTxt,
           style: TextStyle(
             fontWeight: FontWeight.w300,
-            fontSize: 16.sp,
+            fontSize: 16,
             color: Colors.black.withOpacity(.8),
           ),
           textAlign: TextAlign.center,

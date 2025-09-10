@@ -46,7 +46,9 @@
 //         builder: (context, state) {
 //           if (state is VerifyEmailLoadingState) {
 //             return const Center(
-//               child: CircularProgressIndicator(),
+//               child: CircularProgressIndicator(
+              //   color: Colors.blue
+              // ),
 //             );
 //           }
 
@@ -66,7 +68,7 @@
 //                       style: TextStyle(
 //                         height: 0.7,
 //                         fontWeight: FontWeight.w600,
-//                         fontSize: 30.sp,
+//                         fontSize: 30,
 //                         color: Colors.black,
 //                       ),
 //                     ),
@@ -75,7 +77,7 @@
 //                       'We have sent verification \n code to ${widget.userEmail}',
 //                       style: TextStyle(
 //                         fontWeight: FontWeight.w300,
-//                         fontSize: 13.sp,
+//                         fontSize: 13,
 //                         color: Colors.black.withOpacity(.5),
 //                       ),
 //                       textAlign: TextAlign.center,

@@ -31,7 +31,7 @@ class _DateAndTimeFormFiledWidgetState
           widget.isDateNotTime ? 'Date' : 'Time',
           style: TextStyle(
             fontWeight: FontWeight.w500,
-            fontSize: 16.sp,
+            fontSize: 16,
             color: Colors.black,
           ),
         ),
@@ -54,7 +54,7 @@ class _DateAndTimeFormFiledWidgetState
               height: 4,
               color: Colors.black.withOpacity(.5),
               fontWeight: FontWeight.w400,
-              fontSize: 13.sp,
+              fontSize: 13,
             ),
             filled: true,
             fillColor: AppColors.greyBack,

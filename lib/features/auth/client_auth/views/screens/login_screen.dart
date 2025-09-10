@@ -5,6 +5,7 @@ import 'package:gap/gap.dart';
 import 'package:mahu_home_services_app/core/constants/app_const.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
 import 'package:mahu_home_services_app/core/models/user_type_enum.dart';
+import 'package:mahu_home_services_app/core/utils/helpers/cache_helper.dart';
 import 'package:mahu_home_services_app/core/utils/helpers/form_validation_method.dart';
 import 'package:mahu_home_services_app/core/utils/navigation_utils.dart';
 import 'package:mahu_home_services_app/features/auth/client_auth/cubit/auth_cubit.dart';
@@ -49,12 +50,14 @@ class _LoginScreenState extends State<LoginScreen> {
       body: BlocConsumer<AuthCubit, AuthState>(
         listener: (context, state) {
           if (state is LoginSucessededState) {
-            navigateToAndKill(
-              context,
-              UserRoleCubit.get(context).state.name == UserRole.client.name
-                  ? ClientLayoutScreen()
-                  : ProviderLayoutScreen(),
-            );
+            final role = state.userModel.role;
+            print("The role of user: "+role);
+            CacheHelper.saveString('user_role', role);
+            if (role == 'provider') {
+              navigateToAndKill(context, ProviderLayoutScreen());
+            } else {
+              navigateToAndKill(context, ClientLayoutScreen());
+            }
           } else if (state is LoginFailedState) {
             showCustomSnackBar(
               context: context,
@@ -66,7 +69,7 @@ class _LoginScreenState extends State<LoginScreen> {
         builder: (context, state) {
           if (state is LoginLoadingState) {
             return const Center(
-              child: CircularProgressIndicator(),
+              child: CircularProgressIndicator(color: Colors.blue),
             );
           }
           onLoginPressed() {
@@ -126,7 +129,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           'Remember Me',
                           style: TextStyle(
                             fontWeight: FontWeight.w400,
-                            fontSize: 14.sp,
+                            fontSize: 14,
                             color: Colors.black,
                           ),
                         ),
@@ -150,7 +153,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     //   "Or",
                     //   style: TextStyle(
                     //     fontWeight: FontWeight.w300,
-                    //     fontSize: 16.sp,
+                    //     fontSize: 16,
                     //     color: Colors.black,
                     //   ),
                     // ),

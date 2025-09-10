@@ -4,6 +4,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
+import 'package:mahu_home_services_app/core/utils/helpers/cache_helper.dart';
+import 'package:mahu_home_services_app/features/auth/client_auth/views/screens/login_screen.dart';
 import 'package:mahu_home_services_app/features/landing/views/screens/choose_rule_screen.dart';
 import 'package:mahu_home_services_app/features/services/cubit/services_cubit.dart';
 import 'package:mahu_home_services_app/features/services/cubit/services_state.dart';
@@ -64,7 +66,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           final cubit = context.read<ServiceCubit>();
 
           if (state is UserProfileLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(
+                child: CircularProgressIndicator(color: Colors.blue));
           }
 
           if (state is ServiceErrorState) {
@@ -96,12 +99,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Gap(24.h),
                   _buildResponseTimeSection(),
                   Gap(24.h),
-                  _buildSubscriptionSection(),
-                  Gap(24.h),
+                  // _buildSubscriptionSection(),
+                  // Gap(24.h),
                   _buildSettingsSection(user),
                   Gap(32.h),
-                  _buildUpgradeButton(user.id),
-                  Gap(40.h),
+                  // _buildUpgradeButton(user.id),
+                  // Gap(40.h),
                 ],
               ),
             ),
@@ -143,7 +146,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Text(
                 '${user.firstName} ${user.lastName}',
                 style: TextStyle(
-                  fontSize: 22.sp,
+                  fontSize: 22,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -151,8 +154,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Text(
                 user.businessName,
                 style: TextStyle(
-                  fontSize: 16.sp,
+                  fontSize: 16,
                   color: Colors.grey.shade600,
+                ),
+              ),
+              Gap(4.w),
+              Text(
+                'The Reference Id : ${CacheHelper.getString("referenceId")}',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
               Gap(8.h),
@@ -161,13 +172,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Icon(
                     Icons.star,
                     color: Colors.amber,
-                    size: 18.sp,
+                    size: 18,
                   ),
                   Gap(4.w),
                   Text(
                     '${performance.averageRating.toStringAsFixed(1)} (${performance.totalBookings} reviews)',
                     style: TextStyle(
-                      fontSize: 14.sp,
+                      fontSize: 14,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -187,7 +198,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Text(
           'Stats',
           style: TextStyle(
-            fontSize: 18.sp,
+            fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -211,7 +222,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Text(
           label,
           style: TextStyle(
-            fontSize: 14.sp,
+            fontSize: 14,
             color: Colors.grey.shade600,
           ),
         ),
@@ -219,7 +230,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Text(
           value,
           style: TextStyle(
-            fontSize: 18.sp,
+            fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -234,7 +245,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Text(
           'Avg. Response Time',
           style: TextStyle(
-            fontSize: 18.sp,
+            fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -242,7 +253,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Text(
           'Within 1 hour', // You can make this dynamic
           style: TextStyle(
-            fontSize: 16.sp,
+            fontSize: 16,
             color: Colors.grey.shade600,
           ),
         ),
@@ -257,13 +268,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Text(
           'Subscription Plan',
           style: TextStyle(
-            fontSize: 18.sp,
+            fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
         ),
         Gap(12.h),
         _isLoadingSubscription
-            ? const CircularProgressIndicator()
+            ? const CircularProgressIndicator(color: Colors.blue)
             : _currentSubscription == null
                 ? Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -277,7 +288,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         child: Text(
                           'You are not subscribed to any plan yet.',
                           style: TextStyle(
-                            fontSize: 16.sp,
+                            fontSize: 16,
                             color: Colors.grey.shade700,
                           ),
                         ),
@@ -307,7 +318,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           child: Text(
                             'Subscribe Now',
                             style: TextStyle(
-                              fontSize: 16.sp,
+                              fontSize: 16,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
                             ),
@@ -346,14 +357,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 Text(
                                   _currentSubscription!.plan.name,
                                   style: TextStyle(
-                                    fontSize: 16.sp,
+                                    fontSize: 16,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                                 Text(
                                   '\$${_currentSubscription!.plan.price.toStringAsFixed(2)}/${_currentSubscription!.plan.duration} month(s)',
                                   style: TextStyle(
-                                    fontSize: 14.sp,
+                                    fontSize: 14,
                                     color: Colors.grey.shade600,
                                   ),
                                 ),
@@ -371,7 +382,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 Text(
                                   'Start Date',
                                   style: TextStyle(
-                                    fontSize: 12.sp,
+                                    fontSize: 12,
                                     color: Colors.grey.shade600,
                                   ),
                                 ),
@@ -379,7 +390,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   DateFormat('MMM d, yyyy')
                                       .format(_currentSubscription!.startDate),
                                   style: TextStyle(
-                                    fontSize: 14.sp,
+                                    fontSize: 14,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
@@ -391,7 +402,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 Text(
                                   'End Date',
                                   style: TextStyle(
-                                    fontSize: 12.sp,
+                                    fontSize: 12,
                                     color: Colors.grey.shade600,
                                   ),
                                 ),
@@ -399,7 +410,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   DateFormat('MMM d, yyyy')
                                       .format(_currentSubscription!.endDate),
                                   style: TextStyle(
-                                    fontSize: 14.sp,
+                                    fontSize: 14,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
@@ -411,7 +422,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Text(
                           'Status: ${_currentSubscription!.status}',
                           style: TextStyle(
-                            fontSize: 14.sp,
+                            fontSize: 14,
                             color:
                                 _getStatusColor(_currentSubscription!.status),
                           ),
@@ -443,7 +454,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Text(
           'Settings',
           style: TextStyle(
-            fontSize: 18.sp,
+            fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -470,20 +481,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
           children: [
             Icon(
               icon,
-              size: 24.sp,
+              size: 24,
               color: Colors.grey.shade600,
             ),
             Gap(16.w),
             Text(
               label,
               style: TextStyle(
-                fontSize: 16.sp,
+                fontSize: 16,
               ),
             ),
             const Spacer(),
             Icon(
               Icons.chevron_right,
-              size: 24.sp,
+              size: 24,
               color: Colors.grey.shade400,
             ),
           ],
@@ -517,7 +528,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: Text(
           _currentSubscription == null ? 'Subscribe Now' : 'Upgrade Plan',
           style: TextStyle(
-            fontSize: 16.sp,
+            fontSize: 16,
             fontWeight: FontWeight.bold,
             color: Colors.white,
           ),
@@ -549,7 +560,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               // Navigate to ChooseRuleScreen and clear navigation stack
               Navigator.pushAndRemoveUntil(
                 context,
-                MaterialPageRoute(builder: (_) => const RoleSelectionScreen()),
+                MaterialPageRoute(builder: (_) => const LoginScreen()),
                 (Route<dynamic> route) => false, // Remove all previous routes
               );
             },
@@ -562,4 +573,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     );
   }
+}
+
+class UserProfileLoading {
 }

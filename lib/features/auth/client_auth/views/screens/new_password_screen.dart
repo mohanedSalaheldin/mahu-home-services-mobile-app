@@ -56,7 +56,9 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
         builder: (context, state) {
           if (state is ResetPasswordLoadingState) {
             return const Center(
-              child: CircularProgressIndicator(),
+              child: CircularProgressIndicator(
+                color: Colors.blue
+              ),
             );
           }
           return SafeArea(
@@ -70,7 +72,7 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                       'We have sent verification \n code to ${widget.userEmail}',
                       style: TextStyle(
                         fontWeight: FontWeight.w300,
-                        fontSize: 13.sp,
+                        fontSize: 13,
                         color: Colors.black.withOpacity(.5),
                       ),
                       textAlign: TextAlign.center,
@@ -82,7 +84,7 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                         "OTP",
                         style: TextStyle(
                           fontWeight: FontWeight.w500,
-                          fontSize: 16.sp,
+                          fontSize: 16,
                           color: Colors.black,
                         ),
                       ),

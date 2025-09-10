@@ -44,7 +44,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
             widget.label,
             style: TextStyle(
               fontWeight: FontWeight.w500,
-              fontSize: 16.sp,
+              fontSize: 16,
               color: Colors.black,
             ),
           ),
@@ -63,7 +63,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
               height: 4,
               color: Colors.black.withOpacity(.5),
               fontWeight: FontWeight.w400,
-              fontSize: 13.sp,
+              fontSize: 13,
             ),
             filled: true,
             fillColor: AppColors.greyBack,

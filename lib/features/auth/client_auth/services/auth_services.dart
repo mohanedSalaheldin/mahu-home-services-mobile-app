@@ -147,11 +147,13 @@ class AuthServices {
 
 class LoginResponse {
   final String token;
-  final String? businessRegistration; // nullable الآن
+  final String serviceProviderCategory;
+  final String? businessRegistration; // nullable
   final UserModel user;
 
   LoginResponse({
     required this.token,
+    required this.serviceProviderCategory,
     this.businessRegistration,
     required this.user,
   });
@@ -159,6 +161,7 @@ class LoginResponse {
   factory LoginResponse.fromJson(Map<String, dynamic> json) {
     return LoginResponse(
       token: json['token'] ?? '',
+      serviceProviderCategory: json['serviceProviderCategory'] ?? '',
       businessRegistration: json['businessRegistration'], // nullable
       user: UserModel.fromJson(json['user']),
     );
@@ -166,6 +169,7 @@ class LoginResponse {
 
   Map<String, dynamic> toJson() => {
         'token': token,
+        'serviceProviderCategory': serviceProviderCategory,
         'businessRegistration': businessRegistration,
         'user': user.toJson(),
       };

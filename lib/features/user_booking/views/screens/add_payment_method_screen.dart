@@ -77,7 +77,7 @@ class _AddPaymentMethodScreenState extends State<AddPaymentMethodScreen> {
             Gap(10.h),
             AppFilledButton(
               onPressed: () {
-                navigateTo(context, const ReviewBookingSummaryScreen());
+                // navigateTo(context, const ReviewBookingSummaryScreen());
               },
               fontSize: 15,
               text: "Continue",

@@ -1,18 +1,14 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
-import 'package:mahu_home_services_app/features/auth/client_auth/views/screens/login_screen.dart';
 import 'package:mahu_home_services_app/features/landing/views/screens/choose_rule_screen.dart';
+import 'package:mahu_home_services_app/features/services/views/screens/service_provider_jobs.dart';
 import 'package:mahu_home_services_app/features/user_booking/cubit/user_booking_cubit.dart';
 import 'package:mahu_home_services_app/features/user_booking/views/screens/service_category_screen.dart';
-import 'package:mahu_home_services_app/features/user_booking/views/screens/service_details_screen.dart';
-import 'package:mahu_home_services_app/core/models/cleaning_service.dart'
-    as models;
+import 'package:mahu_home_services_app/features/user_booking/views/screens/search_results_screen.dart';
 import 'package:mahu_home_services_app/features/user_booking/views/widgets/categories_widget.dart';
-import 'package:mahu_home_services_app/features/user_booking/views/widgets/favorite_button.dart';
 import 'package:mahu_home_services_app/features/user_booking/views/widgets/popular_services_widget.dart';
 import 'package:mahu_home_services_app/features/user_booking/views/widgets/recommended_services_widget.dart';
 import 'package:mahu_home_services_app/features/user_booking/views/widgets/search_bar_widget.dart';
@@ -37,17 +33,20 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
 
   UserBaseProfileModel? providerProfile;
   bool isLoadingProviderProfile = false;
+  Map<String, bool> _favoriteLoadingStates = {};
 
   @override
   void initState() {
     super.initState();
     var userBookingCubit = UserBookingCubit.get(context);
     final referenceId = CacheHelper.getString('referenceId');
+
+    // Initialize favorites
+    userBookingCubit.initializeFavorites();
+
     if (referenceId == null || referenceId == "null" || referenceId.isEmpty) {
-      // Get all services for all providers
       userBookingCubit.fetchAllServicesForAllProviders();
     } else {
-      // Get services for the specific provider
       userBookingCubit.fetchServicesForProvider(referenceId);
     }
     _fetchProviderProfile();
@@ -78,7 +77,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
 
   void _autoScrollBanners() {
     Future.delayed(const Duration(seconds: 5), () {
-      if (_bannerController.hasClients) {
+      if (_bannerController.hasClients && mounted) {
         if (_bannerController.page == 2) {
           _bannerController.animateToPage(0,
               duration: const Duration(milliseconds: 500),
@@ -93,20 +92,40 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
     });
   }
 
+  void _handleToggleFavorite(String serviceId) {
+    setState(() {
+      _favoriteLoadingStates[serviceId] = true;
+    });
+    final cubit = UserBookingCubit.get(context);
+    cubit.toggleFavorite(serviceId).then((_) async {
+      await cubit.initializeFavorites();
+      if (mounted) {
+        setState(() {
+          _favoriteLoadingStates[serviceId] = false;
+        });
+      }
+    }).catchError((_) {
+      if (mounted) {
+        setState(() {
+          _favoriteLoadingStates[serviceId] = false;
+        });
+      }
+    });
+  }
+
+  bool _isServiceFavorited(String serviceId) {
+    final cubit = UserBookingCubit.get(context);
+    return cubit.isServiceFavorited(serviceId);
+  }
+
+  bool _isFavoriteLoading(String serviceId) {
+    return _favoriteLoadingStates[serviceId] ?? false;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          await CacheHelper.remove('token');
-          Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => const RoleSelectionScreen()));
-        },
-        child: const Icon(Icons.logout_outlined),
-      ),
       appBar: AppBar(
         leadingWidth: 150.w,
         leading: Padding(
@@ -116,7 +135,6 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
               Builder(
                 builder: (context) {
                   final referenceId = CacheHelper.getString('referenceId');
-                  
                   if (referenceId == null || referenceId == "null") {
                     return Image.asset(
                       'assets/imgs/logo.png',
@@ -124,7 +142,6 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                       fit: BoxFit.contain,
                     );
                   }
-                  // If referenceId exists, don't show logo
                   return const SizedBox.shrink();
                 },
               ),
@@ -135,20 +152,28 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
       ),
       body: BlocConsumer<UserBookingCubit, UserBookingState>(
         listener: (context, state) {
-          // TODO: implement listener
+          if (state is FavoriteOperationError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Error: ${state.failure.message}'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
         },
         builder: (context, state) {
           if (state is FetchAvailableServicesLoading) {
             return const Center(
-              child: CircularProgressIndicator(),
+              child: CircularProgressIndicator(color: Colors.blue),
             );
           }
 
           if (state is FetchAvailableServicesError) {
-            return const Center(
-              child: Text('Error loading services'),
+            return Center(
+              child: Text('Error loading services: ${state.failure.message}'),
             );
           }
+
           var userBookingCubit = UserBookingCubit.get(context);
           final referenceId = CacheHelper.getString('referenceId');
 
@@ -165,30 +190,78 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                     _ProviderProfileCard(
                         profile: providerProfile!,
                         isLoading: isLoadingProviderProfile),
-                  SearchBarWidget(controller: _searchController)
+                  // In your CustomerHomeScreen, update the SearchBarWidget usage:
+                  SearchBarWidget(
+                    controller: _searchController,
+                    onSubmitted: (query) {
+                      if (query.trim().isEmpty) return;
+
+                      final userBookingCubit = UserBookingCubit.get(context);
+                      final results = userBookingCubit.availableServices
+                          .where((service) =>
+                              service.name
+                                  .toLowerCase()
+                                  .contains(query.toLowerCase()) ||
+                              service.description
+                                  .toLowerCase()
+                                  .contains(query.toLowerCase()) ||
+                              service.category
+                                  .toLowerCase()
+                                  .contains(query.toLowerCase()))
+                          .toList();
+
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => SearchResultsScreen(
+                            services: results,
+                            query: query,
+                          ),
+                        ),
+                      );
+                    },
+                    onTap: () {
+                      // Optional: Focus the search field when tapped
+                      FocusScope.of(context).requestFocus(FocusNode());
+                    },
+                  )
                       .animate()
                       .fadeIn(delay: 100.ms)
                       .slide(begin: const Offset(0, 0.1)),
+
                   Gap(24.h),
                   SpecialOffersBanner(controller: _bannerController).animate(),
                   Gap(24.h),
                   Builder(
                     builder: (context) {
                       final referenceId = CacheHelper.getString('referenceId');
-                      if (referenceId == null || referenceId == "null" || referenceId.isEmpty) {
+                      if (referenceId == null ||
+                          referenceId == "null" ||
+                          referenceId.isEmpty) {
                         return CategoriesWidget(
                           categories: const [
-                            {'icon': Icons.cleaning_services, 'label': 'cleaning'},
+                            {
+                              'icon': Icons.cleaning_services,
+                              'label': 'cleaning'
+                            },
                             {'icon': Icons.build, 'label': 'repair'},
                             {'icon': Icons.format_paint, 'label': 'painting'},
-                            {'icon': Icons.electrical_services, 'label': 'electrical'},
+                            {
+                              'icon': Icons.electrical_services,
+                              'label': 'electrical'
+                            },
                           ],
                           onTap: (label) {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => ServiceCategoryScreen(
-                                    categoryName: label, services: const []),
+                                  categoryName: label.capitalize(),
+                                  services: userBookingCubit.availableServices
+                                      .where((s) => s.category == label)
+                                      .toList()
+                                      .cast<ServiceModel>(),
+                                ),
                               ),
                             );
                           },
@@ -202,23 +275,22 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                   ),
                   Gap(24.h),
                   PopularServicesWidget(
-                          services: userBookingCubit.availableServices,
-                          onToggleFavorite: (service) {
-                            setState(() {
-                              service.isFavorite = !service.isFavorite;
-                            });
-                          })
+                    services:
+                        userBookingCubit.availableServices.take(5).toList(),
+                    onToggleFavorite: _handleToggleFavorite,
+                    isFavorite: _isServiceFavorited,
+                    isFavoriteLoading: _isFavoriteLoading,
+                  )
                       .animate()
                       .fadeIn(delay: 300.ms)
                       .slide(begin: const Offset(0, 0.1)),
                   Gap(24.h),
                   RecommendedServicesWidget(
-                          services: userBookingCubit.availableServices,
-                          onToggleFavorite: (service) {
-                            setState(() {
-                              service.isFavorite = !service.isFavorite;
-                            });
-                          })
+                    services: userBookingCubit.availableServices,
+                    onToggleFavorite: _handleToggleFavorite,
+                    isFavorite: _isServiceFavorited,
+                    isFavoriteLoading: _isFavoriteLoading,
+                  )
                       .animate()
                       .fadeIn(delay: 400.ms)
                       .slide(begin: const Offset(0, 0.1)),
@@ -246,68 +318,439 @@ class SpecialOffersBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final banners = [
-      CachedNetworkImage(
+    final offers = [
+      _Offer(
+        title: 'Spring Cleaning Special',
+        subtitle: 'Get 20% off on deep cleaning services',
+        discount: '20% OFF',
         imageUrl: 'https://images.unsplash.com/photo-1556911220-bff31c812dba',
-        fit: BoxFit.cover,
-        placeholder: (_, __) => Container(color: Colors.grey.shade200),
+        color: Colors.blue.shade600,
       ),
-      CachedNetworkImage(
+      _Offer(
+        title: 'Weekly Maintenance',
+        subtitle: 'Subscribe & save 30% on recurring services',
+        discount: '30% OFF',
         imageUrl:
             'https://images.unsplash.com/photo-1583847268964-b28dc8f51f92',
-        fit: BoxFit.cover,
-        placeholder: (_, __) => Container(color: Colors.grey.shade200),
+        color: Colors.blue.shade600,
       ),
-      CachedNetworkImage(
+      _Offer(
+        title: 'Emergency Repair',
+        subtitle: 'Same-day service available',
+        discount: '15% OFF',
         imageUrl:
             'https://images.unsplash.com/photo-1512917774080-9991f1c4c750',
-        fit: BoxFit.cover,
-        placeholder: (_, __) => Container(color: Colors.grey.shade200),
+        color: Colors.blue.shade600,
+      ),
+      _Offer(
+        title: 'New Customer Bonus',
+        subtitle: 'Get \$25 off your first booking',
+        discount: '\$25 OFF',
+        imageUrl: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2',
+        color: Colors.blue.shade600,
       ),
     ];
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Special Offers',
-            style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold)),
-        Gap(12.h),
-        SizedBox(
-          height: 150.h,
-          child: PageView.builder(
-            controller: controller,
-            itemCount: banners.length,
-            itemBuilder: (_, i) => Container(
-              margin: EdgeInsets.only(right: 8.w),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                      color: Colors.black.withOpacity(.1),
-                      blurRadius: 10,
-                      offset: const Offset(0, 5)),
-                ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: banners[i],
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Special Offers 🎉',
+              style: TextStyle(
+                fontSize: 20.sp,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey.shade800,
               ),
             ),
+          ],
+        ),
+        Gap(16.h),
+        SizedBox(
+          height: 180.h,
+          child: PageView.builder(
+            controller: controller,
+            itemCount: offers.length,
+            itemBuilder: (_, index) {
+              final offer = offers[index];
+              return Padding(
+                padding: EdgeInsets.only(right: 12.w),
+                child: _OfferCard(offer: offer),
+              );
+            },
           ),
         ),
-        Gap(8.h),
+        Gap(12.h),
         Center(
           child: SmoothPageIndicator(
             controller: controller,
-            count: banners.length,
-            effect: WormEffect(
+            count: offers.length,
+            effect: ExpandingDotsEffect(
               activeDotColor: AppColors.primary,
               dotColor: Colors.grey.shade300,
-              dotWidth: 10.w,
-              dotHeight: 10.w,
-              spacing: 6.w,
+              dotWidth: 8.w,
+              dotHeight: 8.w,
+              spacing: 4.w,
+              expansionFactor: 2,
             ),
           ),
-        )
+        ),
+      ],
+    );
+  }
+}
+
+class _Offer {
+  final String title;
+  final String subtitle;
+  final String discount;
+  final String imageUrl;
+  final Color color;
+
+  _Offer({
+    required this.title,
+    required this.subtitle,
+    required this.discount,
+    required this.imageUrl,
+    required this.color,
+  });
+}
+
+class _OfferCard extends StatelessWidget {
+  final _Offer offer;
+
+  const _OfferCard({required this.offer});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 15,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Stack(
+          children: [
+            // Background Image with Gradient
+            Positioned.fill(
+              child: CachedNetworkImage(
+                imageUrl: offer.imageUrl,
+                fit: BoxFit.cover,
+                placeholder: (_, __) => Container(
+                  color: Colors.grey.shade200,
+                ),
+                errorWidget: (_, __, ___) => Container(
+                  color: Colors.grey.shade200,
+                  child: Icon(
+                    Icons.local_offer_rounded,
+                    color: Colors.grey.shade400,
+                    size: 40,
+                  ),
+                ),
+              ),
+            ),
+
+            // Gradient Overlay
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      Colors.black.withOpacity(0.7),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            // Discount Badge
+            Positioned(
+              top: 16.w,
+              right: 16.w,
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                decoration: BoxDecoration(
+                  color: offer.color,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Text(
+                  offer.discount,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+
+            // Content
+            Positioned(
+              left: 16.w,
+              right: 16.w,
+              bottom: 16.w,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    offer.title,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.bold,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black.withOpacity(0.5),
+                          blurRadius: 4,
+                          offset: const Offset(0, 1),
+                        ),
+                      ],
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Gap(4.h),
+                  Text(
+                    offer.subtitle,
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.9),
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w500,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black.withOpacity(0.5),
+                          blurRadius: 4,
+                          offset: const Offset(0, 1),
+                        ),
+                      ],
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Gap(12.h),
+                  Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.symmetric(vertical: 4.h),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    // child: Center(
+                    //   child: Text(
+                    //     'Claim Offer',
+                    //     style: TextStyle(
+                    //       color: offer.color,
+                    //       fontSize: 14.sp,
+                    //       fontWeight: FontWeight.bold,
+                    //     ),
+                    //   ),
+                    // ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Alternative minimalist design option
+class _MinimalOfferCard extends StatelessWidget {
+  final _Offer offer;
+
+  const _MinimalOfferCard({required this.offer});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.only(right: 12.w),
+      decoration: BoxDecoration(
+        color: offer.color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: offer.color.withOpacity(0.3)),
+      ),
+      child: Padding(
+        padding: EdgeInsets.all(16.w),
+        child: Row(
+          children: [
+            // Icon
+            Container(
+              width: 50.w,
+              height: 50.w,
+              decoration: BoxDecoration(
+                color: offer.color,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.local_offer_rounded,
+                color: Colors.white,
+                size: 24.w,
+              ),
+            ),
+            Gap(16.w),
+
+            // Content
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    offer.discount,
+                    style: TextStyle(
+                      color: offer.color,
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Gap(4.h),
+                  Text(
+                    offer.title,
+                    style: TextStyle(
+                      color: Colors.grey.shade800,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Gap(2.h),
+                  Text(
+                    offer.subtitle,
+                    style: TextStyle(
+                      color: Colors.grey.shade600,
+                      fontSize: 12.sp,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+
+            // Arrow
+            Icon(
+              Icons.arrow_forward_ios_rounded,
+              color: offer.color,
+              size: 16.w,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// For a carousel with mixed designs
+class _MixedOffersBanner extends StatelessWidget {
+  final PageController controller;
+  const _MixedOffersBanner({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    final offers = [
+      _Offer(
+        title: 'Limited Time Offer',
+        subtitle: 'Book now and get exclusive discounts',
+        discount: 'SPECIAL',
+        imageUrl: 'https://images.unsplash.com/photo-1556911220-bff31c812dba',
+        color: Colors.blue.shade600,
+      ),
+      // Add more offers...
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '🔥 Hot Deals',
+          style: TextStyle(
+            fontSize: 20.sp,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        Gap(16.h),
+        SizedBox(
+          height: 120.h,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: offers.length,
+            itemBuilder: (_, index) {
+              return Container(
+                width: 280.w,
+                margin: EdgeInsets.only(right: 12.w),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      offers[index].color.withOpacity(0.8),
+                      offers[index].color,
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Padding(
+                  padding: EdgeInsets.all(16.w),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              offers[index].discount,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 24.sp,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Gap(4.h),
+                            Text(
+                              offers[index].title,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(
+                        Icons.arrow_forward_rounded,
+                        color: Colors.white,
+                        size: 24.w,
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
       ],
     );
   }
@@ -347,12 +790,12 @@ class _ProviderProfileCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(profile.businessName,
-                      style: TextStyle(
-                          fontSize: 18.sp, fontWeight: FontWeight.bold)),
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   Gap(4.h),
                   Text('Business Registration: ${profile.businessRegistration}',
-                      style: TextStyle(
-                          fontSize: 14.sp, color: Colors.grey.shade700)),
+                      style:
+                          TextStyle(fontSize: 14, color: Colors.grey.shade700)),
                   Gap(4.h),
                   Text('${profile.firstName} ${profile.lastName}',
                       style: TextStyle(fontSize: 14.sp)),

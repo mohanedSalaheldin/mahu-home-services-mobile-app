@@ -1,72 +1,90 @@
+// landing_item.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
-import 'package:mahu_home_services_app/core/constants/app_const.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
 import 'package:mahu_home_services_app/core/models/landing_model.dart';
 
 class LandingItem extends StatelessWidget {
-  const LandingItem({
-    super.key,
-    required this.model,
-  });
   final LandingModel model;
+
+  const LandingItem({super.key, required this.model});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.fromLTRB(0, 0, 0, 5),
-          decoration: const BoxDecoration(
-            color: AppColors.blue,
-            borderRadius: BorderRadius.only(
-              bottomLeft: Radius.circular(12),
-              bottomRight: Radius.circular(12),
-            ),
-          ),
-          child: ClipRRect(
-            borderRadius: const BorderRadius.only(
-              bottomLeft: Radius.circular(12),
-              bottomRight: Radius.circular(12),
-            ),
-            child: Image.asset(
-              height: 585.h,
-              fit: BoxFit.cover,
-              model.img,
-              width: double.infinity,
-            ),
-          ),
-        ),
-        Gap(12.h),
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: AppConst.appPadding.w),
-          child: Column(
-            children: [
-              Text(
-                model.title,
-                style: TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 21.sp,
-                  height: 1.5.sp,
-                ),
-                textAlign: TextAlign.center,
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 24.w),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Illustration
+          Container(
+            width: 280.w,
+            height: 280.h,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              image: DecorationImage(
+                image: AssetImage(model.img),
+                fit: BoxFit.cover,
               ),
-              Gap(8.h),
-              Text(
-                model.body,
-                style: TextStyle(
-                  color: const Color.fromARGB(153, 0, 0, 0),
-                  fontWeight: FontWeight.w400,
-                  fontSize: 13.sp,
-                  height: 1.9.sp,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
                 ),
-                textAlign: TextAlign.center,
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      ],
+          
+          Gap(40.h),
+          
+          // Icon Badge
+          Container(
+            padding: EdgeInsets.all(16.w),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              model.icon,
+              size: 32.sp,
+              color: AppColors.primary,
+            ),
+          ),
+          
+          Gap(24.h),
+          
+          // Title
+          Text(
+            model.title,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 24.sp,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
+              height: 1.3,
+            ),
+          ),
+          
+          Gap(16.h),
+          
+          // Description
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24.w),
+            child: Text(
+              model.body,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w400,
+                color: AppColors.textSecondary,
+                height: 1.5,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

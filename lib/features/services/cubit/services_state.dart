@@ -1,4 +1,5 @@
 import 'package:mahu_home_services_app/core/errors/failures.dart';
+import 'package:mahu_home_services_app/features/services/models/booking_model.dart';
 
 import '../views/screens/booking_details_screen.dart';
 
@@ -64,12 +65,21 @@ final class GetMyBookingsFailedState extends ServiceState {
   GetMyBookingsFailedState(this.failure);
 }
 
+class ServiceStatusUpdateLoadingState extends ServiceState {}
+
+class ServiceStatusUpdateSuccessState extends ServiceState {}
+
+class ServiceStatusUpdateFailedState extends ServiceState {
+  final String error;
+  ServiceStatusUpdateFailedState(this.error);
+}
+
 
 
 final class GetMyBookingsLoadingState extends ServiceState {}
 
 class GetMyBookingsSuccessState extends ServiceState {
-  final List<Booking> bookings;
+  final List<BookingModel> bookings;
   GetMyBookingsSuccessState(this.bookings);
 }
 

@@ -6,14 +6,20 @@ import 'package:mahu_home_services_app/core/models/cleaning_service.dart'
     as models;
 import 'package:mahu_home_services_app/features/services/models/service_model.dart';
 import 'package:mahu_home_services_app/features/user_booking/views/widgets/service_card.dart';
+import 'package:mahu_home_services_app/features/user_booking/views/screens/all_services_screen.dart';
 
 class PopularServicesWidget extends StatelessWidget {
   final List<ServiceModel> services;
-  final Function(models.CleaningService) onToggleFavorite;
+  final void Function(String serviceId) onToggleFavorite;
+  final bool Function(String serviceId) isFavorite;
+  final bool Function(String serviceId) isFavoriteLoading;
+
   const PopularServicesWidget({
     super.key,
     required this.services,
     required this.onToggleFavorite,
+    required this.isFavorite,
+    required this.isFavoriteLoading,
   });
 
   @override
@@ -25,12 +31,19 @@ class PopularServicesWidget extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text('Popular Services',
-                style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold)),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             TextButton(
-                onPressed: () {},
-                child: Text('View All',
-                    style:
-                        TextStyle(color: AppColors.primary, fontSize: 12.sp))),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => AllServicesScreen(services: services),
+                  ),
+                );
+              },
+              child: Text('View All',
+                  style: TextStyle(color: AppColors.primary, fontSize: 12.sp)),
+            ),
           ],
         ),
         Gap(12.h),
@@ -41,8 +54,14 @@ class PopularServicesWidget extends StatelessWidget {
             itemCount: services.length,
             separatorBuilder: (_, __) => Gap(16.w),
             itemBuilder: (_, i) {
+              
               final service = services[i];
-              return ServiceCard(service: service, onFavoritePressed: () {});
+              return ServiceCard(
+                service: service,
+                isFavorite: isFavorite(service.id),
+                isLoading: isFavoriteLoading(service.id),
+                onFavoritePressed: () => onToggleFavorite(service.id),
+              );
             },
           ),
         )
