@@ -10,11 +10,12 @@ import 'package:mahu_home_services_app/features/services/services/profile_servic
 import 'package:mahu_home_services_app/core/utils/helpers/cache_helper.dart';
 import 'package:mahu_home_services_app/features/auth/client_auth/views/widgets/custom_snack_bar.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:mahu_home_services_app/generated/l10n.dart';
 
 class EditProfileScreen extends StatefulWidget {
   final UserBaseProfileModel user;
 
-  const EditProfileScreen({Key? key, required this.user}) : super(key: key);
+  const EditProfileScreen({super.key, required this.user});
 
   @override
   _EditProfileScreenState createState() => _EditProfileScreenState();
@@ -63,12 +64,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ListTile(
                 leading:
                     const Icon(Icons.photo_library, color: AppColors.primary),
-                title: const Text('Choose from Gallery'),
+                title: Text(S.of(context).editProfileScreenChooseFromGallery),
                 onTap: () => Navigator.pop(context, 1),
               ),
               ListTile(
                 leading: const Icon(Icons.camera_alt, color: AppColors.primary),
-                title: const Text('Take Photo'),
+                title: Text(S.of(context).editProfileScreenTakePhoto),
                 onTap: () => Navigator.pop(context, 2),
               ),
             ],
@@ -96,7 +97,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         });
       }
     } catch (e) {
-      _showErrorSnackBar('Failed to pick image: $e');
+      _showErrorSnackBar(
+          S.of(context).editProfileScreenImagePickError(e.toString()));
     }
   }
 
@@ -104,17 +106,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     setState(() => _isUploading = true);
 
     try {
-      // Use the actual uploadImage function
       String? imageUrl = await uploadImage(imageFile);
 
       if (imageUrl != null) {
         return imageUrl;
       } else {
-        _showErrorSnackBar('Failed to upload image');
+        _showErrorSnackBar(S.of(context).editProfileScreenImageUploadError);
         return null;
       }
     } catch (e) {
-      _showErrorSnackBar('Failed to upload image: $e');
+      _showErrorSnackBar(S
+          .of(context)
+          .editProfileScreenImageUploadErrorDetailed(e.toString()));
       return null;
     } finally {
       setState(() => _isUploading = false);
@@ -151,7 +154,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         _showErrorSnackBar(failure.message);
       },
       (updatedProfile) {
-        _showSuccessSnackBar('Profile updated successfully!');
+        _showSuccessSnackBar(S.of(context).editProfileScreenSuccessMessage);
         print(updatedProfile);
         Navigator.pop(context, updatedProfile);
       },
@@ -161,22 +164,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   void _showErrorSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-        behavior: SnackBarBehavior.floating,
-      ),
+    showCustomSnackBar(
+      context: context,
+      message: message,
+      type: SnackBarType.failure,
     );
   }
 
   void _showSuccessSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.green,
-        behavior: SnackBarBehavior.floating,
-      ),
+    showCustomSnackBar(
+      context: context,
+      message: message,
+      type: SnackBarType.success,
     );
   }
 
@@ -336,7 +335,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
         title: Text(
-          'Edit Profile',
+          S.of(context).editProfileScreenTitle,
           style: TextStyle(
             fontSize: 20.sp,
             fontWeight: FontWeight.bold,
@@ -355,13 +354,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             key: _formKey,
             child: Column(
               children: [
-                // Avatar Section
                 Center(child: _buildAvatar()),
                 Gap(32.h),
-
-                // Personal Information
                 Text(
-                  'Personal Information',
+                  S.of(context).editProfileScreenPersonalInfo,
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -369,38 +365,32 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   ),
                 ),
                 Gap(20.h),
-
-                // First Name
                 _buildFormField(
                   controller: _firstNameController,
-                  label: 'First Name',
-                  hintText: 'Enter your first name',
+                  label: S.of(context).editProfileScreenFirstNameLabel,
+                  hintText: S.of(context).editProfileScreenFirstNameHint,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'First name is required';
+                      return S.of(context).editProfileScreenFirstNameError;
                     }
                     return null;
                   },
                 ),
                 Gap(16.h),
-
-                // Last Name
                 _buildFormField(
                   controller: _lastNameController,
-                  label: 'Last Name',
-                  hintText: 'Enter your last name',
+                  label: S.of(context).editProfileScreenLastNameLabel,
+                  hintText: S.of(context).editProfileScreenLastNameHint,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Last name is required';
+                      return S.of(context).editProfileScreenLastNameError;
                     }
                     return null;
                   },
                 ),
                 Gap(16.h),
-
-                // Contact Information
                 Text(
-                  'Contact Information',
+                  S.of(context).editProfileScreenContactInfo,
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -408,54 +398,46 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   ),
                 ),
                 Gap(20.h),
-
-                // Email
                 _buildFormField(
                   controller: _emailController,
-                  label: 'Email Address',
-                  hintText: 'Enter your email',
+                  label: S.of(context).editProfileScreenEmailLabel,
+                  hintText: S.of(context).editProfileScreenEmailHint,
                   keyboardType: TextInputType.emailAddress,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Email is required';
+                      return S.of(context).editProfileScreenEmailErrorEmpty;
                     }
                     if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
                         .hasMatch(value)) {
-                      return 'Enter a valid email address';
+                      return S.of(context).editProfileScreenEmailErrorInvalid;
                     }
                     return null;
                   },
                 ),
                 Gap(16.h),
-
-                // Phone
                 _buildFormField(
                   controller: _phoneController,
-                  label: 'Phone Number',
-                  hintText: 'Enter your phone number',
+                  label: S.of(context).editProfileScreenPhoneLabel,
+                  hintText: S.of(context).editProfileScreenPhoneHint,
                   keyboardType: TextInputType.phone,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Phone number is required';
+                      return S.of(context).editProfileScreenPhoneError;
                     }
                     return null;
                   },
                 ),
                 Gap(32.h),
-
-                // Save Button
                 AppFilledButton(
                   onPressed: _isLoading ? () {} : _saveProfile,
                   fontSize: 16,
-                  text: "Save Changes",
+                  text: S.of(context).editProfileScreenSaveButton,
                 ),
                 Gap(20.h),
-
-                // Cancel Button
                 TextButton(
                   onPressed: _isLoading ? null : () => Navigator.pop(context),
                   child: Text(
-                    'Cancel',
+                    S.of(context).editProfileScreenCancelButton,
                     style: TextStyle(
                       fontSize: 16,
                       color: Colors.grey.shade600,

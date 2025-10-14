@@ -20,6 +20,7 @@ class ProfileServices {
         options: Options(
           headers: {
             'Content-Type': 'application/json',
+            'Accept-Language': CacheHelper.getString(appLang) ?? 'en',
           },
         ),
       );
@@ -41,6 +42,8 @@ class ProfileServices {
           headers: {
             'Authorization': 'Bearer ${CacheHelper.getString('token')}',
             'Content-Type': 'application/json',
+                        'Accept-Language': CacheHelper.getString(appLang) ?? 'en',
+
           },
         ),
       );
@@ -76,6 +79,8 @@ class ProfileServices {
           headers: {
             'Authorization': 'Bearer ${CacheHelper.getString('token')}',
             'Content-Type': 'application/json',
+                        'Accept-Language': CacheHelper.getString(appLang) ?? 'en',
+
           },
         ),
       );
@@ -88,8 +93,7 @@ class ProfileServices {
       return Left(Failure('Failed to update profile'));
     }
   }
-  
-  
+
   Future<Either<Failure, UserBaseProfileModel>> editProviderProfile({
     String? email,
     String? phone,
@@ -115,6 +119,8 @@ class ProfileServices {
           headers: {
             'Authorization': 'Bearer ${CacheHelper.getString('token')}',
             'Content-Type': 'application/json',
+                        'Accept-Language': CacheHelper.getString(appLang) ?? 'en',
+
           },
         ),
       );
@@ -127,8 +133,6 @@ class ProfileServices {
       return Left(Failure('Failed to update profile'));
     }
   }
-
-
 }
 
 Future<File?> pickImage() async {
@@ -147,7 +151,7 @@ Future<String?> uploadImage(File imageFile) async {
 
     FormData formData = FormData.fromMap({
       'image': await MultipartFile.fromFile(
-        imageFile.path, 
+        imageFile.path,
         filename: 'avatar_${DateTime.now().millisecondsSinceEpoch}.jpg',
       ),
     });
@@ -162,6 +166,8 @@ Future<String?> uploadImage(File imageFile) async {
         headers: {
           'Authorization': 'Bearer ${CacheHelper.getString('token')}',
           'Content-Type': 'multipart/form-data',
+                      'Accept-Language': CacheHelper.getString(appLang) ?? 'en',
+
         },
       ),
     );

@@ -11,6 +11,7 @@ import 'package:mahu_home_services_app/features/services/cubit/services_state.da
 import 'package:mahu_home_services_app/features/services/views/screens/add_service_screen.dart';
 import 'package:mahu_home_services_app/features/services/views/screens/service_details_screen.dart';
 import 'package:mahu_home_services_app/features/services/models/service_model.dart';
+import 'package:mahu_home_services_app/generated/l10n.dart';
 
 class ServiceProviderDashboardScreen extends StatefulWidget {
   const ServiceProviderDashboardScreen({super.key});
@@ -57,7 +58,7 @@ class _ServiceProviderDashboardScreenState
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text("Dashboard"),
+        title: Text(S.of(context).serviceProviderDashboardScreenTitle),
         centerTitle: false,
         elevation: 0,
         backgroundColor: Colors.white,
@@ -68,7 +69,9 @@ class _ServiceProviderDashboardScreenState
           if (state is ServiceDeletionSuccessState) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: const Text("Service deleted successfully"),
+                content: Text(S
+                    .of(context)
+                    .serviceProviderDashboardScreenDeletionSuccess),
                 backgroundColor: AppColors.success,
                 behavior: SnackBarBehavior.floating,
               ),
@@ -78,7 +81,6 @@ class _ServiceProviderDashboardScreenState
         builder: (context, state) {
           final cubit = ServiceCubit.get(context);
 
-          // ✅ حالة التحميل لما الشاشة تفتح
           if (state is ServiceGetAllLoadingState ||
               state is DashboardLoading ||
               cubit.services.isEmpty && cubit.profile.firstName.isEmpty) {
@@ -99,19 +101,15 @@ class _ServiceProviderDashboardScreenState
                 return CustomScrollView(
                   controller: _scrollController,
                   slivers: [
-                    // Header Section
                     SliverToBoxAdapter(
                       child: _buildHeaderSection(cubit),
                     ),
-                    // Statistics Section
                     SliverToBoxAdapter(
                       child: _buildStatisticsSection(cubit),
                     ),
-                    // Services Header
                     SliverToBoxAdapter(
                       child: _buildServicesHeader(cubit),
                     ),
-                    // Services List
                     if (cubit.services.isEmpty)
                       SliverToBoxAdapter(child: _buildEmptyState())
                     else
@@ -131,19 +129,16 @@ class _ServiceProviderDashboardScreenState
                                 );
 
                                 if (shouldReload == true) {
-                                  // _loadData(); // 👈 أعد تحميل البيانات بعد الرجوع
                                   final cubit = ServiceCubit.get(context);
                                   cubit.fetchServices();
                                   cubit.fetchDashboardData();
                                 }
-// reload after coming back
                               },
                             );
                           },
                           childCount: cubit.services.length,
                         ),
                       ),
-                    // Action Buttons
                     SliverToBoxAdapter(
                       child: Container(
                         padding: EdgeInsets.only(
@@ -187,7 +182,7 @@ class _ServiceProviderDashboardScreenState
             ),
             Gap(16.h),
             Text(
-              'Something went wrong',
+              S.of(context).serviceProviderDashboardScreenErrorTitle,
               style: TextStyle(
                 fontSize: 18.sp,
                 fontWeight: FontWeight.w600,
@@ -197,7 +192,7 @@ class _ServiceProviderDashboardScreenState
             ),
             Gap(8.h),
             Text(
-              'Please try again later',
+              S.of(context).serviceProviderDashboardScreenErrorSubtitle,
               style: TextStyle(
                 fontSize: 14.sp,
                 color: Colors.grey.shade500,
@@ -212,7 +207,8 @@ class _ServiceProviderDashboardScreenState
                 foregroundColor: Colors.white,
                 padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
               ),
-              child: const Text('Retry'),
+              child:
+                  Text(S.of(context).serviceProviderDashboardScreenRetryButton),
             ),
           ],
         ),
@@ -227,7 +223,7 @@ class _ServiceProviderDashboardScreenState
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Welcome back,',
+            S.of(context).serviceProviderDashboardScreenWelcome,
             style: TextStyle(
               fontSize: 16.sp,
               color: Colors.grey.shade600,
@@ -238,16 +234,18 @@ class _ServiceProviderDashboardScreenState
           Text(
             cubit.profile.firstName.isNotEmpty
                 ? cubit.profile.firstName
-                : 'Service Provider',
+                : S
+                    .of(context)
+                    .serviceProviderDashboardScreenDefaultProviderName,
             style: TextStyle(
-              fontSize: 24.sp, // Reduced from 28.sp
+              fontSize: 24.sp,
               fontWeight: FontWeight.w700,
               color: Colors.grey.shade800,
             ),
           ),
           Gap(8.h),
           Text(
-            'Here\'s your performance overview',
+            S.of(context).serviceProviderDashboardScreenPerformanceOverview,
             style: TextStyle(
               fontSize: 14.sp,
               color: Colors.grey.shade500,
@@ -263,7 +261,6 @@ class _ServiceProviderDashboardScreenState
       padding: EdgeInsets.symmetric(horizontal: AppConst.appPadding.w),
       child: Column(
         children: [
-          // First row of stats
           Row(
             children: [
               Expanded(
@@ -271,7 +268,8 @@ class _ServiceProviderDashboardScreenState
                   icon: Icons.star_rounded,
                   value:
                       cubit.performanceModel.averageRating.toStringAsFixed(1),
-                  title: 'Rating',
+                  title:
+                      S.of(context).serviceProviderDashboardScreenRatingTitle,
                   color: AppColors.warning,
                 ),
               ),
@@ -280,21 +278,24 @@ class _ServiceProviderDashboardScreenState
                 child: DashboardStatisticsCard(
                   icon: Icons.task_alt_rounded,
                   value: '${cubit.performanceModel.completionRate.round()}%',
-                  title: 'Completion Rate',
+                  title: S
+                      .of(context)
+                      .serviceProviderDashboardScreenCompletionRateTitle,
                   color: AppColors.success,
                 ),
               ),
             ],
           ),
           Gap(12.h),
-          // Second row of stats
           Row(
             children: [
               Expanded(
                 child: DashboardStatisticsCard(
                   icon: Icons.check_circle_rounded,
                   value: cubit.performanceModel.completed.toString(),
-                  title: 'Completed Jobs',
+                  title: S
+                      .of(context)
+                      .serviceProviderDashboardScreenCompletedJobsTitle,
                   color: AppColors.info,
                 ),
               ),
@@ -303,13 +304,15 @@ class _ServiceProviderDashboardScreenState
                 child: DashboardStatisticsCard(
                   icon: Icons.attach_money_rounded,
                   value: '\$${cubit.performanceModel.totalEarnings}',
-                  title: 'Total Earnings',
+                  title: S
+                      .of(context)
+                      .serviceProviderDashboardScreenTotalEarningsTitle,
                   color: AppColors.primary,
                 ),
               ),
             ],
           ),
-          Gap(16.h), // Added extra gap after statistics
+          Gap(16.h),
         ],
       ),
     );
@@ -326,13 +329,13 @@ class _ServiceProviderDashboardScreenState
           Icon(
             Icons.home_repair_service_rounded,
             color: AppColors.primary,
-            size: 20.sp, // Reduced from 24.sp
+            size: 20.sp,
           ),
           Gap(8.w),
           Text(
-            'Your Services',
+            S.of(context).serviceProviderDashboardScreenServicesTitle,
             style: TextStyle(
-              fontSize: 18.sp, // Reduced from 20.sp
+              fontSize: 18.sp,
               fontWeight: FontWeight.w700,
               color: Colors.grey.shade800,
             ),
@@ -343,7 +346,7 @@ class _ServiceProviderDashboardScreenState
             label: Text(
               cubit.services.length.toString(),
               style: TextStyle(
-                fontSize: 11.sp, // Reduced from 12.sp
+                fontSize: 11.sp,
                 color: Colors.white,
                 fontWeight: FontWeight.w600,
               ),
@@ -361,24 +364,24 @@ class _ServiceProviderDashboardScreenState
         children: [
           Icon(
             Icons.handyman_rounded,
-            size: 56.sp, // Reduced from 64.sp
+            size: 56.sp,
             color: Colors.grey.shade300,
           ),
-          Gap(12.h), // Reduced from 16.h
+          Gap(12.h),
           Text(
-            'No services yet',
+            S.of(context).serviceProviderDashboardScreenNoServicesTitle,
             style: TextStyle(
-              fontSize: 16.sp, // Reduced from 18.sp
+              fontSize: 16.sp,
               fontWeight: FontWeight.w600,
               color: Colors.grey.shade600,
             ),
             textAlign: TextAlign.center,
           ),
-          Gap(6.h), // Reduced from 8.h
+          Gap(6.h),
           Text(
-            'Add your first service to get started',
+            S.of(context).serviceProviderDashboardScreenNoServicesSubtitle,
             style: TextStyle(
-              fontSize: 13.sp, // Reduced from 14.sp
+              fontSize: 13.sp,
               color: Colors.grey.shade500,
             ),
             textAlign: TextAlign.center,
@@ -397,7 +400,7 @@ class _ServiceProviderDashboardScreenState
               navigateTo(context, const AddServiceScreen());
               _loadData();
             },
-            text: 'Add Service',
+            text: S.of(context).serviceProviderDashboardScreenAddServiceButton,
             icon: Icons.add_rounded,
             variant: ButtonVariant.primary,
           ),
@@ -408,7 +411,7 @@ class _ServiceProviderDashboardScreenState
             onPressed: () {
               ProviderNavigationCubit.get(context).changeTab(2);
             },
-            text: 'Calendar',
+            text: S.of(context).serviceProviderDashboardScreenCalendarButton,
             icon: Icons.calendar_month_rounded,
             variant: ButtonVariant.secondary,
           ),
@@ -440,20 +443,20 @@ class DashboardActionButton extends StatelessWidget {
 
     return ConstrainedBox(
       constraints: BoxConstraints(
-        minHeight: 48.h, // Reduced from 52.h
+        minHeight: 48.h,
         maxHeight: 52.h,
       ),
       child: ElevatedButton.icon(
         icon: Icon(
           icon,
-          size: 18.sp, // Reduced from 20.sp
+          size: 18.sp,
           color: isPrimary ? Colors.white : AppColors.primary,
         ),
         label: Text(
           text,
           style: TextStyle(
             fontWeight: FontWeight.w600,
-            fontSize: 13.sp, // Reduced from 14.sp
+            fontSize: 13.sp,
             color: isPrimary ? Colors.white : AppColors.primary,
           ),
         ),
@@ -464,11 +467,11 @@ class DashboardActionButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
             side: isPrimary
                 ? BorderSide.none
-                : BorderSide(color: AppColors.primary, width: 1.5),
+                : const BorderSide(color: AppColors.primary, width: 1.5),
           ),
           elevation: isPrimary ? 2 : 0,
           shadowColor: isPrimary ? AppColors.primary.withOpacity(0.3) : null,
-          padding: EdgeInsets.symmetric(vertical: 12.h), // Added padding
+          padding: EdgeInsets.symmetric(vertical: 12.h),
         ),
         onPressed: onPressed,
       ),
@@ -483,12 +486,12 @@ class DashboardStatisticsCard extends StatelessWidget {
   final Color color;
 
   const DashboardStatisticsCard({
-    Key? key,
+    super.key,
     required this.title,
     required this.value,
     required this.icon,
     required this.color,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -502,7 +505,6 @@ class DashboardStatisticsCard extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Icon
             Container(
               padding: EdgeInsets.all(10.w),
               decoration: BoxDecoration(
@@ -516,8 +518,6 @@ class DashboardStatisticsCard extends StatelessWidget {
               ),
             ),
             SizedBox(width: 12.w),
-
-            // Texts (title + value)
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -569,7 +569,7 @@ class ServiceListItem extends StatelessWidget {
     return Container(
       margin: EdgeInsets.symmetric(
         horizontal: AppConst.appPadding.w,
-        vertical: 5.h, // Reduced from 6.h
+        vertical: 5.h,
       ),
       child: Material(
         color: Colors.white,
@@ -579,14 +579,13 @@ class ServiceListItem extends StatelessWidget {
           onTap: onTap,
           borderRadius: BorderRadius.circular(16),
           child: Padding(
-            padding: EdgeInsets.all(14.w), // Reduced from 16.w
+            padding: EdgeInsets.all(14.w),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Service Image
                 Container(
-                  width: 70.w, // Reduced from 80.w
-                  height: 70.w, // Reduced from 80.w
+                  width: 70.w,
+                  height: 70.w,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
                     image: DecorationImage(
@@ -595,20 +594,18 @@ class ServiceListItem extends StatelessWidget {
                     ),
                   ),
                 ),
-                Gap(12.w), // Reduced from 16.w
-                // Service Details
+                Gap(12.w),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Service Name and Status
                       Row(
                         children: [
                           Expanded(
                             child: Text(
                               service.name,
                               style: TextStyle(
-                                fontSize: 15.sp, // Reduced from 16.sp
+                                fontSize: 15.sp,
                                 fontWeight: FontWeight.w600,
                                 color: Colors.grey.shade800,
                               ),
@@ -618,8 +615,8 @@ class ServiceListItem extends StatelessWidget {
                           ),
                           Container(
                             padding: EdgeInsets.symmetric(
-                              horizontal: 6.w, // Reduced from 8.w
-                              vertical: 3.h, // Reduced from 4.h
+                              horizontal: 6.w,
+                              vertical: 3.h,
                             ),
                             decoration: BoxDecoration(
                               color: service.active
@@ -628,9 +625,15 @@ class ServiceListItem extends StatelessWidget {
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
-                              service.active ? 'Active' : 'Inactive',
+                              service.active
+                                  ? S
+                                      .of(context)
+                                      .serviceProviderDashboardScreenServiceActive
+                                  : S
+                                      .of(context)
+                                      .serviceProviderDashboardScreenServiceInactive,
                               style: TextStyle(
-                                fontSize: 9.sp, // Reduced from 10.sp
+                                fontSize: 9.sp,
                                 fontWeight: FontWeight.w600,
                                 color: service.active
                                     ? AppColors.success
@@ -640,62 +643,58 @@ class ServiceListItem extends StatelessWidget {
                           ),
                         ],
                       ),
-                      Gap(3.h), // Reduced from 4.h
-                      // Service Description
+                      Gap(3.h),
                       Text(
                         service.description,
                         style: TextStyle(
-                          fontSize: 11.sp, // Reduced from 12.sp
+                          fontSize: 11.sp,
                           color: Colors.grey.shade600,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      Gap(10.h), // Reduced from 12.h
-                      // Rating and Price
+                      Gap(10.h),
                       Row(
                         children: [
-                          // Rating
                           Row(
                             children: [
                               Icon(
                                 Icons.star_rounded,
-                                size: 13.sp, // Reduced from 14.sp
+                                size: 13.sp,
                                 color: Colors.amber,
                               ),
-                              Gap(3.w), // Reduced from 4.w
+                              Gap(3.w),
                               Text(
                                 service.averageRating.toStringAsFixed(1),
                                 style: TextStyle(
-                                  fontSize: 11.sp, // Reduced from 12.sp
+                                  fontSize: 11.sp,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
-                              Gap(1.w), // Reduced from 2.w
+                              Gap(1.w),
                               Text(
                                 '(${service.totalReviews})',
                                 style: TextStyle(
-                                  fontSize: 10.sp, // Reduced from 11.sp
+                                  fontSize: 10.sp,
                                   color: Colors.grey.shade500,
                                 ),
                               ),
                             ],
                           ),
                           const Spacer(),
-                          // Price
                           Text(
                             '\$${service.basePrice.toStringAsFixed(2)}',
                             style: TextStyle(
-                              fontSize: 15.sp, // Reduced from 16.sp
+                              fontSize: 15.sp,
                               fontWeight: FontWeight.w700,
                               color: AppColors.primary,
                             ),
                           ),
-                          Gap(3.w), // Reduced from 4.w
+                          Gap(3.w),
                           Text(
-                            _getPricingLabel(service.pricingModel),
+                            _getPricingLabel(service.pricingModel, context),
                             style: TextStyle(
-                              fontSize: 9.sp, // Reduced from 10.sp
+                              fontSize: 9.sp,
                               color: Colors.grey.shade500,
                             ),
                           ),
@@ -712,14 +711,14 @@ class ServiceListItem extends StatelessWidget {
     );
   }
 
-  String _getPricingLabel(String pricingModel) {
+  String _getPricingLabel(String pricingModel, BuildContext context) {
     switch (pricingModel.toLowerCase()) {
       case 'hourly':
-        return '/hr';
+        return S.of(context).serviceProviderDashboardScreenPricingHourly;
       case 'fixed':
-        return 'fixed';
+        return S.of(context).serviceProviderDashboardScreenPricingFixed;
       case 'squarefoot':
-        return '/sqft';
+        return S.of(context).serviceProviderDashboardScreenPricingSquareFoot;
       default:
         return '';
     }

@@ -5,18 +5,7 @@ import 'package:gap/gap.dart';
 import 'package:mahu_home_services_app/core/models/user_type_enum.dart';
 import 'package:mahu_home_services_app/features/auth/client_auth/views/screens/client_register_screen.dart';
 import 'package:mahu_home_services_app/features/auth/provider_auth/views/screens/provider_register_screen.dart';
-// import 'package:shared_preferences/shared_preferences.dart';
-
-void main() {
-  runApp(
-    MaterialApp(
-      home: BlocProvider(
-        create: (context) => UserRoleCubit(),
-        child: const RoleSelectionScreen(),
-      ),
-    ),
-  );
-}
+import 'package:mahu_home_services_app/generated/l10n.dart'; // << لازم تتأكد انه موجود
 
 class RoleSelectionScreen extends StatefulWidget {
   const RoleSelectionScreen({super.key});
@@ -43,9 +32,9 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
             children: [
               const Spacer(flex: 2),
               // Header Section
-              _buildHeader(),
+              _buildHeader(context),
               const Spacer(),
-              
+
               // Role Selection Cards
               BlocBuilder<UserRoleCubit, UserRole>(
                 builder: (context, selectedRole) {
@@ -56,8 +45,8 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                         role: UserRole.client,
                         isSelected: selectedRole == UserRole.client,
                         icon: Icons.person_rounded,
-                        title: "I'm a Customer",
-                        description: "Book home services near you",
+                        title: S.of(context).roleCustomerTitle,
+                        description: S.of(context).roleCustomerDesc,
                         color: Colors.blue,
                       ),
                       Gap(24.h),
@@ -66,8 +55,8 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                         role: UserRole.provider,
                         isSelected: selectedRole == UserRole.provider,
                         icon: Icons.handyman_rounded,
-                        title: "I'm a Service Provider",
-                        description: "Offer your services to customers",
+                        title: S.of(context).roleProviderTitle,
+                        description: S.of(context).roleProviderDesc,
                         color: Colors.orange,
                       ),
                     ],
@@ -75,14 +64,15 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                 },
               ),
               const Spacer(flex: 2),
-              
+
               // Continue Button (only shows when role is selected)
               BlocBuilder<UserRoleCubit, UserRole>(
                 builder: (context, role) {
                   if (role == UserRole.unknown) return const SizedBox.shrink();
-                  
+
                   return FilledButton(
-                    onPressed: () => _navigateToRegistrationScreen(context, role),
+                    onPressed: () =>
+                        _navigateToRegistrationScreen(context, role),
                     style: FilledButton.styleFrom(
                       backgroundColor: Colors.blueAccent,
                       minimumSize: Size(double.infinity, 56.h),
@@ -91,8 +81,8 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                       ),
                     ),
                     child: Text(
-                      'Continue',
-                      style: TextStyle(
+                      S.of(context).continueBtn,
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                         color: Colors.white,
@@ -109,13 +99,13 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Join as a...',
-          style: TextStyle(
+          S.of(context).roleJoinTitle,
+          style: const TextStyle(
             fontSize: 32,
             fontWeight: FontWeight.bold,
             height: 1.2,
@@ -123,7 +113,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
         ),
         Gap(8.h),
         Text(
-          'Select your role to get started',
+          S.of(context).roleJoinSubtitle,
           style: TextStyle(
             fontSize: 16,
             color: Colors.grey.shade600,
@@ -174,7 +164,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                 children: [
                   Text(
                     title,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                     ),
@@ -213,33 +203,3 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
     );
   }
 }
-
-// enum UserRole { client, provider, unknown }
-
-// class UserRoleCubit extends Cubit<UserRole> {
-//   UserRoleCubit() : super(UserRole.unknown);
-
-//   static UserRoleCubit get(context) => BlocProvider.of(context);
-
-//   Future<void> setUserRole(UserRole role) async {
-//     await _saveToPrefs(role);
-//     emit(role);
-//   }
-
-//   Future<void> loadSavedRole() async {
-//     final prefs = await SharedPreferences.getInstance();
-//     final roleStr = prefs.getString('user_role');
-//     if (roleStr != null) {
-//       emit(UserRole.values.firstWhere((e) => e.name == roleStr));
-//     }
-//   }
-
-//   Future<void> _saveToPrefs(UserRole role) async {
-//     final prefs = await SharedPreferences.getInstance();
-//     await prefs.setString('user_role', role.name);
-//   }
-
-//   void clearSelection() {
-//     emit(UserRole.unknown);
-//   }
-// }

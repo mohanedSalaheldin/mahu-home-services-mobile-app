@@ -1,3 +1,4 @@
+import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -8,8 +9,8 @@ import 'package:mahu_home_services_app/core/utils/navigation_utils.dart';
 import 'package:mahu_home_services_app/features/landing/views/widgets/app_filled_button.dart';
 import 'package:mahu_home_services_app/features/user_booking/views/screens/add_payment_method_screen.dart';
 import 'package:mahu_home_services_app/features/user_booking/views/screens/review_booking_summary_screen.dart';
-import 'package:mahu_home_services_app/features/user_booking/views/screens/select_address_screen.dart';
 import 'package:mahu_home_services_app/features/user_booking/views/widgets/home_section_label_text.dart';
+import 'package:mahu_home_services_app/generated/l10n.dart';
 
 class SelectPaymentMethodScreen extends StatelessWidget {
   const SelectPaymentMethodScreen({super.key});
@@ -18,7 +19,7 @@ class SelectPaymentMethodScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Select Payment Method'),
+        title: Text(S.of(context).selectPaymentMethodScreenTitle),
         centerTitle: true,
         leading: const BackButton(
           style: ButtonStyle(),
@@ -29,38 +30,36 @@ class SelectPaymentMethodScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const HomeSectionLabelText(
-              txt: 'Cash',
+            HomeSectionLabelText(
+              txt: S.of(context).selectPaymentMethodScreenCashSection,
               fontSize: 21,
             ),
             Gap(24.h),
-            const PaymentMethodCardWidget(
-              label: 'Cash',
+            PaymentMethodCardWidget(
+              label: S.of(context).selectPaymentMethodScreenCashLabel,
               icon: Icons.money_outlined,
               groupValue: 1,
               value: 1,
             ),
             Gap(24.h),
-            const HomeSectionLabelText(
-              txt: 'More Payment  Options',
+            HomeSectionLabelText(
+              txt: S.of(context).selectPaymentMethodScreenMoreOptionsSection,
               fontSize: 21,
             ),
             Gap(24.h),
-            const PaymentMethodCardWidget(
-              label: 'Master Card 1',
+            PaymentMethodCardWidget(
+              label: S.of(context).selectPaymentMethodScreenMasterCardLabel,
               icon: FontAwesomeIcons.ccMastercard,
               groupValue: 1,
               value: 2,
             ),
             Gap(24.h),
-            // Gap(20.h),
             GestureDetector(
               onTap: () {
-                // Navigate to add new address screen
                 navigateTo(context, const AddPaymentMethodScreen());
               },
-              child: const DottedBorderButton(
-                text: "Add New Payment Method",
+              child: DottedBorderButton(
+                text: S.of(context).selectPaymentMethodScreenAddNew,
                 icon: Icons.add_circle_outline,
               ),
             ),
@@ -71,7 +70,7 @@ class SelectPaymentMethodScreen extends StatelessWidget {
                 // navigateTo(context, const ReviewBookingSummaryScreen());
               },
               fontSize: 15,
-              text: "Continue",
+              text: S.of(context).selectPaymentMethodScreenContinue,
             ),
           ],
         ),
@@ -115,7 +114,7 @@ class PaymentMethodCardWidget extends StatelessWidget {
           Gap(16.w),
           Text(
             label,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
@@ -129,11 +128,49 @@ class PaymentMethodCardWidget extends StatelessWidget {
               onChanged: (value) {},
               activeColor: AppColors.blue,
             ),
-          )
+          ),
         ],
       ),
     );
   }
 }
 
-//
+class DottedBorderButton extends StatelessWidget {
+  final String text;
+  final IconData icon;
+
+  const DottedBorderButton({super.key, required this.text, required this.icon});
+
+  @override
+  Widget build(BuildContext context) {
+    return DottedBorder(
+      color: AppColors.blue,
+      strokeWidth: 1,
+      dashPattern: const [8, 8],
+      borderType: BorderType.RRect,
+      radius: const Radius.circular(30),
+      child: Container(
+        height: 59,
+        decoration: BoxDecoration(
+          color: Colors.blue.withOpacity(0.05),
+        ),
+        child: Center(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: Colors.blue),
+              const SizedBox(width: 8),
+              Text(
+                text,
+                style: const TextStyle(
+                  color: Colors.blue,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

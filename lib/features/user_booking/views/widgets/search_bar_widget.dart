@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
+import 'package:mahu_home_services_app/generated/l10n.dart';
 
 class SearchBarWidget extends StatefulWidget {
   final TextEditingController controller;
@@ -42,7 +43,7 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
         onTap: widget.onTap,
         onSubmitted: widget.onSubmitted,
         decoration: InputDecoration(
-          hintText: 'Search for services...',
+          hintText: S.of(context).searchBarWidgetHint,
           hintStyle: TextStyle(
             color: Colors.grey.shade500,
             fontSize: 14.sp,

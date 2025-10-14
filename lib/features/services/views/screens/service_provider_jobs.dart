@@ -9,6 +9,7 @@ import 'package:mahu_home_services_app/features/services/cubit/services_state.da
 import 'package:mahu_home_services_app/features/services/models/booking_model.dart';
 import 'package:mahu_home_services_app/features/services/views/screens/booking_details_screen.dart'
     as booking_details;
+import 'package:mahu_home_services_app/generated/l10n.dart';
 
 // ---------------------------- MAIN SCREEN ----------------------------
 
@@ -39,14 +40,14 @@ class _ServiceProviderJobsScreenState extends State<ServiceProviderJobsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Bookings'),
+        title: Text(S.of(context).serviceProviderJobsScreenTitle),
         actions: [_buildFilterButton()],
       ),
       body: BlocConsumer<ServiceCubit, ServiceState>(
         listener: (context, state) {},
         builder: (context, state) {
           if (state is GetMyBookingsLoadingState) {
-            return const Center(
+            return Center(
                 child: CircularProgressIndicator(color: Colors.blue));
           } else if (state is GetMyBookingsFailedState) {
             return Center(
@@ -96,7 +97,7 @@ class _ServiceProviderJobsScreenState extends State<ServiceProviderJobsScreen> {
                               option: bookingModel.option,
                               duration: bookingModel.duration,
                               address: bookingModel.address,
-                              status: _formatStatus(bookingModel.status),
+                              status: _formatStatus(bookingModel.status, context),
                               paymentStatus: bookingModel.paymentStatus,
                             ),
                           );
@@ -114,10 +115,10 @@ class _ServiceProviderJobsScreenState extends State<ServiceProviderJobsScreen> {
     return PopupMenuButton<String>(
       onSelected: (value) => setState(() => _selectedFilter = value),
       itemBuilder: (context) => [
-        const PopupMenuItem(value: 'All', child: Text('All Bookings')),
-        const PopupMenuItem(value: 'Upcoming', child: Text('Upcoming')),
-        const PopupMenuItem(value: 'InProgress', child: Text('In Progress')),
-        const PopupMenuItem(value: 'Completed', child: Text('Completed')),
+        PopupMenuItem(value: 'All', child: Text(S.of(context).serviceProviderJobsScreenFilterAll)),
+        PopupMenuItem(value: 'Upcoming', child: Text(S.of(context).serviceProviderJobsScreenFilterUpcoming)),
+        PopupMenuItem(value: 'InProgress', child: Text(S.of(context).serviceProviderJobsScreenFilterInProgress)),
+        PopupMenuItem(value: 'Completed', child: Text(S.of(context).serviceProviderJobsScreenFilterCompleted)),
       ],
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -152,7 +153,10 @@ class _ServiceProviderJobsScreenState extends State<ServiceProviderJobsScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: stats.entries
-            .map((entry) => _buildStatItem(entry.key, entry.value))
+            .map((entry) => _buildStatItem(
+                  S.of(context).serviceProviderJobsScreenStatsLabel(entry.key),
+                  entry.value,
+                ))
             .toList(),
       ),
     );
@@ -192,7 +196,6 @@ class _ServiceProviderJobsScreenState extends State<ServiceProviderJobsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header
               Row(
                 children: [
                   Container(
@@ -235,7 +238,7 @@ class _ServiceProviderJobsScreenState extends State<ServiceProviderJobsScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
-                      booking.status.capitalize(),
+                      booking.status,
                       style: TextStyle(
                         fontSize: 12,
                         color: _getStatusColor(booking.status),
@@ -244,10 +247,7 @@ class _ServiceProviderJobsScreenState extends State<ServiceProviderJobsScreen> {
                   ),
                 ],
               ),
-
               Gap(16.h),
-
-              // Client info
               Row(
                 children: [
                   booking.user.profile.avatar!.isEmpty ||
@@ -287,10 +287,7 @@ class _ServiceProviderJobsScreenState extends State<ServiceProviderJobsScreen> {
                   ),
                 ],
               ),
-
               Gap(16.h),
-
-              // Details
               Row(
                 children: [
                   _buildDetailChip(
@@ -345,12 +342,12 @@ class _ServiceProviderJobsScreenState extends State<ServiceProviderJobsScreen> {
               size: 60, color: Colors.grey.shade300),
           Gap(16.h),
           Text(
-            'No bookings found',
+            S.of(context).serviceProviderJobsScreenNoBookingsTitle,
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
           ),
           Gap(8.h),
           Text(
-            'No bookings on ${DateFormat('MMM d, yyyy').format(_selectedDate)}',
+            S.of(context).serviceProviderJobsScreenNoBookingsSubtitle(DateFormat('MMM d, yyyy').format(_selectedDate)),
             style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
           ),
         ],
@@ -358,7 +355,6 @@ class _ServiceProviderJobsScreenState extends State<ServiceProviderJobsScreen> {
     );
   }
 
-  // Navigation to BookingDetailsScreen
   void _navigateToBookingDetails(BookingModel booking) {
     Navigator.push(
       context,
@@ -379,7 +375,7 @@ class _ServiceProviderJobsScreenState extends State<ServiceProviderJobsScreen> {
             option: booking.option,
             duration: booking.duration,
             address: booking.address,
-            status: _formatStatus(booking.status),
+            status: _formatStatus(booking.status, context),
             paymentStatus: booking.paymentStatus,
           ),
         ),
@@ -387,30 +383,29 @@ class _ServiceProviderJobsScreenState extends State<ServiceProviderJobsScreen> {
     );
   }
 
-  // Helpers
-  String _formatStatus(String status) {
+  String _formatStatus(String status, BuildContext context) {
     switch (status.toLowerCase()) {
       case 'upcoming':
-        return 'Upcoming';
+        return S.of(context).serviceProviderJobsScreenStatusUpcoming;
       case 'inprogress':
-        return 'In Progress';
+        return S.of(context).serviceProviderJobsScreenStatusInProgress;
       case 'completed':
-        return 'Completed';
+        return S.of(context).serviceProviderJobsScreenStatusCompleted;
       case 'cancelled':
-        return 'Cancelled';
+        return S.of(context).serviceProviderJobsScreenStatusCancelled;
       default:
         return status.toUpperCase();
     }
   }
 
-  String _formatPaymentStatus(String paymentStatus) {
+  String _formatPaymentStatus(String paymentStatus, BuildContext context) {
     switch (paymentStatus.toLowerCase()) {
       case 'pending':
-        return 'Pending';
+        return S.of(context).serviceProviderJobsScreenPaymentStatusPending;
       case 'paid':
-        return 'Paid';
+        return S.of(context).serviceProviderJobsScreenPaymentStatusPaid;
       case 'failed':
-        return 'Failed';
+        return S.of(context).serviceProviderJobsScreenPaymentStatusFailed;
       default:
         return paymentStatus;
     }
@@ -526,25 +521,33 @@ class _DateSelectorWidgetState extends State<DateSelectorWidget> {
     }
   }
 
-  String _getDayName(DateTime date) {
-    const days = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+  String _getDayName(DateTime date, BuildContext context) {
+    final days = [
+      S.of(context).serviceProviderJobsScreenDaySunday,
+      S.of(context).serviceProviderJobsScreenDayMonday,
+      S.of(context).serviceProviderJobsScreenDayTuesday,
+      S.of(context).serviceProviderJobsScreenDayWednesday,
+      S.of(context).serviceProviderJobsScreenDayThursday,
+      S.of(context).serviceProviderJobsScreenDayFriday,
+      S.of(context).serviceProviderJobsScreenDaySaturday,
+    ];
     return days[date.weekday % 7];
   }
 
-  String _getMonthName(DateTime date) {
-    const months = [
-      'JAN',
-      'FEB',
-      'MAR',
-      'APR',
-      'MAY',
-      'JUN',
-      'JUL',
-      'AUG',
-      'SEP',
-      'OCT',
-      'NOV',
-      'DEC'
+  String _getMonthName(DateTime date, BuildContext context) {
+    final months = [
+      S.of(context).serviceProviderJobsScreenMonthJanuary,
+      S.of(context).serviceProviderJobsScreenMonthFebruary,
+      S.of(context).serviceProviderJobsScreenMonthMarch,
+      S.of(context).serviceProviderJobsScreenMonthApril,
+      S.of(context).serviceProviderJobsScreenMonthMay,
+      S.of(context).serviceProviderJobsScreenMonthJune,
+      S.of(context).serviceProviderJobsScreenMonthJuly,
+      S.of(context).serviceProviderJobsScreenMonthAugust,
+      S.of(context).serviceProviderJobsScreenMonthSeptember,
+      S.of(context).serviceProviderJobsScreenMonthOctober,
+      S.of(context).serviceProviderJobsScreenMonthNovember,
+      S.of(context).serviceProviderJobsScreenMonthDecember,
     ];
     return months[date.month - 1];
   }
@@ -584,7 +587,7 @@ class _DateSelectorWidgetState extends State<DateSelectorWidget> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    _getDayName(date),
+                    _getDayName(date, context),
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
@@ -601,7 +604,7 @@ class _DateSelectorWidgetState extends State<DateSelectorWidget> {
                     ),
                   ),
                   Text(
-                    _getMonthName(date),
+                    _getMonthName(date, context),
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w500,

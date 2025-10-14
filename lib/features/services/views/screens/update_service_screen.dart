@@ -16,7 +16,7 @@ import 'package:mahu_home_services_app/features/layouts/provider_layout_screen.d
 import 'package:mahu_home_services_app/features/services/cubit/services_cubit.dart';
 import 'package:mahu_home_services_app/features/services/cubit/services_state.dart';
 import 'package:mahu_home_services_app/features/services/models/service_model.dart';
-import 'package:mahu_home_services_app/features/services/views/widgets/time_slot_selector.dart';
+import 'package:mahu_home_services_app/generated/l10n.dart';
 
 class UpdateServiceScreen extends StatefulWidget {
   const UpdateServiceScreen({
@@ -35,23 +35,61 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen> {
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _basePriceController = TextEditingController();
   final TextEditingController _durationController = TextEditingController();
+  final TextEditingController _optionDescriptionController =
+      TextEditingController();
+
+  // controllers for option
+  final TextEditingController _optionNameController = TextEditingController();
+  final TextEditingController _optionDescController = TextEditingController();
+  final TextEditingController _optionPriceController = TextEditingController();
+  String _selectedPricingModel = 'fixed';
+  String _selectedAppliesTo = 'one-time';
+  bool _optionActive = true;
 
   XFile? _selectedImage;
   final ImagePicker _picker = ImagePicker();
 
-  // final bool _isPricingModelHourly = false;
-  // final bool _isServiceTypeRecurring = false;
   final String _serviceSubType = 'normal';
   final bool _isActiveImmediately = true;
 
   List<String> _selectedDays = [];
   List<Map<String, String>> _timeSlots = [];
+  List<ServiceOption> _options = [];
 
   Future<void> _pickImage() async {
     final picked = await _picker.pickImage(source: ImageSource.gallery);
     if (picked != null) {
       setState(() => _selectedImage = picked);
     }
+  }
+
+  void _addOption() {
+    final name = _optionNameController.text.trim();
+    final price = _optionPriceController.text.trim();
+    final description = _optionDescriptionController.text.trim();
+
+    if (name.isNotEmpty && price.isNotEmpty) {
+      setState(() {
+        _options.add(ServiceOption(
+          name: name,
+          price: double.tryParse(price) ?? 0.0,
+          description: description,
+          pricingModel: _selectedPricingModel,
+          appliesTo: _selectedAppliesTo,
+          active: _optionActive,
+        ));
+      });
+
+      _optionNameController.clear();
+      _optionPriceController.clear();
+      _optionDescriptionController.clear();
+    }
+  }
+
+  void _removeOption(int index) {
+    setState(() {
+      _options.removeAt(index);
+    });
   }
 
   void _addTimeSlot(String startTime, String endTime) {
@@ -76,12 +114,32 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen> {
     });
   }
 
+  String _getDayName(BuildContext context, String day) {
+    switch (day) {
+      case 'monday':
+        return S.of(context).updateServiceScreenDayMonday;
+      case 'tuesday':
+        return S.of(context).updateServiceScreenDayTuesday;
+      case 'wednesday':
+        return S.of(context).updateServiceScreenDayWednesday;
+      case 'thursday':
+        return S.of(context).updateServiceScreenDayThursday;
+      case 'friday':
+        return S.of(context).updateServiceScreenDayFriday;
+      case 'saturday':
+        return S.of(context).updateServiceScreenDaySaturday;
+      case 'sunday':
+        return S.of(context).updateServiceScreenDaySunday;
+      default:
+        return day;
+    }
+  }
+
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     ServiceModel service = widget.service;
-    _selectedDays = service.availableDays;
+    _selectedDays = List.from(service.availableDays);
     _timeSlots = service.availableSlots
         .map((slot) => {
               'startTime': slot.startTime,
@@ -92,6 +150,179 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen> {
     _descriptionController.text = service.description;
     _basePriceController.text = service.basePrice.toString();
     _durationController.text = service.duration.toString();
+    _options = List.from(service.options);
+  }
+
+  Column _buildServiceOptionItem(BuildContext context) {
+    final s = S.of(context); // لتسهيل الوصول للترجمات
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // ===== بطاقة الإدخال =====
+        Container(
+          padding: EdgeInsets.all(12.w),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              // ===== صف الاسم والسعر =====
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _optionNameController,
+                      decoration: InputDecoration(
+                        hintText: s.optionName, // ✅ الترجمة
+                        filled: true,
+                        fillColor: AppColors.greyBack,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 8.w),
+                  Expanded(
+                    child: TextField(
+                      controller: _optionPriceController,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        hintText: s.extraPrice, // ✅ الترجمة
+                        filled: true,
+                        fillColor: AppColors.greyBack,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              SizedBox(height: 10.h),
+
+              // ===== حقل الوصف =====
+              TextField(
+                controller: _optionDescriptionController,
+                maxLines: 2,
+                decoration: InputDecoration(
+                  hintText: s.optionDescriptionOptional, // ✅ الترجمة
+                  filled: true,
+                  fillColor: AppColors.greyBack,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
+
+              SizedBox(height: 14.h),
+
+              // ===== زر الإضافة =====
+              Align(
+                alignment: Alignment.centerRight,
+                child: ElevatedButton.icon(
+                  onPressed: _addOption,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  icon:
+                      const Icon(Icons.add_circle_outline, color: Colors.white),
+                  label: Text(
+                    s.addOption, // ✅ الترجمة
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        Gap(20.h),
+
+        // ===== عرض الخيارات =====
+        if (_options.isNotEmpty)
+          Column(
+            children: _options.asMap().entries.map((entry) {
+              final index = entry.key;
+              final option = entry.value;
+
+              return Container(
+                margin: EdgeInsets.only(bottom: 10.h),
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: Colors.grey[300]!),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.04),
+                      blurRadius: 5,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // ===== الاسم والسعر =====
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "${option.name} (+${option.price.toStringAsFixed(2)})",
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                          onPressed: () =>
+                              setState(() => _options.removeAt(index)),
+                        ),
+                      ],
+                    ),
+                    // ===== الوصف =====
+                    if (option.description != '' &&
+                        option.description.toString().trim().isNotEmpty)
+                      Padding(
+                        padding: EdgeInsets.only(top: 4.h),
+                        child: Text(
+                          option.description,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+      ],
+    );
   }
 
   @override
@@ -99,7 +330,7 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: const BackButton(),
-        title: const Text("Edit Service"),
+        title: Text(S.of(context).updateServiceScreenTitle),
         centerTitle: true,
         elevation: 0,
       ),
@@ -108,7 +339,7 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen> {
           if (state is ServiceUpdateSuccessState) {
             showCustomSnackBar(
               context: context,
-              message: 'Uodated Successfully',
+              message: S.of(context).updateServiceScreenSuccessMessage,
               type: SnackBarType.success,
             );
             Future.delayed(const Duration(milliseconds: 300), () {
@@ -119,9 +350,7 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen> {
         builder: (context, state) {
           if (state is ServiceUpdateLoadingState) {
             return const Center(
-              child: CircularProgressIndicator(
-                color: Colors.blue
-              ),
+              child: CircularProgressIndicator(color: Colors.blue),
             );
           }
           return Padding(
@@ -132,6 +361,7 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    /// image picker
                     DottedBorder(
                       color: AppColors.blue,
                       strokeWidth: 2,
@@ -180,30 +410,34 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen> {
                         ),
                       ),
                     ),
-
                     Gap(16.h),
 
-                    // Service Name
+                    /// name
                     CustomTextField(
-                      label: 'Service Name',
-                      hint: 'e.g., Deep Cleaning, Weekly Maintenance',
+                      label: S.of(context).updateServiceScreenServiceNameLabel,
+                      hint: S.of(context).updateServiceScreenServiceNameHint,
                       controller: _serviceNameController,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter a service name';
+                          return S
+                              .of(context)
+                              .updateServiceScreenServiceNameError;
                         }
                         return null;
                       },
                     ),
                     Gap(16.h),
 
-                    // Description
-                    const AppFieledLabelText(label: 'Description'),
+                    /// description
+                    AppFieledLabelText(
+                        label:
+                            S.of(context).updateServiceScreenDescriptionLabel),
                     TextFormField(
                       controller: _descriptionController,
                       maxLines: 5,
                       decoration: InputDecoration(
-                        hintText: 'Describe your cleaning service in detail...',
+                        hintText:
+                            S.of(context).updateServiceScreenDescriptionHint,
                         hintStyle: TextStyle(
                           color: Colors.black.withOpacity(0.5),
                           fontSize: 14,
@@ -216,118 +450,157 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen> {
                         ),
                         contentPadding: EdgeInsets.all(16.w),
                       ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter a description';
-                        }
-                        if (value.length < 30) {
-                          return 'Description should be at least 30 characters';
-                        }
-                        return null;
-                      },
                     ),
                     Gap(16.h),
 
+                    /// base price
                     CustomTextField(
-                      label: 'Pricing Rate',
-                      hint: 'Pricing Rate',
+                      label: S.of(context).updateServiceScreenPricingLabel,
+                      hint: S.of(context).updateServiceScreenPricingHint,
                       controller: _basePriceController,
                       keyboardType: TextInputType.number,
                       validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter a price';
-                        }
-                        if (double.tryParse(value) == null) {
-                          return 'Please enter a valid number';
-                        }
+                        // if (value == null || value.isEmpty) {
+                        //   return S
+                        //       .of(context)
+                        //       .updateServiceScreenPricingError;
+                        // }
+                        // if (double.tryParse(value) == null) {
+                        //   return S
+                        //       .of(context)
+                        //       .updateServiceScreenPricingInvalidError;
+                        // }
                         return null;
                       },
                     ),
-
                     Gap(16.h),
 
+                    /// duration
                     CustomTextField(
-                      label: 'Minimum Duration',
-                      hint: 'e.g., 2 hours',
+                      label: S.of(context).updateServiceScreenDurationLabel,
+                      hint: S.of(context).updateServiceScreenDurationHint,
                       controller: _durationController,
                       keyboardType: TextInputType.number,
                       validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter duration';
-                        }
-                        if (int.tryParse(value) == null) {
-                          return 'Please enter a valid number';
-                        }
+                        // if (value == null || value.isEmpty) {
+                        //   return S
+                        //       .of(context)
+                        //       .updateServiceScreenDurationError;
+                        // }
+                        // if (int.tryParse(value) == null) {
+                        //   return S
+                        //       .of(context)
+                        //       .updateServiceScreenDurationInvalidError;
+                        // }
                         return null;
                       },
                     ),
 
                     Gap(16.h),
 
-                    const AppFieledLabelText(label: 'Available Days'),
-                    Wrap(
-                      spacing: 8.w,
+                    /// Options section
+                    const AppFieledLabelText(label: "Service Options"),
+                    Column(
                       children: [
-                        'monday',
-                        'tuesday',
-                        'wednesday',
-                        'thursday',
-                        'friday',
-                        'saturday',
-                        'sunday'
-                      ]
-                          .map((day) => FilterChip(
-                                label: Text(
-                                  day.substring(0, 1).toUpperCase() +
-                                      day.substring(1),
-                                  style: TextStyle(
-                                    color: _selectedDays.contains(day)
-                                        ? Colors.white
-                                        : Colors.black,
-                                  ),
-                                ),
-                                selected: _selectedDays.contains(day),
-                                onSelected: (_) => _toggleDaySelection(day),
-                                selectedColor: AppColors.primary,
-                                checkmarkColor: Colors.white,
-                              ))
-                          .toList(),
+                        // CustomTextField(
+                        //   label: "Option Name",
+                        //   controller: _optionNameController,
+                        //   hint: "e.g. Extra Cleaning",
+                        //   validator: (value) {
+                        //     if (value == null || value.isEmpty) {
+                        //       return "Please enter option name";
+                        //     }
+                        //     return null;
+                        //   },
+                        // ),
+                        // Gap(8.h),
+                        // CustomTextField(
+                        //   label: "Description",
+                        //   controller: _optionDescController,
+                        //   hint: "e.g. Additional 30 minutes of cleaning",
+                        //   validator: (value) {
+                        //     if (value == null || value.isEmpty) {
+                        //       return "Please enter option name";
+                        //     }
+                        //     return null;
+                        //   },
+                        // ),
+                        // Gap(8.h),
+                        // CustomTextField(
+                        //   label: "Price",
+                        //   controller: _optionPriceController,
+                        //   keyboardType: TextInputType.number,
+                        //   hint: "e.g. 20.00",
+                        //   validator: (value) {
+                        //     if (value == null || value.isEmpty) {
+                        //       return "Please enter option name";
+                        //     }
+                        //     return null;
+                        //   },
+                        // ),
+                        // Gap(8.h),
+                        // DropdownButtonFormField<String>(
+                        //   value: _selectedPricingModel,
+                        //   items: ['fixed', 'hourly', 'weekly', 'monthly']
+                        //       .map((e) =>
+                        //           DropdownMenuItem(value: e, child: Text(e)))
+                        //       .toList(),
+                        //   onChanged: (val) =>
+                        //       setState(() => _selectedPricingModel = val!),
+                        //   decoration:
+                        //       const InputDecoration(labelText: "Pricing Model"),
+                        // ),
+                        // Gap(8.h),
+                        // DropdownButtonFormField<String>(
+                        //   value: _selectedAppliesTo,
+                        //   items: ['one-time', 'recurring']
+                        //       .map((e) =>
+                        //           DropdownMenuItem(value: e, child: Text(e)))
+                        //       .toList(),
+                        //   onChanged: (val) =>
+                        //       setState(() => _selectedAppliesTo = val!),
+                        //   decoration:
+                        //       const InputDecoration(labelText: "Applies To"),
+                        // ),
+                        // Row(
+                        //   children: [
+                        //     Checkbox(
+                        //       value: _optionActive,
+                        //       onChanged: (val) =>
+                        //           setState(() => _optionActive = val!),
+                        //     ),
+                        //     const Text("Active"),
+                        //   ],
+                        // ),
+                        _buildServiceOptionItem(context),
+                        // ElevatedButton(
+                        //   onPressed: _addOption,
+                        //   child: const Text("Add Option"),
+                        // ),
+                      ],
                     ),
-                    if (_selectedDays.isEmpty)
-                      Padding(
-                        padding: EdgeInsets.only(top: 8.h),
-                        child: Text(
-                          'Please select at least one day',
-                          style: TextStyle(
-                            color: Colors.red,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                    Gap(16.h),
-
-                    // Time Slots
-                    const AppFieledLabelText(label: 'Available Time Slots'),
-                    TimeSlotSelector(
-                      onAddSlot: _addTimeSlot,
-                      existingSlots: _timeSlots,
-                      onRemoveSlot: _removeTimeSlot,
-                    ),
-                    if (_timeSlots.isEmpty)
-                      Padding(
-                        padding: EdgeInsets.only(top: 8.h),
-                        child: Text(
-                          'Please add at least one time slot',
-                          style: TextStyle(
-                            color: Colors.red,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
+                    // Gap(12.h),
+                    // ListView.builder(
+                    //   shrinkWrap: true,
+                    //   physics: const NeverScrollableScrollPhysics(),
+                    //   itemCount: _options.length,
+                    //   itemBuilder: (context, index) {
+                    //     final option = _options[index];
+                    //     return ListTile(
+                    //       title: Text(option.name),
+                    //       subtitle: Text(
+                    //           "${option.description} | ${option.price} | ${option.pricingModel} | ${option.appliesTo}"),
+                    //       trailing: IconButton(
+                    //         icon: const Icon(Icons.delete, color: Colors.red),
+                    //         onPressed: () => _removeOption(index),
+                    //       ),
+                    //     );
+                    //   },
+                    // ),
 
                     Gap(24.h),
 
-                    // Submit Button
+                    /// Submit button
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
@@ -340,24 +613,6 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen> {
                         ),
                         onPressed: () {
                           if (_formKey.currentState!.validate()) {
-                            if (_selectedDays.isEmpty) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content: Text(
-                                        'Please select at least one available day')),
-                              );
-                              return;
-                            }
-                            if (_timeSlots.isEmpty) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content: Text(
-                                        'Please add at least one time slot')),
-                              );
-                              return;
-                            }
-
-                            // Create service model
                             var service = widget.service;
                             final updatedService = ServiceModel(
                               id: service.id,
@@ -372,7 +627,7 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen> {
                                   double.parse(_basePriceController.text),
                               pricingModel: service.pricingModel,
                               duration: int.parse(_durationController.text),
-                              image: _selectedImage?.path ?? '',
+                              image: _selectedImage?.path ?? service.image,
                               active: _isActiveImmediately,
                               provider: service.provider,
                               isApproved: _isActiveImmediately,
@@ -387,21 +642,22 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen> {
                                     ),
                                   )
                                   .toList(),
-                              v: 1, 
+                              options: _options,
+                              v: 1,
                               businessName: '',
                               firstName: '',
                               lastName: '',
-                              avatar: '', reviews: service.reviews,
+                              avatar: '',
+                              reviews: service.reviews,
                             );
 
-                            // Call cubit to create service
                             ServiceCubit.get(context)
                                 .updateService(updatedService);
                           }
                         },
                         child: Text(
-                          'Publish Service',
-                          style: TextStyle(
+                          S.of(context).updateServiceScreenPublishButton,
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
@@ -415,34 +671,6 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen> {
             ),
           );
         },
-      ),
-    );
-  }
-
-  Widget _buildSectionHeader(String title) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: 8.h),
-      child: Text(
-        title,
-        style: TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-          color: Colors.black87,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInfoText(String text) {
-    return Padding(
-      padding: EdgeInsets.only(top: 4.h, bottom: 8.h),
-      child: Text(
-        text,
-        style: TextStyle(
-          fontSize: 12,
-          color: Colors.grey[600],
-          fontStyle: FontStyle.italic,
-        ),
       ),
     );
   }

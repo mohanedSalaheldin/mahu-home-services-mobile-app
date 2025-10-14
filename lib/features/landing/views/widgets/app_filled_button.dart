@@ -7,7 +7,7 @@ class AppFilledButton extends StatelessWidget {
     super.key,
     required this.text,
     required this.onPressed,
-    this.fontSize, 
+    this.fontSize,
   });
   final String text;
   final double? fontSize;
@@ -33,7 +33,7 @@ class AppFilledButton extends StatelessWidget {
           text,
           style: TextStyle(
             fontWeight: FontWeight.w500,
-            fontSize: fontSize?.sp ?? 25,
+            fontSize: fontSize?.sp ?? 25.sp,
             color: Colors.white,
           ),
         ),

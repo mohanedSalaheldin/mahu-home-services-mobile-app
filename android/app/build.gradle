@@ -31,6 +31,7 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        multiDexEnabled true // Add this line to enable MultiDex support
     }
 
     buildTypes {
@@ -45,3 +46,12 @@ android {
 flutter {
     source = "../.."
 }
+
+// Ensure the google() repository is included
+repositories {
+    google()
+    mavenCentral()
+}
+
+// Ensure the Google Services plugin is applied
+apply plugin: 'com.google.gms.google-services'

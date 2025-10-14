@@ -5,6 +5,7 @@ import 'package:mahu_home_services_app/core/constants/colors.dart';
 import 'package:mahu_home_services_app/features/services/models/service_model.dart';
 import 'package:mahu_home_services_app/features/user_booking/views/screens/service_details_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:mahu_home_services_app/generated/l10n.dart';
 
 class SearchResultsScreen extends StatefulWidget {
   final List<ServiceModel> services;
@@ -26,7 +27,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Search Results for "${widget.query}"',
+          S.of(context).searchResultsScreenTitle(widget.query),
           style: TextStyle(fontSize: 16.sp),
         ),
         centerTitle: true,
@@ -50,7 +51,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
           ),
           Gap(16.h),
           Text(
-            'No services found',
+            S.of(context).searchResultsScreenEmptyTitle,
             style: TextStyle(
               fontSize: 18.sp,
               fontWeight: FontWeight.bold,
@@ -59,7 +60,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
           ),
           Gap(8.h),
           Text(
-            'Try searching with different keywords',
+            S.of(context).searchResultsScreenEmptyMessage,
             style: TextStyle(
               fontSize: 14.sp,
               color: Colors.grey.shade500,
@@ -110,7 +111,6 @@ class _ServiceCard extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Service Image
               Container(
                 width: 80.w,
                 height: 80.w,
@@ -137,8 +137,6 @@ class _ServiceCard extends StatelessWidget {
                 ),
               ),
               Gap(16.w),
-
-              // Service Details
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -176,7 +174,7 @@ class _ServiceCard extends StatelessWidget {
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
-                            service.category.toUpperCase(),
+                            _getLocalizedCategory(context, service.category),
                             style: TextStyle(
                               fontSize: 10.sp,
                               fontWeight: FontWeight.bold,
@@ -195,7 +193,7 @@ class _ServiceCard extends StatelessWidget {
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
-                            service.serviceType.toUpperCase(),
+                            _getLocalizedServiceType(context, service.serviceType),
                             style: TextStyle(
                               fontSize: 10.sp,
                               fontWeight: FontWeight.bold,
@@ -218,7 +216,7 @@ class _ServiceCard extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          '${service.duration} hrs',
+                          S.of(context).searchResultsScreenDuration(service.duration),
                           style: TextStyle(
                             fontSize: 12.sp,
                             color: Colors.grey.shade600,
@@ -234,5 +232,33 @@ class _ServiceCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _getLocalizedCategory(BuildContext context, String category) {
+    switch (category.toLowerCase()) {
+      case 'cleaning':
+        return S.of(context).searchResultsScreenCategoryCleaning;
+      case 'repair':
+        return S.of(context).searchResultsScreenCategoryRepair;
+      case 'painting':
+        return S.of(context).searchResultsScreenCategoryPainting;
+      case 'electrical':
+        return S.of(context).searchResultsScreenCategoryElectrical;
+      default:
+        return S.of(context).searchResultsScreenCategoryDefault;
+    }
+  }
+
+  String _getLocalizedServiceType(BuildContext context, String serviceType) {
+    switch (serviceType.toLowerCase()) {
+      case 'basic':
+        return S.of(context).searchResultsScreenServiceTypeBasic;
+      case 'premium':
+        return S.of(context).searchResultsScreenServiceTypePremium;
+      case 'standard':
+        return S.of(context).searchResultsScreenServiceTypeStandard;
+      default:
+        return S.of(context).searchResultsScreenServiceTypeDefault;
+    }
   }
 }

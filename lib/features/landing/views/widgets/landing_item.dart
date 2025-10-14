@@ -36,9 +36,9 @@ class LandingItem extends StatelessWidget {
               ],
             ),
           ),
-          
+
           Gap(40.h),
-          
+
           // Icon Badge
           Container(
             padding: EdgeInsets.all(16.w),
@@ -52,13 +52,15 @@ class LandingItem extends StatelessWidget {
               color: AppColors.primary,
             ),
           ),
-          
+
           Gap(24.h),
-          
+
           // Title
           Text(
             model.title,
             textAlign: TextAlign.center,
+            overflow: TextOverflow.ellipsis,
+            maxLines: 2,
             style: TextStyle(
               fontSize: 24.sp,
               fontWeight: FontWeight.w700,
@@ -66,15 +68,17 @@ class LandingItem extends StatelessWidget {
               height: 1.3,
             ),
           ),
-          
+
           Gap(16.h),
-          
+
           // Description
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 24.w),
             child: Text(
               model.body,
               textAlign: TextAlign.center,
+              overflow: TextOverflow.ellipsis,
+              maxLines: 3,
               style: TextStyle(
                 fontSize: 16.sp,
                 fontWeight: FontWeight.w400,

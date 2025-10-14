@@ -29,14 +29,14 @@ class TermsCheckbox extends StatelessWidget {
           'I agree the ',
           style: TextStyle(
             fontWeight: FontWeight.w400,
-            fontSize: 14,
+            fontSize: 14.sp,
             color: Colors.black,
-            
           ),
         ),
         AppTextButton(
           txt: 'Terms and Conditions',
           onPressed: onTapTerms,
+          fontSize: 14.sp,
         ),
       ],
     );

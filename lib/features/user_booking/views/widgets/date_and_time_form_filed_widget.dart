@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
 import 'package:mahu_home_services_app/features/user_booking/views/screens/booking_form_screen.dart';
+import 'package:intl/intl.dart';
+import 'package:mahu_home_services_app/generated/l10n.dart';
 
 class DateAndTimeFormFiledWidget extends StatefulWidget {
   DateAndTimeFormFiledWidget({
@@ -28,8 +30,10 @@ class _DateAndTimeFormFiledWidgetState
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          widget.isDateNotTime ? 'Date' : 'Time',
-          style: TextStyle(
+          widget.isDateNotTime
+              ? S.of(context).dateAndTimeFormFieldWidgetDateLabel
+              : S.of(context).dateAndTimeFormFieldWidgetTimeLabel,
+          style: const TextStyle(
             fontWeight: FontWeight.w500,
             fontSize: 16,
             color: Colors.black,
@@ -44,7 +48,9 @@ class _DateAndTimeFormFiledWidgetState
                 : await _selectTime(context);
           },
           decoration: InputDecoration(
-            hintText: widget.isDateNotTime ? 'Select Date' : 'Select Time',
+            hintText: widget.isDateNotTime
+                ? S.of(context).dateAndTimeFormFieldWidgetSelectDateHint
+                : S.of(context).dateAndTimeFormFieldWidgetSelectTimeHint,
             suffixIcon: Icon(
               widget.isDateNotTime
                   ? Icons.calendar_today_outlined
@@ -85,8 +91,9 @@ class _DateAndTimeFormFiledWidgetState
     if (picked != null && picked != widget.selectedDate) {
       setState(() {
         widget.selectedDate = picked;
-        textEditingController.text =
-            "${picked.day}/${picked.month}/${picked.year}";
+        textEditingController.text = DateFormat.yMd(
+          Localizations.localeOf(context).languageCode,
+        ).format(picked);
       });
     }
   }

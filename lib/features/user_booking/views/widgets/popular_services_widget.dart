@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
-import 'package:mahu_home_services_app/core/models/cleaning_service.dart'
-    as models;
+import 'package:mahu_home_services_app/core/models/cleaning_service.dart' as models;
 import 'package:mahu_home_services_app/features/services/models/service_model.dart';
 import 'package:mahu_home_services_app/features/user_booking/views/widgets/service_card.dart';
 import 'package:mahu_home_services_app/features/user_booking/views/screens/all_services_screen.dart';
+import 'package:mahu_home_services_app/generated/l10n.dart';
 
 class PopularServicesWidget extends StatelessWidget {
   final List<ServiceModel> services;
@@ -30,8 +30,10 @@ class PopularServicesWidget extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Popular Services',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text(
+              S.of(context).popularServicesWidgetTitle,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             TextButton(
               onPressed: () {
                 Navigator.push(
@@ -41,8 +43,10 @@ class PopularServicesWidget extends StatelessWidget {
                   ),
                 );
               },
-              child: Text('View All',
-                  style: TextStyle(color: AppColors.primary, fontSize: 12.sp)),
+              child: Text(
+                S.of(context).popularServicesWidgetViewAll,
+                style: TextStyle(color: AppColors.primary, fontSize: 12.sp),
+              ),
             ),
           ],
         ),
@@ -54,7 +58,6 @@ class PopularServicesWidget extends StatelessWidget {
             itemCount: services.length,
             separatorBuilder: (_, __) => Gap(16.w),
             itemBuilder: (_, i) {
-              
               final service = services[i];
               return ServiceCard(
                 service: service,
@@ -64,7 +67,7 @@ class PopularServicesWidget extends StatelessWidget {
               );
             },
           ),
-        )
+        ),
       ],
     );
   }

@@ -2,19 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
+import 'package:mahu_home_services_app/generated/l10n.dart';
 
 class CategoriesWidget extends StatelessWidget {
   final void Function(String label) onTap;
   final List<Map<String, dynamic>> categories;
-  const CategoriesWidget({super.key, required this.onTap, required this.categories});
+
+  const CategoriesWidget({
+    super.key,
+    required this.onTap,
+    required this.categories,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Categories',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        Text(
+          S.of(context).categoriesWidgetTitle,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
         Gap(12.h),
         SizedBox(
           height: 100.h,
@@ -30,20 +38,29 @@ class CategoriesWidget extends StatelessWidget {
                 child: Container(
                   width: 80.w,
                   decoration: BoxDecoration(
-                      color: Colors.grey.shade100,
-                      borderRadius: BorderRadius.circular(12)),
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       CircleAvatar(
                         radius: 20.w,
                         backgroundColor: AppColors.primary.withOpacity(.1),
-                        child: Icon(item['icon'] as IconData,
-                            color: AppColors.primary),
+                        child: Icon(
+                          item['icon'] as IconData,
+                          color: AppColors.primary,
+                        ),
                       ),
                       Gap(8.h),
-                      Text(item['label'] as String,
-                          style: TextStyle(fontSize: 12.sp)),
+                      Text(
+                        _getLocalizedCategoryLabel(
+                            context, item['label'] as String),
+                        style: TextStyle(fontSize: 12.sp),
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ],
                   ),
                 ),
@@ -53,5 +70,18 @@ class CategoriesWidget extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  String _getLocalizedCategoryLabel(BuildContext context, String label) {
+    switch (label.toLowerCase()) {
+      case 'deep clean':
+        return S.of(context).categoriesWidgetDeepCleanLabel;
+      case 'recurring':
+        return S.of(context).categoriesWidgetRecurringLabel;
+      case 'one-time':
+        return S.of(context).categoriesWidgetOneTimeLabel;
+      default:
+        return S.of(context).categoriesWidgetDefaultLabel(label);
+    }
   }
 }

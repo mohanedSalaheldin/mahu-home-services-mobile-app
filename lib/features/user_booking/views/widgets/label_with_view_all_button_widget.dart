@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mahu_home_services_app/features/landing/views/widgets/app_text_button.dart';
 import 'package:mahu_home_services_app/features/user_booking/views/widgets/home_section_label_text.dart';
+import 'package:mahu_home_services_app/generated/l10n.dart';
 
 class LabelWithViewAllButtonWidget extends StatelessWidget {
   const LabelWithViewAllButtonWidget({
@@ -20,10 +21,10 @@ class LabelWithViewAllButtonWidget extends StatelessWidget {
           txt: label,
         ),
         AppTextButton(
-          txt: 'View All',
+          txt: S.of(context).labelWithViewAllButtonWidgetViewAll,
           fontSize: 13,
           onPressed: onPressed,
-        )
+        ),
       ],
     );
   }

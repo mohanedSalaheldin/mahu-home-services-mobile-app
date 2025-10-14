@@ -1,8 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:intl/intl.dart';
 import 'package:mahu_home_services_app/features/services/models/service_model.dart';
 import 'package:mahu_home_services_app/features/user_booking/views/screens/service_details_screen.dart';
+import 'package:mahu_home_services_app/generated/l10n.dart';
 
 class ServiceCard extends StatelessWidget {
   final ServiceModel service;
@@ -100,7 +102,7 @@ class ServiceCard extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          service.name,
+                          _getLocalizedServiceName(context, service.name),
                           style: TextStyle(
                             fontSize: 13.sp,
                             fontWeight: FontWeight.w600,
@@ -112,7 +114,7 @@ class ServiceCard extends StatelessWidget {
                       ),
                       SizedBox(width: 4.w),
                       Text(
-                        '\$${service.basePrice}',
+                        _getLocalizedPrice(context, service.basePrice),
                         style: TextStyle(
                           fontSize: 13.sp,
                           fontWeight: FontWeight.bold,
@@ -131,7 +133,7 @@ class ServiceCard extends StatelessWidget {
                           size: 14, color: Colors.grey.shade600),
                       SizedBox(width: 4.w),
                       Text(
-                        'Min Duration: ',
+                        S.of(context).serviceCardMinDurationLabel,
                         style: TextStyle(
                           fontSize: 7.sp,
                           color: Colors.grey.shade600,
@@ -140,7 +142,8 @@ class ServiceCard extends StatelessWidget {
                       ),
                       Flexible(
                         child: Text(
-                          '${service.duration} hours',
+                          S.of(context)
+                              .serviceCardDuration(service.duration.toString()),
                           style: TextStyle(
                             fontSize: 11.sp,
                             color: Colors.grey.shade600,
@@ -157,6 +160,29 @@ class ServiceCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _getLocalizedServiceName(BuildContext context, String name) {
+    // Placeholder: Replace with actual localization logic based on service name
+    switch (name.toLowerCase()) {
+      case 'deep clean':
+        return S.of(context).serviceCardDeepCleanName;
+      case 'recurring':
+        return S.of(context).serviceCardRecurringName;
+      case 'one-time':
+        return S.of(context).serviceCardOneTimeName;
+      default:
+        return name; // Fallback to original name if not localized
+    }
+  }
+
+  String _getLocalizedPrice(BuildContext context, double price) {
+    // Use NumberFormat for currency formatting based on locale
+    return NumberFormat.currency(
+      locale: Localizations.localeOf(context).languageCode,
+      symbol: S.of(context).serviceCardCurrencySymbol,
+      decimalDigits: 0,
+    ).format(price);
   }
 }
 

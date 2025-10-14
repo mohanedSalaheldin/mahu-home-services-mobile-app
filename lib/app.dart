@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
 import 'package:mahu_home_services_app/core/models/user_type_enum.dart';
@@ -12,6 +13,9 @@ import 'package:mahu_home_services_app/features/layouts/client_layout_screen.dar
 import 'package:mahu_home_services_app/features/layouts/provider_layout_screen.dart';
 import 'package:mahu_home_services_app/features/services/cubit/services_cubit.dart';
 import 'package:mahu_home_services_app/features/user_booking/cubit/user_booking_cubit.dart';
+import 'package:mahu_home_services_app/generated/l10n.dart';
+
+import 'core/utils/helpers/localization_helper.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -39,35 +43,59 @@ class MyApp extends StatelessWidget {
           BlocProvider<UserBookingCubit>(
             create: (context) => UserBookingCubit(),
           ),
+          BlocProvider<LocaleCubit>(
+            create: (context) => LocaleCubit(),
+          ),
         ],
-        child: MaterialApp(
-          title: 'MAHU Booking Platform',
-          debugShowCheckedModeBanner: false,
-          theme: ThemeData(
-            fontFamily: 'Poppins',
-            scaffoldBackgroundColor: Colors.white,
-            appBarTheme: const AppBarTheme(color: Colors.white),
-            colorScheme: ColorScheme.fromSeed(seedColor: AppColors.black),
-            useMaterial3: true,
-          ),
-          home: FutureBuilder<Widget>(
-            future: getInitialScreen(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Scaffold(
-                  body: Center(child: CircularProgressIndicator(
-                color: Colors.blue
-              )),
-                );
-              } else if (snapshot.hasError) {
-                return const Scaffold(
-                  body: Center(child: Text('حدث خطأ!')),
-                );
-              } else {
-                return snapshot.data!;
-              }
-            },
-          ),
+        child: BlocBuilder<LocaleCubit, Locale>(
+          builder: (context, locale) {
+            return MaterialApp(
+              locale: locale,
+              // locale: const Locale('ar'),
+              supportedLocales: const [
+                Locale('en'),
+                Locale('ar'),
+              ],
+              localizationsDelegates: const [
+                S.delegate,
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
+              title: 'MAHU Booking Platform',
+              debugShowCheckedModeBanner: false,
+              builder: (context, child) => MediaQuery(
+                data: MediaQuery.of(context)
+                    .copyWith(textScaler: const TextScaler.linear(1.0)),
+                child: child!,
+              ),
+              theme: ThemeData(
+                fontFamily: 'Poppins',
+                scaffoldBackgroundColor: Colors.white,
+                appBarTheme: const AppBarTheme(color: Colors.white),
+                colorScheme: ColorScheme.fromSeed(seedColor: AppColors.black),
+                useMaterial3: true,
+              ),
+              home: FutureBuilder<Widget>(
+                future: getInitialScreen(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Scaffold(
+                      body: Center(
+                        child: CircularProgressIndicator(color: Colors.blue),
+                      ),
+                    );
+                  } else if (snapshot.hasError) {
+                    return const Scaffold(
+                      body: Center(child: Text('حدث خطأ!')),
+                    );
+                  } else {
+                    return snapshot.data!;
+                  }
+                },
+              ),
+            );
+          },
         ),
       ),
     );

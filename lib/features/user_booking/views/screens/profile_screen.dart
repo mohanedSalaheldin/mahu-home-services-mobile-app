@@ -1,18 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
+import 'package:mahu_home_services_app/core/utils/helpers/cache_helper.dart';
+import 'package:mahu_home_services_app/core/utils/navigation_utils.dart';
 import 'package:mahu_home_services_app/features/auth/client_auth/views/screens/login_screen.dart';
 import 'package:mahu_home_services_app/features/landing/views/screens/choose_rule_screen.dart';
-import 'package:mahu_home_services_app/core/utils/helpers/cache_helper.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:mahu_home_services_app/features/services/services/profile_services.dart';
 import 'package:mahu_home_services_app/features/services/models/user_base_profile_model.dart';
 import 'package:mahu_home_services_app/features/user_booking/views/screens/edit_profile_screen.dart';
-import 'package:mahu_home_services_app/features/user_booking/views/screens/Help_center_screen.dart';
+import 'package:mahu_home_services_app/features/user_booking/views/screens/help_center_screen.dart';
 import 'package:mahu_home_services_app/features/user_booking/views/screens/privacy_policy_screen.dart';
 import 'package:mahu_home_services_app/features/user_booking/views/screens/terms_of_service.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:mahu_home_services_app/generated/l10n.dart';
+
+import '../../../../core/utils/helpers/localization_helper.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -66,106 +71,113 @@ class _ProfileScreenState extends State<ProfileScreen> {
           : RefreshIndicator(
               onRefresh: _loadUserProfile,
               color: AppColors.primary,
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (_errorMessage != null) _buildErrorState(),
-                    if (_userProfile != null)
-                      _ProfileHeader(user: _userProfile!)
-                          .animate()
-                          .fadeIn(delay: 100.ms),
-                    if (_userProfile == null && _errorMessage == null)
-                      _buildEmptyState(),
-                    Gap(32.h),
+              child: SafeArea(
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (_errorMessage != null) _buildErrorState(),
+                      if (_userProfile != null)
+                        _ProfileHeader(user: _userProfile!)
+                            .animate()
+                            .fadeIn(delay: 100.ms),
+                      if (_userProfile == null && _errorMessage == null)
+                        _buildEmptyState(),
+                      Gap(32.h),
+                      _sectionTitle(S.of(context).profileScreenSectionAccount,
+                          delay: 200.ms),
 
-                    // Account Section
-                    _sectionTitle('ACCOUNT', delay: 200.ms),
-                    Gap(16.h),
-
-                    _ProfileOption(
-                      icon: Icons.person_outline_rounded,
-                      title: 'Personal Information',
-                      subtitle: 'Update your personal details',
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              EditProfileScreen(user: _userProfile!),
+                      Gap(16.h),
+                      _ProfileOption(
+                        icon: Icons.person_outline_rounded,
+                        title: S.of(context).profileScreenPersonalInfoTitle,
+                        subtitle:
+                            S.of(context).profileScreenPersonalInfoSubtitle,
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                EditProfileScreen(user: _userProfile!),
+                          ),
+                        ).then((updatedProfile) {
+                          if (updatedProfile != null) {
+                            // setState(() {
+                            //   _userProfile = updatedProfile;
+                            // });
+                          }
+                        }),
+                      ).animate().fadeIn(delay: 250.ms),
+                      Gap(16.h),
+                      // _ProfileOption(
+                      //   icon: Icons.location_on_outlined,
+                      //   title: S.of(context).profileScreenAddressBookTitle,
+                      //   subtitle: S.of(context).profileScreenAddressBookSubtitle,
+                      //   onTap: () => _showComingSoon(context),
+                      // ).animate().fadeIn(delay: 300.ms),
+                      // Gap(32.h),
+                      _sectionTitle(S.of(context).profileScreenSectionSupport,
+                          delay: 600.ms),
+                      Gap(16.h),
+                      _ProfileOption(
+                        icon: Icons.language_rounded,
+                        title: S.of(context).profileScreenLanguageTitle,
+                        subtitle: S.of(context).profileScreenLanguageSubtitle,
+                        onTap: () {
+                          // استدعاء الـ Cubit لتغيير اللغة
+                          context.read<LocaleCubit>().toggleLocale();
+                        },
+                      ).animate().fadeIn(delay: 750.ms),
+                      Gap(16.h),
+                      _ProfileOption(
+                        icon: Icons.help_outline_rounded,
+                        title: S.of(context).profileScreenHelpCenterTitle,
+                        subtitle: S.of(context).profileScreenHelpCenterSubtitle,
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const HelpCenterScreen()),
                         ),
-                      ).then((updatedProfile) {
-                        if (updatedProfile != null) {
-                          // setState(() {
-                          //   _userProfile = updatedProfile;
-                          // });
-                        }
-                      }),
-                    ).animate().fadeIn(delay: 250.ms),
-                    Gap(16.h),
-
-                    // _ProfileOption(
-                    //   icon: Icons.location_on_outlined,
-                    //   title: 'Address Book',
-                    //   subtitle: 'Manage your addresses',
-                    //   onTap: () => _showComingSoon(context),
-                    // ).animate().fadeIn(delay: 300.ms),
-
-                    // Gap(32.h),
-
-                    // Support Section
-                    _sectionTitle('SUPPORT', delay: 600.ms),
-                    Gap(16.h),
-
-                    _ProfileOption(
-                      icon: Icons.help_outline_rounded,
-                      title: 'Help Center',
-                      subtitle: 'Get help and support',
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const HelpCenterScreen()),
-                      ),
-                    ).animate().fadeIn(delay: 650.ms),
-                    Gap(16.h),
-
-                    _ProfileOption(
-                      icon: Icons.security_outlined,
-                      title: 'Privacy Policy',
-                      subtitle: 'Read our privacy policy',
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const PrivacyPolicyScreen()),
-                      ),
-                    ).animate().fadeIn(delay: 700.ms),
-                    Gap(16.h),
-
-                    _ProfileOption(
-                      icon: Icons.description_outlined,
-                      title: 'Terms of Service',
-                      subtitle: 'Read our terms and conditions',
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const TermsOfServiceScreen()),
-                      ),
-                    ).animate().fadeIn(delay: 750.ms),
-
-                    Gap(32.h),
-
-                    // Logout Section
-                    _ProfileOption(
-                      icon: Icons.logout_rounded,
-                      title: 'Log Out',
-                      subtitle: 'Sign out of your account',
-                      onTap: _logout,
-                      color: Colors.red,
-                    ).animate().fadeIn(delay: 800.ms),
-
-                    Gap(40.h),
-                  ],
+                      ).animate().fadeIn(delay: 650.ms),
+                      Gap(16.h),
+                      _ProfileOption(
+                        icon: Icons.security_outlined,
+                        title: S.of(context).profileScreenPrivacyPolicyTitle,
+                        subtitle:
+                            S.of(context).profileScreenPrivacyPolicySubtitle,
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  const PrivacyPolicyScreen()),
+                        ),
+                      ).animate().fadeIn(delay: 700.ms),
+                      Gap(16.h),
+                      _ProfileOption(
+                        icon: Icons.description_outlined,
+                        title: S.of(context).profileScreenTermsOfServiceTitle,
+                        subtitle:
+                            S.of(context).profileScreenTermsOfServiceSubtitle,
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  const TermsOfServiceScreen()),
+                        ),
+                      ).animate().fadeIn(delay: 750.ms),
+                      Gap(32.h),
+                      _ProfileOption(
+                        icon: Icons.logout_rounded,
+                        title: S.of(context).profileScreenLogoutTitle,
+                        subtitle: S.of(context).profileScreenLogoutSubtitle,
+                        onTap: _logout,
+                        color: Colors.red,
+                      ).animate().fadeIn(delay: 800.ms),
+                      Gap(40.h),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -192,14 +204,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
           SizedBox(
             width: 70.w,
             height: 70.w,
-            child: CircularProgressIndicator(
+            child: const CircularProgressIndicator(
               strokeWidth: 4,
               color: AppColors.primary,
             ),
           ),
           Gap(28.h),
           Text(
-            'Loading your profile...',
+            S.of(context).profileScreenLoading,
             style: TextStyle(
               fontSize: 16,
               color: Colors.grey.shade600,
@@ -226,7 +238,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             Gap(14.h),
             Text(
-              'Failed to load profile',
+              S.of(context).profileScreenErrorTitle,
               style: TextStyle(
                 fontSize: 17,
                 fontWeight: FontWeight.bold,
@@ -235,7 +247,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             Gap(10.h),
             Text(
-              _errorMessage ?? 'Please try again later',
+              _errorMessage ?? S.of(context).profileScreenErrorDefault,
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey.shade600,
@@ -253,8 +265,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
               child: Text(
-                'Try Again',
-                style: TextStyle(
+                S.of(context).profileScreenTryAgain,
+                style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
                 ),
@@ -294,7 +306,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'User Profile',
+                    S.of(context).profileScreenEmptyTitle,
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -303,7 +315,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   Gap(6.h),
                   Text(
-                    'No profile information available',
+                    S.of(context).profileScreenEmptyMessage,
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.grey.shade600,
@@ -321,7 +333,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _showComingSoon(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('This feature is coming soon!'),
+        content: Text(S.of(context).profileScreenComingSoon),
         backgroundColor: AppColors.primary,
       ),
     );
@@ -332,14 +344,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(
-          'Log Out',
-          style: TextStyle(
+          S.of(context).profileScreenLogoutDialogTitle,
+          style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
         ),
         content: Text(
-          'Are you sure you want to log out of your account?',
+          S.of(context).profileScreenLogoutDialogContent,
           style: TextStyle(
             fontSize: 14,
             color: Colors.grey.shade600,
@@ -347,19 +359,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
+            onPressed: () {
+              CacheHelper.remove('token');
+              navigateToAndKill(context, const RoleSelectionScreen());
+            },
             child: Text(
-              'Cancel',
+              S.of(context).profileScreenLogoutCancel,
               style: TextStyle(
                 color: Colors.grey.shade600,
               ),
             ),
           ),
           TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text(
-              'Log Out',
-              style: TextStyle(
+            onPressed: () {
+              // Navigator.pop(context, true);
+              navigateToAndKill(context, const RoleSelectionScreen());
+            },
+            child: Text(
+              S.of(context).profileScreenLogoutConfirm,
+              style: const TextStyle(
                 color: Colors.red,
                 fontWeight: FontWeight.bold,
               ),
@@ -389,13 +407,12 @@ class _ProfileHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final name = '${user.firstName ?? ''} ${user.lastName ?? ''}'.trim();
-    final displayName = name.isNotEmpty
-        ? name
-        : '${user.firstName ?? ''} ${user.lastName ?? ''}'.trim();
-    final email = user.email ?? (user.email ?? '').trim();
-    final phone = user.phone ?? (user.phone ?? '').trim();
-    final avatar = user.avatar ?? (user.avatar ?? '').trim();
-    final businessName = user.businessName;
+    final displayName =
+        name.isNotEmpty ? name : S.of(context).profileScreenUnknownUser;
+    final email = user.email ?? S.of(context).profileScreenNoEmail;
+    final phone = user.phone ?? S.of(context).profileScreenNoPhone;
+    final avatar = user.avatar ?? '';
+    final businessName = user.businessName ?? '';
 
     return Card(
       elevation: 3,
@@ -405,7 +422,6 @@ class _ProfileHeader extends StatelessWidget {
         padding: EdgeInsets.all(24.w),
         child: Row(
           children: [
-            // Profile Avatar
             Container(
               width: 85.w,
               height: 85.w,
@@ -417,7 +433,7 @@ class _ProfileHeader extends StatelessWidget {
                 ),
               ),
               child: ClipOval(
-                child: avatar != null && avatar.isNotEmpty
+                child: avatar.isNotEmpty
                     ? CachedNetworkImage(
                         imageUrl: avatar,
                         fit: BoxFit.cover,
@@ -426,7 +442,7 @@ class _ProfileHeader extends StatelessWidget {
                         ),
                         errorWidget: (context, url, error) => Container(
                           color: AppColors.primary.withOpacity(0.1),
-                          child: Icon(
+                          child: const Icon(
                             Icons.person,
                             size: 32,
                             color: AppColors.primary,
@@ -435,7 +451,7 @@ class _ProfileHeader extends StatelessWidget {
                       )
                     : Container(
                         color: AppColors.primary.withOpacity(0.1),
-                        child: Icon(
+                        child: const Icon(
                           Icons.person,
                           size: 32,
                           color: AppColors.primary,
@@ -444,13 +460,11 @@ class _ProfileHeader extends StatelessWidget {
               ),
             ),
             Gap(20.w),
-
-            // User Info
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (businessName != null && businessName.isNotEmpty) ...[
+                  if (businessName.isNotEmpty) ...[
                     Text(
                       businessName,
                       style: TextStyle(
@@ -466,7 +480,7 @@ class _ProfileHeader extends StatelessWidget {
                   Text(
                     displayName,
                     style: TextStyle(
-                      fontSize: businessName != null ? 15 : 17,
+                      fontSize: businessName.isNotEmpty ? 15 : 17,
                       fontWeight: FontWeight.bold,
                       color: Colors.grey.shade800,
                     ),

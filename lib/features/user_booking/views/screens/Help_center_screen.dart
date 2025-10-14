@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
+import 'package:mahu_home_services_app/generated/l10n.dart';
 
 class HelpCenterScreen extends StatelessWidget {
   const HelpCenterScreen({super.key});
@@ -11,7 +12,7 @@ class HelpCenterScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Help Center',
+          S.of(context).helpCenterScreenTitle,
           style: TextStyle(
             fontSize: 20.sp,
             fontWeight: FontWeight.bold,
@@ -35,15 +36,15 @@ class HelpCenterScreen extends StatelessWidget {
                   ),
                   Gap(16.h),
                   Text(
-                    'How can we help you?',
-                    style: TextStyle(
+                    S.of(context).helpCenterScreenHeader,
+                    style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   Gap(8.h),
                   Text(
-                    'Find answers to common questions and get support',
+                    S.of(context).helpCenterScreenSubheader,
                     style: TextStyle(
                       fontSize: 16,
                       color: Colors.grey.shade600,
@@ -76,7 +77,7 @@ class HelpCenterScreen extends StatelessWidget {
                   Expanded(
                     child: TextField(
                       decoration: InputDecoration(
-                        hintText: 'Search for help...',
+                        hintText: S.of(context).helpCenterScreenSearchHint,
                         hintStyle: TextStyle(color: Colors.grey.shade500),
                         border: InputBorder.none,
                       ),
@@ -89,8 +90,8 @@ class HelpCenterScreen extends StatelessWidget {
 
             // FAQ Section
             Text(
-              'Frequently Asked Questions',
-              style: TextStyle(
+              S.of(context).helpCenterScreenFAQTitle,
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
@@ -98,24 +99,26 @@ class HelpCenterScreen extends StatelessWidget {
             Gap(16.h),
 
             _buildFAQItem(
-              question: 'How do I book a service?',
-              answer:
-                  'To book a service, browse available services, select your preferred time slot, and proceed to payment.',
+              context: context,
+              question: S.of(context).helpCenterScreenFAQBookServiceQuestion,
+              answer: S.of(context).helpCenterScreenFAQBookServiceAnswer,
             ),
             _buildFAQItem(
-              question: 'What payment methods are accepted?',
-              answer:
-                  'We accept credit cards, debit cards, and mobile payment options.',
+              context: context,
+              question: S.of(context).helpCenterScreenFAQPaymentMethodsQuestion,
+              answer: S.of(context).helpCenterScreenFAQPaymentMethodsAnswer,
             ),
             _buildFAQItem(
-              question: 'Can I cancel or reschedule my booking?',
-              answer:
-                  'Yes, you can cancel or reschedule up to 24 hours before your appointment.',
+              context: context,
+              question:
+                  S.of(context).helpCenterScreenFAQCancelRescheduleQuestion,
+              answer: S.of(context).helpCenterScreenFAQCancelRescheduleAnswer,
             ),
             _buildFAQItem(
-              question: 'How do I contact my service provider?',
-              answer:
-                  'You can message your provider directly through the app after booking.',
+              context: context,
+              question:
+                  S.of(context).helpCenterScreenFAQContactProviderQuestion,
+              answer: S.of(context).helpCenterScreenFAQContactProviderAnswer,
             ),
 
             Gap(24.h),
@@ -131,15 +134,15 @@ class HelpCenterScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Still need help?',
-                    style: TextStyle(
+                    S.of(context).helpCenterScreenContactTitle,
+                    style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   Gap(8.h),
                   Text(
-                    'Our support team is available 24/7 to assist you with any questions or concerns.',
+                    S.of(context).helpCenterScreenContactDescription,
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.grey.shade600,
@@ -150,19 +153,19 @@ class HelpCenterScreen extends StatelessWidget {
                     children: [
                       _buildContactOption(
                         icon: Icons.email,
-                        title: 'Email',
+                        title: S.of(context).helpCenterScreenContactEmail,
                         onTap: () => _contactEmail(),
                       ),
                       Gap(16.w),
                       _buildContactOption(
                         icon: Icons.phone,
-                        title: 'Call',
+                        title: S.of(context).helpCenterScreenContactPhone,
                         onTap: () => _contactPhone(),
                       ),
                       Gap(16.w),
                       _buildContactOption(
                         icon: Icons.chat,
-                        title: 'Chat',
+                        title: S.of(context).helpCenterScreenContactChat,
                         onTap: () => _contactChat(),
                       ),
                     ],
@@ -176,11 +179,15 @@ class HelpCenterScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFAQItem({required String question, required String answer}) {
+  Widget _buildFAQItem({
+    required BuildContext context,
+    required String question,
+    required String answer,
+  }) {
     return ExpansionTile(
       title: Text(
         question,
-        style: TextStyle(
+        style: const TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w500,
         ),
@@ -227,7 +234,7 @@ class HelpCenterScreen extends StatelessWidget {
               Gap(8.h),
               Text(
                 title,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                 ),

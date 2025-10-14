@@ -23,6 +23,7 @@ import 'package:mahu_home_services_app/features/landing/views/widgets/app_text_b
 import 'package:mahu_home_services_app/features/landing/views/widgets/have_or_not_an_account_row.dart';
 import 'package:mahu_home_services_app/features/services/views/widgets/image_picker_container.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mahu_home_services_app/generated/l10n.dart';
 
 class ProviderRegisterScreen extends StatefulWidget {
   const ProviderRegisterScreen({super.key});
@@ -97,7 +98,7 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Provider Registeration'),
+        title: Text(S.of(context).providerRegisterTitle),
       ),
       body: BlocConsumer<AuthCubit, AuthState>(
         listener: (context, state) {
@@ -130,8 +131,9 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
                     Gap(20.h),
                     IntlPhoneField(
                       decoration: InputDecoration(
-                        labelText: 'Phone Number',
-                        labelStyle: TextStyle(color: Colors.blue),
+                        labelText:
+                            S.of(context).providerRegisterPhoneNumberLabel,
+                        labelStyle: const TextStyle(color: Colors.blue),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8.r),
                         ),
@@ -163,7 +165,7 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
                       },
                       validator: (value) {
                         if (value == null || value.number.isEmpty) {
-                          return 'Please enter a phone number';
+                          return S.of(context).providerRegisterPhoneNumberHint;
                         }
                         return null;
                       },
@@ -177,8 +179,8 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
 
                     Gap(10.h),
                     CustomTextField(
-                      label: 'Email',
-                      hint: 'Enter Email Address',
+                      label: S.of(context).providerRegisterEmailLabel,
+                      hint: S.of(context).providerRegisterEmailHint,
                       keyboardType: TextInputType.emailAddress,
                       controller: emailController,
                       validator: FormValidationMethod.validateEmail,
@@ -186,8 +188,8 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
 
                     Gap(10.h),
                     CustomTextField(
-                      label: 'First Name',
-                      hint: 'Enter First Name',
+                      label: S.of(context).providerRegisterFirstNameLabel,
+                      hint: S.of(context).providerRegisterFirstNameHint,
                       keyboardType: TextInputType.name,
                       controller: fNameController,
                       validator: (value) =>
@@ -196,8 +198,8 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
                     ),
                     Gap(10.h),
                     CustomTextField(
-                      label: 'Last Name',
-                      hint: 'Enter Last Name',
+                      label: S.of(context).providerRegisterLastNameLabel,
+                      hint: S.of(context).providerRegisterLastNameHint,
                       keyboardType: TextInputType.name,
                       controller: lNameController,
                       validator: (value) =>
@@ -206,8 +208,8 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
                     ),
                     Gap(10.h),
                     CustomTextField(
-                      label: 'Business Name',
-                      hint: 'Enter Business Name',
+                      label: S.of(context).providerRegisterBusinessNameLabel,
+                      hint: S.of(context).providerRegisterBusinessNameHint,
                       keyboardType: TextInputType.name,
                       controller: businessNameController,
                       validator: (value) =>
@@ -219,7 +221,8 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
                     Gap(10.h),
                     DropdownButtonFormField<String>(
                       decoration: InputDecoration(
-                        labelText: 'Business Category',
+                        labelText:
+                            S.of(context).providerRegisterBusinessCategoryLabel,
                         labelStyle: const TextStyle(color: Colors.blue),
                         enabledBorder: OutlineInputBorder(
                           borderSide:
@@ -250,14 +253,14 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
                         });
                       },
                       validator: (value) => value == null || value.isEmpty
-                          ? 'Please select a category'
+                          ? S.of(context).providerRegisterBusinessCategoryHint
                           : null,
                     ),
 
                     Gap(10.h),
                     CustomTextField(
-                      label: 'Password',
-                      hint: 'Enter Password',
+                      label: S.of(context).providerRegisterPasswordLabel,
+                      hint: S.of(context).providerRegisterPasswordHint,
                       keyboardType: TextInputType.visiblePassword,
                       controller: passwordController,
                       isPassword: true,
@@ -266,8 +269,8 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
                     ),
                     Gap(10.h),
                     CustomTextField(
-                      label: 'Confirm Password',
-                      hint: 'Enter Password',
+                      label: S.of(context).providerRegisterConfirmPasswordLabel,
+                      hint: S.of(context).providerRegisterConfirmPasswordHint,
                       keyboardType: TextInputType.visiblePassword,
                       controller: confirmPasswordController,
                       isPassword: true,
@@ -277,8 +280,8 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
                               value, passwordController),
                     ),
                     Gap(10.h),
-                    const AppFieledLabelText(
-                      label: 'Upload Your Logo',
+                    AppFieledLabelText(
+                      label: S.of(context).providerRegisterUploadLogoLabel,
                     ),
                     Gap(10.h),
                     ImagePickerContainer(
@@ -289,8 +292,8 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
                     Gap(10.h),
                     // NEW: OTP channel section
                     Text(
-                      'Receive OTP via',
-                      style: TextStyle(
+                      S.of(context).providerRegisterReceiveOtpVia,
+                      style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
@@ -304,8 +307,10 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
                       fillColor: const WidgetStatePropertyAll(AppColors.blue),
                       groupValue: _otpChannel,
                       onChanged: (v) => setState(() => _otpChannel = v!),
-                      title: const Text('Phone (WhatsApp)'),
-                      subtitle: const Text('Send OTP to your WhatsApp number'),
+                      title: Text(
+                          S.of(context).providerRegisterOtpPhoneOptionTitle),
+                      subtitle: Text(
+                          S.of(context).providerRegisterOtpPhoneOptionSubtitle),
                       secondary: const Icon(Icons.message),
                       dense: true,
                     ),
@@ -317,8 +322,10 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
                       fillColor: const WidgetStatePropertyAll(AppColors.blue),
                       groupValue: _otpChannel,
                       onChanged: (v) => setState(() => _otpChannel = v!),
-                      title: const Text('Email'),
-                      subtitle: const Text('Send OTP to your email address'),
+                      title: Text(
+                          S.of(context).providerRegisterOtpEmailOptionTitle),
+                      subtitle: Text(
+                          S.of(context).providerRegisterOtpEmailOptionSubtitle),
                       secondary: const Icon(Icons.email),
                       dense: true,
                     ),
@@ -339,15 +346,18 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
                           },
                         ),
                         Text(
-                          'I agree the ',
-                          style: TextStyle(
+                          S.of(context).providerRegisterAgreeTerms,
+                          style: const TextStyle(
                             fontWeight: FontWeight.w400,
                             fontSize: 14,
                             color: Colors.black,
                           ),
                         ),
                         AppTextButton(
-                            txt: 'Terms and Conditions', onPressed: () {}),
+                            txt: S
+                                .of(context)
+                                .providerRegisterTermsAndConditions,
+                            onPressed: () {}),
                       ],
                     ),
                     Gap(5.h),
@@ -381,7 +391,7 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
                           print("Form is valid");
                         }
                       },
-                      text: 'Sign Up',
+                      text: S.of(context).providerRegisterSignUp,
                     ),
                     // Gap(3.h),
                     // Text(
@@ -404,8 +414,9 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
                     // ),
                     // const Spacer(),
                     HaveOrNotAnAccountRow(
-                      questionTxt: 'Already have an account ?',
-                      buttonTxt: 'Login',
+                      questionTxt:
+                          S.of(context).providerRegisterAlreadyHaveAccount,
+                      buttonTxt: S.of(context).providerRegisterLogin,
                       onPresseButton: () {
                         navigateTo(context, const LoginScreen());
                       },

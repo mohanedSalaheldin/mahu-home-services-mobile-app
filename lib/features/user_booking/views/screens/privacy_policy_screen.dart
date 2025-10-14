@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
+import 'package:intl/intl.dart';
+import 'package:mahu_home_services_app/generated/l10n.dart';
 
 class PrivacyPolicyScreen extends StatelessWidget {
   const PrivacyPolicyScreen({super.key});
@@ -11,7 +13,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Privacy Policy',
+          S.of(context).privacyPolicyScreenTitle,
           style: TextStyle(
             fontSize: 20.sp,
             fontWeight: FontWeight.bold,
@@ -24,7 +26,6 @@ class PrivacyPolicyScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header
             Center(
               child: Column(
                 children: [
@@ -35,15 +36,16 @@ class PrivacyPolicyScreen extends StatelessWidget {
                   ),
                   Gap(16.h),
                   Text(
-                    'Privacy Policy',
-                    style: TextStyle(
+                    S.of(context).privacyPolicyScreenTitle,
+                    style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   Gap(8.h),
                   Text(
-                    'Last updated: ${_getCurrentDate()}',
+                    S.of(context).privacyPolicyScreenLastUpdated(
+                        _getCurrentDate(context)),
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.grey.shade600,
@@ -53,78 +55,33 @@ class PrivacyPolicyScreen extends StatelessWidget {
               ),
             ),
             Gap(32.h),
-
-            // Policy Sections
             _buildPolicySection(
-              title: '1. Information We Collect',
-              content: '''
-We collect information you provide directly to us, including:
-- Personal information (name, email, phone number)
-- Service preferences and booking history
-- Payment information
-- Location data for service delivery
-''',
+              title: S.of(context).privacyPolicyScreenSection1Title,
+              content: S.of(context).privacyPolicyScreenSection1Content,
             ),
-
             _buildPolicySection(
-              title: '2. How We Use Your Information',
-              content: '''
-We use your information to:
-- Provide and improve our services
-- Process your bookings and payments
-- Communicate with you about services
-- Ensure safety and security
-- Comply with legal obligations
-''',
+              title: S.of(context).privacyPolicyScreenSection2Title,
+              content: S.of(context).privacyPolicyScreenSection2Content,
             ),
-
             _buildPolicySection(
-              title: '3. Data Sharing',
-              content: '''
-We may share your information with:
-- Service providers to fulfill bookings
-- Payment processors for transaction processing
-- Legal authorities when required by law
-- Business partners with your consent
-''',
+              title: S.of(context).privacyPolicyScreenSection3Title,
+              content: S.of(context).privacyPolicyScreenSection3Content,
             ),
-
             _buildPolicySection(
-              title: '4. Data Security',
-              content: '''
-We implement security measures including:
-- Encryption of sensitive data
-- Secure servers and infrastructure
-- Regular security audits
-- Access controls and authentication
-''',
+              title: S.of(context).privacyPolicyScreenSection4Title,
+              content: S.of(context).privacyPolicyScreenSection4Content,
             ),
-
             _buildPolicySection(
-              title: '5. Your Rights',
-              content: '''
-You have the right to:
-- Access your personal information
-- Correct inaccurate data
-- Request data deletion
-- Opt-out of marketing communications
-- Data portability
-''',
+              title: S.of(context).privacyPolicyScreenSection5Title,
+              content: S.of(context).privacyPolicyScreenSection5Content,
             ),
-
             _buildPolicySection(
-              title: '6. Contact Us',
-              content: '''
-If you have questions about this privacy policy, please contact us at:
-- Email: privacy@mahu.com
-- Phone: +1 (555) 123-4567
-- Address: 123 Service Street, City, Country
-''',
+              title: S.of(context).privacyPolicyScreenSection6Title,
+              content: S.of(context).privacyPolicyScreenSection6Content,
             ),
-
             Gap(24.h),
             Text(
-              'By using our services, you agree to the terms of this Privacy Policy.',
+              S.of(context).privacyPolicyScreenConsent,
               style: TextStyle(
                 fontSize: 14,
                 fontStyle: FontStyle.italic,
@@ -143,7 +100,7 @@ If you have questions about this privacy policy, please contact us at:
       children: [
         Text(
           title,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
             color: AppColors.primary,
@@ -163,7 +120,8 @@ If you have questions about this privacy policy, please contact us at:
     );
   }
 
-  String _getCurrentDate() {
-    return 'December 15, 2024';
+  String _getCurrentDate(BuildContext context) {
+    return DateFormat.yMMMMd(Localizations.localeOf(context).languageCode)
+        .format(DateTime.now());
   }
 }

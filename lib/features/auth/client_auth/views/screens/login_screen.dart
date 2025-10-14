@@ -20,6 +20,7 @@ import 'package:mahu_home_services_app/features/landing/views/widgets/app_text_b
 import 'package:mahu_home_services_app/features/landing/views/widgets/have_or_not_an_account_row.dart';
 import 'package:mahu_home_services_app/features/layouts/client_layout_screen.dart';
 import 'package:mahu_home_services_app/features/layouts/provider_layout_screen.dart';
+import 'package:mahu_home_services_app/generated/l10n.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -45,13 +46,12 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Login'),
+        title: Text(S.of(context).loginScreenTitle),
       ),
       body: BlocConsumer<AuthCubit, AuthState>(
         listener: (context, state) {
           if (state is LoginSucessededState) {
             final role = state.userModel.role;
-            print("The role of user: "+role);
             CacheHelper.saveString('user_role', role);
             if (role == 'provider') {
               navigateToAndKill(context, ProviderLayoutScreen());
@@ -90,16 +90,16 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: [
                     Gap(25.h),
                     CustomTextField(
-                      label: 'Email or Phone Number',
-                      hint: 'Enter Email or Phone Number',
+                      label: S.of(context).loginScreenEmailOrPhoneLabel,
+                      hint: S.of(context).loginScreenEmailOrPhoneHint,
                       keyboardType: TextInputType.emailAddress,
                       controller: emailOrPhoneController,
                       validator: FormValidationMethod.validateEmailAndPhoneNum,
                     ),
                     Gap(10.h),
                     CustomTextField(
-                      label: 'Password',
-                      hint: 'Enter Password',
+                      label: S.of(context).loginScreenPasswordLabel,
+                      hint: S.of(context).loginScreenPasswordHint,
                       keyboardType: TextInputType.visiblePassword,
                       controller: passwordController,
                       isPassword: true,
@@ -126,8 +126,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           },
                         ),
                         Text(
-                          'Remember Me',
-                          style: TextStyle(
+                          S.of(context).loginScreenRememberMe,
+                          style: const TextStyle(
                             fontWeight: FontWeight.w400,
                             fontSize: 14,
                             color: Colors.black,
@@ -135,7 +135,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         const Spacer(),
                         AppTextButton(
-                          txt: 'Forgot Password',
+                          txt: S.of(context).loginScreenForgotPassword,
                           fontSize: 14,
                           onPressed: () {
                             navigateTo(context, const ForgetPasswordScreen());
@@ -146,32 +146,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     Gap(5.h),
                     AppFilledButton(
                       onPressed: onLoginPressed,
-                      text: 'Login',
+                      text: S.of(context).loginScreenLoginBtn,
                     ),
                     Gap(3.h),
-                    // Text(
-                    //   "Or",
-                    //   style: TextStyle(
-                    //     fontWeight: FontWeight.w300,
-                    //     fontSize: 16,
-                    //     color: Colors.black,
-                    //   ),
-                    // ),
-                    // Gap(3.h),
-                    // Row(
-                    //   mainAxisAlignment: MainAxisAlignment.center,
-                    //   children: [
-                    //     const OtherWayToSigninItem(
-                    //         img: 'assets/icons/google.png'),
-                    //     Gap(22.w),
-                    //     const OtherWayToSigninItem(
-                    //         img: 'assets/icons/facebook.png'),
-                    //   ],
-                    // ),
-                    // const Spacer(),
                     HaveOrNotAnAccountRow(
-                      questionTxt: 'Don\'t have an account?',
-                      buttonTxt: 'Sign Up',
+                      questionTxt: S.of(context).loginScreenDontHaveAccount,
+                      buttonTxt: S.of(context).loginScreenSignUp,
                       onPresseButton: () {
                         navigateToAndKill(
                             context,

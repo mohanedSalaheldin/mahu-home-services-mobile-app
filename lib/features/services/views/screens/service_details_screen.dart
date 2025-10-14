@@ -6,12 +6,12 @@ import 'package:gap/gap.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
 import 'package:mahu_home_services_app/core/utils/navigation_utils.dart';
 import 'package:mahu_home_services_app/features/auth/client_auth/views/widgets/custom_snack_bar.dart';
-import 'package:mahu_home_services_app/features/layouts/provider_layout_screen.dart';
 import 'package:mahu_home_services_app/features/services/cubit/services_cubit.dart';
 import 'package:mahu_home_services_app/features/services/cubit/services_state.dart';
 import 'package:mahu_home_services_app/features/services/views/screens/update_service_screen.dart';
 import 'package:mahu_home_services_app/features/services/views/widgets/action_buttons.dart';
 import 'package:mahu_home_services_app/features/services/views/widgets/detail_section.dart';
+import 'package:mahu_home_services_app/generated/l10n.dart';
 import '../../models/service_model.dart';
 
 class ServiceDetailsScreen extends StatefulWidget {
@@ -41,7 +41,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => Navigator.pop(context, true),
         ),
-        title: const Text("Service Details"),
+        title: Text(S.of(context).serviceDetailsScreenTitle),
         centerTitle: false,
         elevation: 0,
         backgroundColor: Colors.white,
@@ -53,7 +53,6 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
       ),
       body: BlocConsumer<ServiceCubit, ServiceState>(
         listener: (context, state) {
-
           if (state is ServiceStatusUpdateSuccessState) {
             setState(() {
               _currentService =
@@ -62,8 +61,8 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
             showCustomSnackBar(
               context: context,
               message: _currentService.active
-                  ? 'Service activated successfully'
-                  : 'Service deactivated successfully',
+                  ? S.of(context).serviceDetailsScreenActivateSuccess
+                  : S.of(context).serviceDetailsScreenDeactivateSuccess,
               type: SnackBarType.success,
             );
           }
@@ -71,7 +70,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
           if (state is ServiceStatusUpdateFailedState) {
             showCustomSnackBar(
               context: context,
-              message: 'Failed to update service status',
+              message: S.of(context).serviceDetailsScreenStatusUpdateFailed,
               type: SnackBarType.failure,
             );
           }
@@ -93,26 +92,16 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Hero Image Section
                 _buildHeroImage(),
                 Gap(24.h),
-
-                // Service Header Section
                 _buildServiceHeader(),
                 Gap(16.h),
-
-                // Status Badge
                 _buildStatusBadge(),
                 Gap(24.h),
-
-                // Details Section
                 DetailSection(service: _currentService),
                 Gap(24.h),
-
-                // Action Buttons
                 ActionButtons(
                   isActive: _currentService.active,
-                  // onDelete: () => {},
                   onEdit: () => _navigateToEditScreen(context),
                   onToggleStatus: () => _toggleServiceStatus(context),
                 ),
@@ -221,7 +210,9 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
           ),
           Gap(6.w),
           Text(
-            _currentService.active ? 'Active' : 'Inactive',
+            _currentService.active
+                ? S.of(context).serviceDetailsScreenStatusActive
+                : S.of(context).serviceDetailsScreenStatusInactive,
             style: TextStyle(
               fontSize: 14.sp,
               fontWeight: FontWeight.w600,
@@ -245,7 +236,6 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
     );
   }
 
-  
   void _toggleServiceStatus(BuildContext context) {
     final cubit = ServiceCubit.get(context);
     final newStatus = !_currentService.active;
@@ -254,7 +244,9 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(
-          newStatus ? "Activate Service" : "Deactivate Service",
+          newStatus
+              ? S.of(context).serviceDetailsScreenActivateTitle
+              : S.of(context).serviceDetailsScreenDeactivateTitle,
           style: TextStyle(
             fontSize: 20.sp,
             fontWeight: FontWeight.w600,
@@ -262,8 +254,8 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
         ),
         content: Text(
           newStatus
-              ? "Are you sure you want to activate this service? It will become visible to customers."
-              : "Are you sure you want to deactivate this service? It will no longer be visible to customers.",
+              ? S.of(context).serviceDetailsScreenActivateConfirmation
+              : S.of(context).serviceDetailsScreenDeactivateConfirmation,
           style: TextStyle(
             fontSize: 16.sp,
             color: AppColors.textSecondary,
@@ -278,17 +270,20 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
             style: TextButton.styleFrom(
               foregroundColor: AppColors.textSecondary,
             ),
-            child: const Text("Cancel"),
+            child: Text(S.of(context).serviceDetailsScreenCancelButton),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              cubit.updateServiceStatus(_currentService.id, _currentService.active);
+              cubit.updateServiceStatus(
+                  _currentService.id, _currentService.active);
             },
             style: TextButton.styleFrom(
               foregroundColor: newStatus ? AppColors.success : AppColors.error,
             ),
-            child: Text(newStatus ? "Activate" : "Deactivate"),
+            child: Text(newStatus
+                ? S.of(context).serviceDetailsScreenActivateButton
+                : S.of(context).serviceDetailsScreenDeactivateButton),
           ),
         ],
       ),

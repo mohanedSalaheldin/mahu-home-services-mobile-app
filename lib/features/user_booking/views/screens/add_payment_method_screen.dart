@@ -10,6 +10,7 @@ import 'package:mahu_home_services_app/features/landing/views/widgets/app_filled
 import 'package:mahu_home_services_app/features/user_booking/views/screens/review_booking_summary_screen.dart';
 import 'package:mahu_home_services_app/features/user_booking/views/widgets/date_and_time_form_filed_widget.dart';
 import 'package:mahu_home_services_app/features/user_booking/views/widgets/payment_card_details_widget.dart';
+import 'package:mahu_home_services_app/generated/l10n.dart';
 
 class AddPaymentMethodScreen extends StatefulWidget {
   const AddPaymentMethodScreen({super.key});
@@ -21,11 +22,40 @@ class AddPaymentMethodScreen extends StatefulWidget {
 class _AddPaymentMethodScreenState extends State<AddPaymentMethodScreen> {
   bool agreedToTerms = false;
   bool showTermsError = false;
+
+  // Custom validation methods to avoid modifying FormValidationMethod
+  String? _validateName(String? value) {
+    if (value == null || value.isEmpty) {
+      return S.of(context).addPaymentMethodScreenNameError;
+    }
+    return null;
+  }
+
+  String? _validateCardNumber(String? value) {
+    if (value == null || value.isEmpty) {
+      return S.of(context).addPaymentMethodScreenCardNumberError;
+    }
+    if (!RegExp(r'^\d{16}$').hasMatch(value)) {
+      return S.of(context).addPaymentMethodScreenCardNumberInvalidError;
+    }
+    return null;
+  }
+
+  String? _validateCvv(String? value) {
+    if (value == null || value.isEmpty) {
+      return S.of(context).addPaymentMethodScreenCvvError;
+    }
+    if (!RegExp(r'^\d{3,4}$').hasMatch(value)) {
+      return S.of(context).addPaymentMethodScreenCvvInvalidError;
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Payment Method'),
+        title: Text(S.of(context).addPaymentMethodScreenTitle),
         centerTitle: true,
       ),
       body: Padding(
@@ -36,29 +66,29 @@ class _AddPaymentMethodScreenState extends State<AddPaymentMethodScreen> {
             const PaymentCardDetailsWidget(),
             Gap(10.h),
             CustomTextField(
-              label: 'Name',
-              hint: 'Enter Name',
+              label: S.of(context).addPaymentMethodScreenNameLabel,
+              hint: S.of(context).addPaymentMethodScreenNameHint,
               keyboardType: TextInputType.name,
               controller: TextEditingController(),
-              validator: FormValidationMethod.validateEmail,
+              validator: _validateName,
             ),
             Gap(10.h),
             CustomTextField(
-              label: 'Card Number',
-              hint: 'Enter Card Number',
+              label: S.of(context).addPaymentMethodScreenCardNumberLabel,
+              hint: S.of(context).addPaymentMethodScreenCardNumberHint,
               keyboardType: TextInputType.number,
               controller: TextEditingController(),
-              validator: FormValidationMethod.validateEmail,
+              validator: _validateCardNumber,
             ),
             Gap(10.h),
             DateAndTimeFormFiledWidget(isDateNotTime: true),
             Gap(10.h),
             CustomTextField(
-              label: 'CVV',
-              hint: 'CVV',
+              label: S.of(context).addPaymentMethodScreenCvvLabel,
+              hint: S.of(context).addPaymentMethodScreenCvvHint,
               keyboardType: TextInputType.number,
               controller: TextEditingController(),
-              validator: FormValidationMethod.validateEmail,
+              validator: _validateCvv,
             ),
             Gap(10.h),
             const Spacer(),
@@ -74,13 +104,26 @@ class _AddPaymentMethodScreenState extends State<AddPaymentMethodScreen> {
                 // Show terms or navigate to terms screen
               },
             ),
+            if (showTermsError)
+              Padding(
+                padding: EdgeInsets.only(top: 8.h),
+                child: Text(
+                  S.of(context).addPaymentMethodScreenTermsError,
+                  style: TextStyle(color: Colors.red, fontSize: 12.sp),
+                ),
+              ),
             Gap(10.h),
             AppFilledButton(
               onPressed: () {
-                // navigateTo(context, const ReviewBookingSummaryScreen());
+                setState(() {
+                  showTermsError = !agreedToTerms;
+                });
+                if (agreedToTerms) {
+                  // navigateTo(context, const ReviewBookingSummaryScreen());
+                }
               },
               fontSize: 15,
-              text: "Continue",
+              text: S.of(context).addPaymentMethodScreenContinueButton,
             ),
           ],
         ),

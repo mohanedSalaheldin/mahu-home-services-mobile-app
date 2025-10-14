@@ -8,6 +8,7 @@ import 'package:mahu_home_services_app/features/services/models/service_model.da
 import 'package:mahu_home_services_app/features/user_booking/models/review.dart';
 import 'package:mahu_home_services_app/features/user_booking/services/review_services.dart';
 import 'package:mahu_home_services_app/features/user_booking/views/screens/booking_form_screen.dart';
+import 'package:mahu_home_services_app/generated/l10n.dart';
 import 'package:readmore/readmore.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -35,7 +36,6 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
   void initState() {
     super.initState();
     _loadReviews();
-    // Check favorite status when screen loads
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final cubit = BlocProvider.of<UserBookingCubit>(context);
       cubit.checkFavoriteStatus(widget.service.id);
@@ -57,11 +57,9 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
         print('Error loading reviews: ${failure.message}');
       },
       (reviewsData) {
-        print('Reviews data received: $reviewsData'); // Debug print
-
+        print('Reviews data received: $reviewsData');
         setState(() {
           _isLoadingReviews = false;
-          // Extract reviews from the correct path
           _reviews = (reviewsData['reviews'] as List<dynamic>?)
                   ?.map((review) => Review.fromJson(review))
                   .toList() ??
@@ -69,10 +67,9 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
           _averageRating = (reviewsData['averageRating'] ?? 0.0).toDouble();
           _totalReviews = (reviewsData['totalReviews'] ?? 0).toInt();
         });
-
-        print('Parsed reviews: $_reviews'); // Debug print
-        print('Average rating: $_averageRating'); // Debug print
-        print('Total reviews: $_totalReviews'); // Debug print
+        print('Parsed reviews: $_reviews');
+        print('Average rating: $_averageRating');
+        print('Total reviews: $_totalReviews');
       },
     );
   }
@@ -81,11 +78,10 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
   Widget build(BuildContext context) {
     return BlocConsumer<UserBookingCubit, UserBookingState>(
       listener: (context, state) {
-        // Handle favorite operation states
         if (state is FavoriteOperationError) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Error: ${state.failure.message}'),
+              content: Text(S.of(context).serviceDetailsScreenFavoriteError(state.failure.message)),
               backgroundColor: Colors.red,
             ),
           );
@@ -99,7 +95,6 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
         return Scaffold(
           body: Stack(
             children: [
-              // Service Images Gallery
               SizedBox(
                 height: 300.h,
                 width: double.infinity,
@@ -110,8 +105,6 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                   ],
                 ),
               ),
-
-              // Back Button
               Positioned(
                 top: 50.h,
                 left: 16.w,
@@ -124,8 +117,6 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                   ),
                 ),
               ),
-
-              // Favorite Button
               Positioned(
                 top: 50.h,
                 right: 16.w,
@@ -137,8 +128,6 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                   },
                 ),
               ),
-
-              // Image Indicator
               Positioned(
                 bottom: 280.h,
                 left: 0,
@@ -157,8 +146,6 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                   ),
                 ),
               ),
-
-              // Content
               DraggableScrollableSheet(
                 initialChildSize: 0.65,
                 minChildSize: 0.65,
@@ -167,8 +154,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                   return Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius:
-                          const BorderRadius.vertical(top: Radius.circular(24)),
+                      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withOpacity(0.1),
@@ -196,8 +182,6 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                               ),
                             ),
                             Gap(16.h),
-
-                            // Provider Card
                             if (widget.service.businessName != null ||
                                 widget.service.firstName != null)
                               ServiceProviderCard(
@@ -208,15 +192,13 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                             if (widget.service.businessName != null ||
                                 widget.service.firstName != null)
                               Gap(16.h),
-
-                            // Service Title and Basic Info
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Expanded(
                                   child: Text(
                                     widget.service.name,
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       fontSize: 24,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -234,7 +216,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                                     borderRadius: BorderRadius.circular(20),
                                   ),
                                   child: Text(
-                                    widget.service.serviceType,
+                                    _getLocalizedServiceType(context, widget.service.serviceType),
                                     style: TextStyle(
                                       fontSize: 12,
                                       color: widget.service.serviceType
@@ -248,43 +230,33 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                               ],
                             ),
                             Gap(8.h),
-
-                            // Rating and Duration
                             Row(
                               children: [
                                 Icon(Icons.star,
                                     color: Colors.amber, size: 16.sp),
                                 Gap(4.w),
                                 Text(
-                                  '${_averageRating.toStringAsFixed(1)} ($_totalReviews reviews)',
+                                  S.of(context).serviceDetailsScreenRating(_averageRating.toStringAsFixed(1), _totalReviews),
                                   style: TextStyle(fontSize: 14.sp),
                                 ),
                                 Gap(16.w),
-                                Icon(Icons.access_time,
+                                const Icon(Icons.access_time,
                                     size: 16, color: Colors.grey),
                                 Gap(4.w),
                                 Text(
-                                  '${widget.service.duration} hours',
-                                  style: TextStyle(
+                                  S.of(context).serviceDetailsScreenDuration(widget.service.duration),
+                                  style: const TextStyle(
                                       fontSize: 14, color: Colors.grey),
                                 ),
                               ],
                             ),
                             Gap(24.h),
-
-                            // Available Time Section
                             _buildAvailableTimeSection(),
                             Gap(16.h),
-
-                            // Price Section
                             _buildPriceSection(),
                             Gap(24.h),
-
-                            // About Service
                             _buildAboutSection(),
                             Gap(24.h),
-
-                            // Reviews Section
                             _buildReviewsSection(),
                             Gap(24.h),
                           ],
@@ -301,6 +273,17 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
     );
   }
 
+  String _getLocalizedServiceType(BuildContext context, String serviceType) {
+    switch (serviceType.toLowerCase()) {
+      case 'recurring':
+        return S.of(context).serviceDetailsScreenServiceTypeRecurring;
+      case 'one-time':
+        return S.of(context).serviceDetailsScreenServiceTypeOneTime;
+      default:
+        return S.of(context).serviceDetailsScreenServiceTypeDefault;
+    }
+  }
+
   Widget _buildAvailableTimeSection() {
     return Container(
       padding: EdgeInsets.all(16.w),
@@ -313,11 +296,12 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
         children: [
           Row(
             children: [
-              Icon(Icons.calendar_today, size: 20, color: AppColors.primary),
+              const Icon(Icons.calendar_today,
+                  size: 20, color: AppColors.primary),
               Gap(8.w),
               Text(
-                'Available Time',
-                style: TextStyle(
+                S.of(context).serviceDetailsScreenAvailableTimeTitle,
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
@@ -326,8 +310,8 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
           ),
           Gap(12.h),
           Text(
-            'Available Days:',
-            style: TextStyle(
+            S.of(context).serviceDetailsScreenAvailableDaysLabel,
+            style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
             ),
@@ -339,7 +323,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                 .map((day) => Chip(
                       label: Text(day),
                       backgroundColor: AppColors.primary.withOpacity(0.1),
-                      labelStyle: TextStyle(
+                      labelStyle: const TextStyle(
                         color: AppColors.primary,
                         fontSize: 12,
                       ),
@@ -348,8 +332,8 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
           ),
           Gap(12.h),
           Text(
-            'Time Slots:',
-            style: TextStyle(
+            S.of(context).serviceDetailsScreenTimeSlotsLabel,
+            style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
             ),
@@ -357,19 +341,22 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
           Gap(8.h),
           Column(
             children: widget.service.availableSlots
-                .map((time) => Padding(
-                      padding: EdgeInsets.only(bottom: 8.h),
-                      child: Row(
-                        children: [
-                          Icon(Icons.access_time, size: 16, color: Colors.grey),
-                          Gap(8.w),
-                          Text(
-                            '${time.startTime} - ${time.endTime}',
-                            style: TextStyle(fontSize: 14.sp),
-                          ),
-                        ],
-                      ),
-                    ))
+                .map(
+                  (time) => Padding(
+                    padding: EdgeInsets.only(bottom: 8.h),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.access_time,
+                            size: 16, color: Colors.grey),
+                        Gap(8.w),
+                        Text(
+                          '${time.startTime} - ${time.endTime}',
+                          style: TextStyle(fontSize: 14.sp),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
                 .toList(),
           ),
         ],
@@ -390,14 +377,14 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Starting from',
+                S.of(context).serviceDetailsScreenStartingFrom,
                 style: TextStyle(
                   fontSize: 12,
                   color: Colors.grey.shade600,
                 ),
               ),
               Text(
-                '\$${widget.service.basePrice}',
+                '\$${widget.service.basePrice.toInt()}',
                 style: const TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
@@ -426,9 +413,9 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                   ),
                 );
               },
-              child: const Text(
-                'Book Now',
-                style: TextStyle(
+              child: Text(
+                S.of(context).serviceDetailsScreenBookNow,
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
@@ -445,9 +432,9 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'About This Service',
-          style: TextStyle(
+        Text(
+          S.of(context).serviceDetailsScreenAboutTitle,
+          style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
@@ -457,13 +444,13 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
           widget.service.description,
           trimLines: 3,
           trimMode: TrimMode.Line,
-          trimCollapsedText: ' Read more',
-          trimExpandedText: ' Show less',
-          moreStyle: TextStyle(
+          trimCollapsedText: S.of(context).serviceDetailsScreenReadMore,
+          trimExpandedText: S.of(context).serviceDetailsScreenShowLess,
+          moreStyle: const TextStyle(
             fontSize: 14,
             color: AppColors.primary,
           ),
-          lessStyle: TextStyle(
+          lessStyle: const TextStyle(
             fontSize: 14,
             color: AppColors.primary,
           ),
@@ -485,15 +472,15 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Customer Reviews',
-              style: TextStyle(
+              S.of(context).serviceDetailsScreenReviewsTitle,
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
             ),
             if (_totalReviews > 0)
               Text(
-                '$_totalReviews reviews',
+                S.of(context).serviceDetailsScreenReviewsCount(_totalReviews),
                 style: TextStyle(
                   fontSize: 14,
                   color: Colors.grey.shade600,
@@ -502,30 +489,23 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
           ],
         ),
         Gap(12.h),
-
-        // Average Rating Summary
         if (_totalReviews > 0) _buildRatingSummary(),
         Gap(16.h),
-
-        // Reviews List
         if (_isLoadingReviews)
           Center(
             child: Padding(
               padding: EdgeInsets.symmetric(vertical: 32.h),
-              child: CircularProgressIndicator(),
+              child: const CircularProgressIndicator(),
             ),
           )
         else if (_reviews.isEmpty)
-          // make this container to be in center
-
           Container(
             padding: EdgeInsets.symmetric(vertical: 32.h),
-            alignment: Alignment.center, // center content horizontally
+            alignment: Alignment.center,
             child: Column(
-              mainAxisSize: MainAxisSize.min, // wrap content vertically
-              mainAxisAlignment: MainAxisAlignment.center, // center vertically
-              crossAxisAlignment:
-                  CrossAxisAlignment.center, // center horizontally
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Icon(
                   Icons.reviews_outlined,
@@ -534,14 +514,14 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                 ),
                 Gap(16.h),
                 Text(
-                  'No reviews yet',
+                  S.of(context).serviceDetailsScreenNoReviewsTitle,
                   style: TextStyle(
                     fontSize: 16,
                     color: Colors.grey.shade500,
                   ),
                 ),
                 Text(
-                  'Be the first to review this service!',
+                  S.of(context).serviceDetailsScreenNoReviewsMessage,
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.grey.shade400,
@@ -558,8 +538,8 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                 TextButton(
                   onPressed: _showAllReviews,
                   child: Text(
-                    'View all $_totalReviews reviews',
-                    style: TextStyle(
+                    S.of(context).serviceDetailsScreenViewAllReviews(_totalReviews),
+                    style: const TextStyle(
                       fontSize: 14,
                       color: AppColors.primary,
                     ),
@@ -580,12 +560,11 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
       ),
       child: Row(
         children: [
-          // Average Rating
           Column(
             children: [
               Text(
                 _averageRating.toStringAsFixed(1),
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
                   color: AppColors.primary,
@@ -600,9 +579,8 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Rating distribution could be added here if available
                 Text(
-                  'Based on $_totalReviews reviews',
+                  S.of(context).serviceDetailsScreenBasedOnReviews(_totalReviews),
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.grey.shade600,
@@ -612,7 +590,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                 LinearProgressIndicator(
                   value: _averageRating / 5,
                   backgroundColor: Colors.grey.shade300,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.amber),
+                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.amber),
                 ),
               ],
             ),
@@ -634,20 +612,19 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
             blurRadius: 8,
-            offset: Offset(0, 2),
+            offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header with user and rating
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 review.userName,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
@@ -656,8 +633,6 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
             ],
           ),
           Gap(8.h),
-
-          // Feedback
           if (review.feedback.isNotEmpty)
             Text(
               review.feedback,
@@ -668,8 +643,6 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
               ),
             ),
           Gap(8.h),
-
-          // Date
           Text(
             DateFormat('MMM dd, yyyy').format(review.createdAt),
             style: TextStyle(
@@ -708,14 +681,14 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'All Reviews ($_totalReviews)',
-                  style: TextStyle(
+                  S.of(context).serviceDetailsScreenAllReviewsTitle(_totalReviews),
+                  style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 IconButton(
-                  icon: Icon(Icons.close),
+                  icon: const Icon(Icons.close),
                   onPressed: () => Navigator.pop(context),
                 ),
               ],
@@ -742,7 +715,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
     } else if (widget.service.businessName != null) {
       return widget.service.businessName!;
     } else {
-      return "Service Provider";
+      return S.of(context).serviceDetailsScreenDefaultProviderName;
     }
   }
 
@@ -751,9 +724,9 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
       return widget.service.businessName!;
     } else if (widget.service.firstName != null ||
         widget.service.lastName != null) {
-      return "Independent Provider";
+      return S.of(context).serviceDetailsScreenDefaultProviderType;
     } else {
-      return "Service Provider";
+      return S.of(context).serviceDetailsScreenDefaultProviderName;
     }
   }
 
@@ -845,7 +818,6 @@ class ServiceProviderCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        // Provider Logo
         Container(
           width: 40.w,
           height: 40.w,
@@ -876,8 +848,6 @@ class ServiceProviderCard extends StatelessWidget {
                 ),
         ),
         Gap(12.w),
-
-        // Provider Info
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -891,7 +861,7 @@ class ServiceProviderCard extends StatelessWidget {
               ),
               Text(
                 providerName,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
                 ),

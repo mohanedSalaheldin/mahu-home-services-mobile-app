@@ -3,10 +3,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
 import 'package:mahu_home_services_app/features/services/models/service_model.dart';
-import 'package:mahu_home_services_app/features/services/views/screens/service_provider_jobs.dart';
 import 'package:mahu_home_services_app/features/user_booking/views/screens/service_details_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:mahu_home_services_app/generated/l10n.dart';
 
 class ServiceCategoryScreen extends StatefulWidget {
   final String categoryName;
@@ -40,7 +40,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          widget.categoryName.capitalize(),
+          _getLocalizedCategoryName(context, widget.categoryName),
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -56,18 +56,14 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
           children: [
             _buildCategoryDescription(),
             Gap(24.h),
-
-            // Services Count
             Text(
-              '${filteredServices.length} Services Available',
+              S.of(context).serviceCategoryScreenServicesCount(filteredServices.length),
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey.shade600,
               ),
             ),
             Gap(16.h),
-
-            // Services List
             if (filteredServices.isEmpty)
               _buildEmptyState()
             else
@@ -85,31 +81,38 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
     );
   }
 
+  String _getLocalizedCategoryName(BuildContext context, String categoryName) {
+    switch (categoryName.toLowerCase()) {
+      case 'deep clean':
+        return S.of(context).serviceCategoryScreenDeepCleanTitle;
+      case 'recurring':
+        return S.of(context).serviceCategoryScreenRecurringTitle;
+      case 'one-time':
+        return S.of(context).serviceCategoryScreenOneTimeTitle;
+      default:
+        return S.of(context).serviceCategoryScreenDefaultTitle(categoryName);
+    }
+  }
+
   Widget _buildCategoryDescription() {
-    String description = '';
+    String descriptionKey = '';
     String imageUrl = '';
 
-    switch (widget.categoryName) {
-      case 'Deep Clean':
-        description =
-            'Thorough cleaning of all areas including hard-to-reach spots. Perfect for deep sanitization and intensive cleaning needs.';
-        imageUrl =
-            'https://images.unsplash.com/photo-1600585152220-90363fe7e115';
+    switch (widget.categoryName.toLowerCase()) {
+      case 'deep clean':
+        descriptionKey = 'serviceCategoryScreenDeepCleanDescription';
+        imageUrl = 'https://images.unsplash.com/photo-1600585152220-90363fe7e115';
         break;
-      case 'Recurring':
-        description =
-            'Regular scheduled cleaning services to maintain your space. Set your preferred frequency and enjoy consistent cleanliness.';
-        imageUrl =
-            'https://images.unsplash.com/photo-1584622650111-993a426fbf0a';
+      case 'recurring':
+        descriptionKey = 'serviceCategoryScreenRecurringDescription';
+        imageUrl = 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a';
         break;
-      case 'One-Time':
-        description =
-            'Single cleaning sessions for specific needs. Ideal for special occasions, move-ins/move-outs, or when you need a one-time refresh.';
-        imageUrl =
-            'https://images.unsplash.com/photo-1512917774080-9991f1c4c750';
+      case 'one-time':
+        descriptionKey = 'serviceCategoryScreenOneTimeDescription';
+        imageUrl = 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750';
         break;
       default:
-        description = 'Browse our ${widget.categoryName} services in this category.';
+        descriptionKey = 'serviceCategoryScreenDefaultDescription';
         imageUrl = 'https://images.unsplash.com/photo-1556911220-bff31c812dba';
     }
 
@@ -136,7 +139,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
           Padding(
             padding: EdgeInsets.all(16.w),
             child: Text(
-              description,
+              _getLocalizedDescription(context, descriptionKey, widget.categoryName),
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey.shade700,
@@ -148,6 +151,21 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
         ],
       ),
     ).animate().fadeIn(delay: 100.ms).slide(begin: const Offset(0, 0.1));
+  }
+
+  String _getLocalizedDescription(BuildContext context, String key, String categoryName) {
+    switch (key) {
+      case 'serviceCategoryScreenDeepCleanDescription':
+        return S.of(context).serviceCategoryScreenDeepCleanDescription;
+      case 'serviceCategoryScreenRecurringDescription':
+        return S.of(context).serviceCategoryScreenRecurringDescription;
+      case 'serviceCategoryScreenOneTimeDescription':
+        return S.of(context).serviceCategoryScreenOneTimeDescription;
+      case 'serviceCategoryScreenDefaultDescription':
+        return S.of(context).serviceCategoryScreenDefaultDescription(categoryName);
+      default:
+        return categoryName;
+    }
   }
 
   Widget _buildServiceCard(ServiceModel service) {
@@ -175,7 +193,6 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
         ),
         child: Row(
           children: [
-            // Service Image
             ClipRRect(
               borderRadius: const BorderRadius.horizontal(
                 left: Radius.circular(12),
@@ -190,14 +207,12 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                 errorWidget: (context, url, error) => const Icon(Icons.error),
               ),
             ),
-            // Service Info
             Expanded(
               child: Padding(
                 padding: EdgeInsets.all(12.w),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Title + Type
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -223,7 +238,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
-                            service.serviceType,
+                            _getLocalizedServiceType(context, service.serviceType),
                             style: TextStyle(
                               fontSize: 10,
                               color: service.serviceType.toLowerCase() ==
@@ -236,19 +251,14 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                       ],
                     ),
                     Gap(8.h),
-
-                    // Provider Info
                     _ServiceProviderInfo(
                       providerName:
                           "${service.firstName ?? ''} ${service.lastName ?? ''}".trim(),
                       businessName:
-                          service.businessName ?? "Independent Provider",
+                          service.businessName ?? S.of(context).serviceCategoryScreenDefaultProvider,
                       logoUrl: service.avatar,
                     ),
-
                     Gap(12.h),
-
-                    // Rating + Price
                     Row(
                       children: [
                         const Spacer(),
@@ -266,10 +276,21 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                 ),
               ),
             ),
-        ],
+          ],
         ),
       ),
     ).animate().fadeIn().slide(begin: const Offset(0, 0.1));
+  }
+
+  String _getLocalizedServiceType(BuildContext context, String serviceType) {
+    switch (serviceType.toLowerCase()) {
+      case 'recurring':
+        return S.of(context).serviceCategoryScreenServiceTypeRecurring;
+      case 'one-time':
+        return S.of(context).serviceCategoryScreenServiceTypeOneTime;
+      default:
+        return S.of(context).serviceCategoryScreenServiceTypeDefault;
+    }
   }
 
   Widget _buildEmptyState() {
@@ -283,7 +304,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
         ),
         Gap(16.h),
         Text(
-          'No services found',
+          S.of(context).serviceCategoryScreenEmptyTitle,
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w500,
@@ -291,7 +312,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
         ),
         Gap(8.h),
         Text(
-          'We currently have no ${widget.categoryName.toLowerCase()} services available',
+          S.of(context).serviceCategoryScreenEmptyMessage(widget.categoryName.toLowerCase()),
           style: TextStyle(
             fontSize: 14,
             color: Colors.grey.shade600,
@@ -303,7 +324,6 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
   }
 }
 
-/// Compact Provider Info Widget for List Cards
 class _ServiceProviderInfo extends StatelessWidget {
   final String providerName;
   final String businessName;
@@ -335,7 +355,7 @@ class _ServiceProviderInfo extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                providerName.isNotEmpty ? providerName : "Unknown",
+                providerName.isNotEmpty ? providerName : S.of(context).serviceCategoryScreenUnknownProvider,
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,

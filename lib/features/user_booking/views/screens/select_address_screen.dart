@@ -7,7 +7,7 @@ import 'package:mahu_home_services_app/core/constants/colors.dart';
 import 'package:mahu_home_services_app/core/utils/navigation_utils.dart';
 import 'package:mahu_home_services_app/features/landing/views/widgets/app_filled_button.dart';
 import 'package:mahu_home_services_app/features/user_booking/views/screens/select_payment_screen.dart';
-import 'package:mahu_home_services_app/features/user_booking/views/widgets/select_room_count_list_tile_widget.dart';
+import 'package:mahu_home_services_app/generated/l10n.dart';
 
 class SelectAddressScreen extends StatelessWidget {
   const SelectAddressScreen({super.key});
@@ -16,7 +16,7 @@ class SelectAddressScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Select Address'),
+        title: Text(S.of(context).selectAddressScreenTitle),
         centerTitle: true,
         leading: const BackButton(
           style: ButtonStyle(),
@@ -28,13 +28,12 @@ class SelectAddressScreen extends StatelessWidget {
           children: [
             const AddressCardWidget(),
             Gap(20.h),
-            // Gap(20.h),
             GestureDetector(
               onTap: () {
                 // Navigate to add new address screen
               },
-              child: const DottedBorderButton(
-                text: "Add New Address",
+              child: DottedBorderButton(
+                text: S.of(context).selectAddressScreenAddNew,
                 icon: Icons.add_circle_outline,
               ),
             ),
@@ -45,7 +44,7 @@ class SelectAddressScreen extends StatelessWidget {
                 navigateTo(context, const SelectPaymentMethodScreen());
               },
               fontSize: 15,
-              text: "Continue",
+              text: S.of(context).selectAddressScreenContinue,
             ),
           ],
         ),
@@ -55,9 +54,7 @@ class SelectAddressScreen extends StatelessWidget {
 }
 
 class AddressCardWidget extends StatelessWidget {
-  const AddressCardWidget({
-    super.key,
-  });
+  const AddressCardWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -83,15 +80,15 @@ class AddressCardWidget extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Home',
-                style: TextStyle(
+                S.of(context).selectAddressScreenHomeLabel,
+                style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
               ),
               Text(
-                '7421 Ajman Street, Ajman ,\n floor 3 , UAE',
-                style: TextStyle(
+                S.of(context).selectAddressScreenSampleAddress,
+                style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w300,
                 ),
@@ -107,14 +104,13 @@ class AddressCardWidget extends StatelessWidget {
               onChanged: (value) {},
               activeColor: AppColors.blue,
             ),
-          )
+          ),
         ],
       ),
     );
   }
 }
 
-// Helper Widget for the dotted button
 class DottedBorderButton extends StatelessWidget {
   final String text;
   final IconData icon;
@@ -132,9 +128,6 @@ class DottedBorderButton extends StatelessWidget {
       child: Container(
         height: 59,
         decoration: BoxDecoration(
-          // borderRadius: BorderRadius.circular(30),
-          // border: Border.all(
-          //     color: Colors.blue, style: BorderStyle.solid, width: 1.5),
           color: Colors.blue.withOpacity(0.05),
         ),
         child: Center(

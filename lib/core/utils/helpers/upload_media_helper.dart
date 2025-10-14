@@ -13,7 +13,15 @@ class UploadMediaHelper {
     String token =
         CacheHelper.getString('token') ?? ''; // Replace with your actual token
 
-    final Dio dio = Dio();
+    final Dio dio = Dio(
+      BaseOptions(
+        baseUrl: apiBaseURL,
+        headers: {
+          // 'Content-Type': 'application/json',
+          'x-vercel-protection-bypass': 'zfUQ9ZLDwFJu2T4hgp4j9KI9Q1DxesP0',
+        },
+      ),
+    );
 
     // Set Authorization header
     // dio.options.headers['Authorization'] = 'Bearer $token';
@@ -23,7 +31,6 @@ class UploadMediaHelper {
       'image': await MultipartFile.fromFile(
         imageFile.path,
         filename: imageFile.path.split('/').last,
-        
       ),
     });
 

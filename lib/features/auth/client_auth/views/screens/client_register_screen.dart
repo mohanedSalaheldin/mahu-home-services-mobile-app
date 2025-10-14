@@ -18,6 +18,7 @@ import 'package:mahu_home_services_app/features/auth/client_auth/views/widgets/t
 import 'package:mahu_home_services_app/features/landing/views/widgets/app_filled_button.dart';
 import 'package:mahu_home_services_app/features/landing/views/widgets/have_or_not_an_account_row.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mahu_home_services_app/generated/l10n.dart';
 
 class ClientRegisterScreen extends StatefulWidget {
   const ClientRegisterScreen({super.key});
@@ -79,7 +80,7 @@ class _ClientRegisterScreenState extends State<ClientRegisterScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Client Registeration'),
+        title: Text(S.of(context).clientRegisterationTitle),
       ),
       body: BlocConsumer<AuthCubit, AuthState>(
         listener: (context, state) {
@@ -112,8 +113,8 @@ class _ClientRegisterScreenState extends State<ClientRegisterScreen> {
                     Gap(20.h),
                     IntlPhoneField(
                       decoration: InputDecoration(
-                        labelText: 'Phone Number',
-                        labelStyle: TextStyle(color: Colors.blue),
+                        labelText: S.of(context).clientRegisterationPhoneNumber,
+                        labelStyle: const TextStyle(color: Colors.blue),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8.r),
                         ),
@@ -127,25 +128,26 @@ class _ClientRegisterScreenState extends State<ClientRegisterScreen> {
                               const BorderSide(color: AppColors.blue, width: 2),
                         ),
                       ),
-                      // Use saved country code or fallback to Egypt if none
                       initialCountryCode: countryCode.isNotEmpty
                           ? CountryCodeHelper.getCountryCodeFromDial(
                               countryCode)
                           : 'EG',
-                      countries: countries, // full country list
+                      countries: countries,
                       controller: phoneController,
                       onChanged: (phone) {
                         phoneNumber = phone.completeNumber;
                         countryCode = phone.countryCode;
-                        _saveCountry(countryCode); // persist selection
+                        _saveCountry(countryCode);
                       },
                       onCountryChanged: (country) {
                         countryCode = '+${country.dialCode}';
-                        _saveCountry(countryCode); // persist selection
+                        _saveCountry(countryCode);
                       },
                       validator: (value) {
                         if (value == null || value.number.isEmpty) {
-                          return 'Please enter a phone number';
+                          return S
+                              .of(context)
+                              .clientRegisterationPleaseEnterPhoneNumber;
                         }
                         return null;
                       },
@@ -156,39 +158,38 @@ class _ClientRegisterScreenState extends State<ClientRegisterScreen> {
                       style: const TextStyle(color: AppColors.blue),
                       dropdownTextStyle: const TextStyle(color: AppColors.blue),
                     ),
-                    
                     Gap(10.h),
                     CustomTextField(
-                      label: 'Email',
-                      hint: 'Enter Email Address',
+                      label: S.of(context).clientRegisterationEmail,
+                      hint: S.of(context).clientRegisterationEnterEmailAddress,
                       keyboardType: TextInputType.emailAddress,
                       controller: emailController,
                       validator: FormValidationMethod.validateEmail,
                     ),
                     Gap(10.h),
                     CustomTextField(
-                      label: 'First Name',
-                      hint: 'Enter First Name',
+                      label: S.of(context).clientRegisterationFirstName,
+                      hint: S.of(context).clientRegisterationEnterFirstName,
                       keyboardType: TextInputType.name,
                       controller: fNameController,
                       validator: (value) =>
-                          FormValidationMethod.validateNameField(
-                              value, 'First Name'),
+                          FormValidationMethod.validateNameField(value,
+                              S.of(context).clientRegisterationFirstName),
                     ),
                     Gap(10.h),
                     CustomTextField(
-                      label: 'Last Name',
-                      hint: 'Enter Last Name',
+                      label: S.of(context).clientRegisterationLastName,
+                      hint: S.of(context).clientRegisterationEnterLastName,
                       keyboardType: TextInputType.name,
                       controller: lNameController,
                       validator: (value) =>
                           FormValidationMethod.validateNameField(
-                              value, 'Last Name'),
+                              value, S.of(context).clientRegisterationLastName),
                     ),
                     Gap(10.h),
                     CustomTextField(
-                      label: 'Password',
-                      hint: 'Enter Password',
+                      label: S.of(context).clientRegisterationPassword,
+                      hint: S.of(context).clientRegisterationEnterPassword,
                       keyboardType: TextInputType.visiblePassword,
                       controller: passwordController,
                       isPassword: true,
@@ -197,8 +198,8 @@ class _ClientRegisterScreenState extends State<ClientRegisterScreen> {
                     ),
                     Gap(10.h),
                     CustomTextField(
-                      label: 'Confirm Password',
-                      hint: 'Enter Password',
+                      label: S.of(context).clientRegisterationConfirmPassword,
+                      hint: S.of(context).clientRegisterationEnterPassword,
                       keyboardType: TextInputType.visiblePassword,
                       controller: confirmPasswordController,
                       isPassword: true,
@@ -209,8 +210,10 @@ class _ClientRegisterScreenState extends State<ClientRegisterScreen> {
                     ),
                     Gap(10.h),
                     CustomTextField(
-                      label: 'Business Reference ID',
-                      hint: 'Please add reference id',
+                      label:
+                          S.of(context).clientRegisterationBusinessReferenceId,
+                      hint:
+                          S.of(context).clientRegisterationPleaseAddReferenceId,
                       keyboardType: TextInputType.name,
                       controller: refrenceIdController,
                       isPassword: false,
@@ -218,7 +221,9 @@ class _ClientRegisterScreenState extends State<ClientRegisterScreen> {
                         if (value == null || value.isEmpty) return null;
 
                         if (!RegExp(r'^[0-9]+$').hasMatch(value)) {
-                          return "Reference ID must be numbers only";
+                          return S
+                              .of(context)
+                              .clientRegisterationReferenceIdMustBeNumbersOnly;
                         }
 
                         return null;
@@ -227,8 +232,8 @@ class _ClientRegisterScreenState extends State<ClientRegisterScreen> {
                     ),
                     Gap(10.h),
                     Text(
-                      'Receive OTP via',
-                      style: TextStyle(
+                      S.of(context).clientRegisterationReceiveOtpVia,
+                      style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
@@ -240,8 +245,11 @@ class _ClientRegisterScreenState extends State<ClientRegisterScreen> {
                       fillColor: const WidgetStatePropertyAll(AppColors.blue),
                       groupValue: _otpChannel,
                       onChanged: (v) => setState(() => _otpChannel = v!),
-                      title: const Text('Phone (WhatsApp)'),
-                      subtitle: const Text('Send OTP to your WhatsApp number'),
+                      title: Text(
+                          S.of(context).clientRegisterationOtpPhoneOptionTitle),
+                      subtitle: Text(S
+                          .of(context)
+                          .clientRegisterationOtpPhoneOptionSubtitle),
                       secondary: const Icon(Icons.message),
                       dense: true,
                     ),
@@ -251,8 +259,11 @@ class _ClientRegisterScreenState extends State<ClientRegisterScreen> {
                       fillColor: const WidgetStatePropertyAll(AppColors.blue),
                       groupValue: _otpChannel,
                       onChanged: (v) => setState(() => _otpChannel = v!),
-                      title: const Text('Email'),
-                      subtitle: const Text('Send OTP to your email address'),
+                      title: Text(
+                          S.of(context).clientRegisterationOtpEmailOptionTitle),
+                      subtitle: Text(S
+                          .of(context)
+                          .clientRegisterationOtpEmailOptionSubtitle),
                       secondary: const Icon(Icons.email),
                       dense: true,
                     ),
@@ -269,13 +280,15 @@ class _ClientRegisterScreenState extends State<ClientRegisterScreen> {
                     ),
                     Gap(5.h),
                     AppFilledButton(
+                      fontSize: 20.sp,
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
                           if (!agreedToTerms) {
                             showCustomSnackBar(
                                 context: context,
-                                message:
-                                    'You must agree to the terms before registering.',
+                                message: S
+                                    .of(context)
+                                    .clientRegisterationMustAgreeToTerms,
                                 type: SnackBarType.failure);
                             return;
                           }
@@ -293,11 +306,12 @@ class _ClientRegisterScreenState extends State<ClientRegisterScreen> {
                               otpMethod: _otpChannel.name);
                         }
                       },
-                      text: 'Sign Up',
+                      text: S.of(context).clientRegisterationSignUp,
                     ),
                     HaveOrNotAnAccountRow(
-                      questionTxt: 'Already have an account ?',
-                      buttonTxt: 'Login',
+                      questionTxt:
+                          S.of(context).clientRegisterationAlreadyHaveAccount,
+                      buttonTxt: S.of(context).clientRegisterationLogin,
                       onPresseButton: () {
                         navigateTo(context, const LoginScreen());
                       },
@@ -320,13 +334,12 @@ class AppUserConfig {
 }
 
 class CountryCodeHelper {
-  // Convert '+20' -> 'EG', '+971' -> 'AE', etc.
   static String getCountryCodeFromDial(String dialCode) {
     for (var c in countries) {
       if ('+${c.dialCode}' == dialCode) {
         return c.code;
       }
     }
-    return 'EG'; // fallback if not found
+    return 'EG';
   }
 }

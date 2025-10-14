@@ -12,6 +12,7 @@ import 'package:mahu_home_services_app/features/user_booking/views/widgets/categ
 import 'package:mahu_home_services_app/features/user_booking/views/widgets/popular_services_widget.dart';
 import 'package:mahu_home_services_app/features/user_booking/views/widgets/recommended_services_widget.dart';
 import 'package:mahu_home_services_app/features/user_booking/views/widgets/search_bar_widget.dart';
+import 'package:mahu_home_services_app/generated/l10n.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -33,7 +34,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
 
   UserBaseProfileModel? providerProfile;
   bool isLoadingProviderProfile = false;
-  Map<String, bool> _favoriteLoadingStates = {};
+  final Map<String, bool> _favoriteLoadingStates = {};
 
   @override
   void initState() {
@@ -41,7 +42,6 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
     var userBookingCubit = UserBookingCubit.get(context);
     final referenceId = CacheHelper.getString('referenceId');
 
-    // Initialize favorites
     userBookingCubit.initializeFavorites();
 
     if (referenceId == null || referenceId == "null" || referenceId.isEmpty) {
@@ -148,14 +148,16 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
             ],
           ),
         ),
-        actions: [],
+        actions: const [],
       ),
       body: BlocConsumer<UserBookingCubit, UserBookingState>(
         listener: (context, state) {
           if (state is FavoriteOperationError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('Error: ${state.failure.message}'),
+                content: Text(S
+                    .of(context)
+                    .customerHomeScreenFavoriteError(state.failure.message)),
                 backgroundColor: Colors.red,
               ),
             );
@@ -170,7 +172,9 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
 
           if (state is FetchAvailableServicesError) {
             return Center(
-              child: Text('Error loading services: ${state.failure.message}'),
+              child: Text(S
+                  .of(context)
+                  .customerHomeScreenServicesError(state.failure.message)),
             );
           }
 
@@ -190,7 +194,6 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                     _ProviderProfileCard(
                         profile: providerProfile!,
                         isLoading: isLoadingProviderProfile),
-                  // In your CustomerHomeScreen, update the SearchBarWidget usage:
                   SearchBarWidget(
                     controller: _searchController,
                     onSubmitted: (query) {
@@ -221,14 +224,12 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                       );
                     },
                     onTap: () {
-                      // Optional: Focus the search field when tapped
                       FocusScope.of(context).requestFocus(FocusNode());
                     },
                   )
                       .animate()
                       .fadeIn(delay: 100.ms)
                       .slide(begin: const Offset(0, 0.1)),
-
                   Gap(24.h),
                   SpecialOffersBanner(controller: _bannerController).animate(),
                   Gap(24.h),
@@ -239,16 +240,29 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                           referenceId == "null" ||
                           referenceId.isEmpty) {
                         return CategoriesWidget(
-                          categories: const [
+                          categories: [
                             {
                               'icon': Icons.cleaning_services,
-                              'label': 'cleaning'
+                              'label': S
+                                  .of(context)
+                                  .customerHomeScreenCategoryCleaning
                             },
-                            {'icon': Icons.build, 'label': 'repair'},
-                            {'icon': Icons.format_paint, 'label': 'painting'},
+                            {
+                              'icon': Icons.build,
+                              'label':
+                                  S.of(context).customerHomeScreenCategoryRepair
+                            },
+                            {
+                              'icon': Icons.format_paint,
+                              'label': S
+                                  .of(context)
+                                  .customerHomeScreenCategoryPainting
+                            },
                             {
                               'icon': Icons.electrical_services,
-                              'label': 'electrical'
+                              'label': S
+                                  .of(context)
+                                  .customerHomeScreenCategoryElectrical
                             },
                           ],
                           onTap: (label) {
@@ -258,7 +272,9 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                                 builder: (context) => ServiceCategoryScreen(
                                   categoryName: label.capitalize(),
                                   services: userBookingCubit.availableServices
-                                      .where((s) => s.category == label)
+                                      .where((s) =>
+                                          s.category.toLowerCase() ==
+                                          label.toLowerCase())
                                       .toList()
                                       .cast<ServiceModel>(),
                                 ),
@@ -320,32 +336,34 @@ class SpecialOffersBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final offers = [
       _Offer(
-        title: 'Spring Cleaning Special',
-        subtitle: 'Get 20% off on deep cleaning services',
-        discount: '20% OFF',
+        title: S.of(context).customerHomeScreenOfferSpringCleaningTitle,
+        subtitle: S.of(context).customerHomeScreenOfferSpringCleaningSubtitle,
+        discount: S.of(context).customerHomeScreenOfferSpringCleaningDiscount,
         imageUrl: 'https://images.unsplash.com/photo-1556911220-bff31c812dba',
         color: Colors.blue.shade600,
       ),
       _Offer(
-        title: 'Weekly Maintenance',
-        subtitle: 'Subscribe & save 30% on recurring services',
-        discount: '30% OFF',
+        title: S.of(context).customerHomeScreenOfferWeeklyMaintenanceTitle,
+        subtitle:
+            S.of(context).customerHomeScreenOfferWeeklyMaintenanceSubtitle,
+        discount:
+            S.of(context).customerHomeScreenOfferWeeklyMaintenanceDiscount,
         imageUrl:
             'https://images.unsplash.com/photo-1583847268964-b28dc8f51f92',
         color: Colors.blue.shade600,
       ),
       _Offer(
-        title: 'Emergency Repair',
-        subtitle: 'Same-day service available',
-        discount: '15% OFF',
+        title: S.of(context).customerHomeScreenOfferEmergencyRepairTitle,
+        subtitle: S.of(context).customerHomeScreenOfferEmergencyRepairSubtitle,
+        discount: S.of(context).customerHomeScreenOfferEmergencyRepairDiscount,
         imageUrl:
             'https://images.unsplash.com/photo-1512917774080-9991f1c4c750',
         color: Colors.blue.shade600,
       ),
       _Offer(
-        title: 'New Customer Bonus',
-        subtitle: 'Get \$25 off your first booking',
-        discount: '\$25 OFF',
+        title: S.of(context).customerHomeScreenOfferNewCustomerTitle,
+        subtitle: S.of(context).customerHomeScreenOfferNewCustomerSubtitle,
+        discount: S.of(context).customerHomeScreenOfferNewCustomerDiscount,
         imageUrl: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2',
         color: Colors.blue.shade600,
       ),
@@ -358,7 +376,7 @@ class SpecialOffersBanner extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Special Offers 🎉',
+              S.of(context).customerHomeScreenSpecialOffers,
               style: TextStyle(
                 fontSize: 20.sp,
                 fontWeight: FontWeight.bold,
@@ -440,7 +458,6 @@ class _OfferCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         child: Stack(
           children: [
-            // Background Image with Gradient
             Positioned.fill(
               child: CachedNetworkImage(
                 imageUrl: offer.imageUrl,
@@ -458,8 +475,6 @@ class _OfferCard extends StatelessWidget {
                 ),
               ),
             ),
-
-            // Gradient Overlay
             Positioned.fill(
               child: Container(
                 decoration: BoxDecoration(
@@ -474,8 +489,6 @@ class _OfferCard extends StatelessWidget {
                 ),
               ),
             ),
-
-            // Discount Badge
             Positioned(
               top: 16.w,
               right: 16.w,
@@ -502,8 +515,6 @@ class _OfferCard extends StatelessWidget {
                 ),
               ),
             ),
-
-            // Content
             Positioned(
               left: 16.w,
               right: 16.w,
@@ -556,7 +567,7 @@ class _OfferCard extends StatelessWidget {
                     ),
                     // child: Center(
                     //   child: Text(
-                    //     'Claim Offer',
+                    //     S.of(context).customerHomeScreenClaimOffer,
                     //     style: TextStyle(
                     //       color: offer.color,
                     //       fontSize: 14.sp,
@@ -575,7 +586,6 @@ class _OfferCard extends StatelessWidget {
   }
 }
 
-// Alternative minimalist design option
 class _MinimalOfferCard extends StatelessWidget {
   final _Offer offer;
 
@@ -594,7 +604,6 @@ class _MinimalOfferCard extends StatelessWidget {
         padding: EdgeInsets.all(16.w),
         child: Row(
           children: [
-            // Icon
             Container(
               width: 50.w,
               height: 50.w,
@@ -609,8 +618,6 @@ class _MinimalOfferCard extends StatelessWidget {
               ),
             ),
             Gap(16.w),
-
-            // Content
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -647,8 +654,6 @@ class _MinimalOfferCard extends StatelessWidget {
                 ],
               ),
             ),
-
-            // Arrow
             Icon(
               Icons.arrow_forward_ios_rounded,
               color: offer.color,
@@ -661,7 +666,6 @@ class _MinimalOfferCard extends StatelessWidget {
   }
 }
 
-// For a carousel with mixed designs
 class _MixedOffersBanner extends StatelessWidget {
   final PageController controller;
   const _MixedOffersBanner({required this.controller});
@@ -670,20 +674,19 @@ class _MixedOffersBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final offers = [
       _Offer(
-        title: 'Limited Time Offer',
-        subtitle: 'Book now and get exclusive discounts',
-        discount: 'SPECIAL',
+        title: S.of(context).customerHomeScreenOfferLimitedTimeTitle,
+        subtitle: S.of(context).customerHomeScreenOfferLimitedTimeSubtitle,
+        discount: S.of(context).customerHomeScreenOfferLimitedTimeDiscount,
         imageUrl: 'https://images.unsplash.com/photo-1556911220-bff31c812dba',
         color: Colors.blue.shade600,
       ),
-      // Add more offers...
     ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '🔥 Hot Deals',
+          S.of(context).customerHomeScreenHotDeals,
           style: TextStyle(
             fontSize: 20.sp,
             fontWeight: FontWeight.bold,
@@ -789,16 +792,22 @@ class _ProviderProfileCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(profile.businessName,
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text(
+                    profile.businessName,
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
                   Gap(4.h),
-                  Text('Business Registration: ${profile.businessRegistration}',
-                      style:
-                          TextStyle(fontSize: 14, color: Colors.grey.shade700)),
+                  Text(
+                    S.of(context).customerHomeScreenBusinessRegistration(
+                        profile.businessRegistration),
+                    style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
+                  ),
                   Gap(4.h),
-                  Text('${profile.firstName} ${profile.lastName}',
-                      style: TextStyle(fontSize: 14.sp)),
+                  Text(
+                    '${profile.firstName} ${profile.lastName}',
+                    style: TextStyle(fontSize: 14.sp),
+                  ),
                 ],
               ),
             ),

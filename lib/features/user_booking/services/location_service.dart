@@ -62,21 +62,16 @@ class LocationService {
   // }
 
   /// 🆕 Get address (street, city, country) from latitude & longitude
-  static Future<String> getAddressFromCoordinates(
+  static Future<List<Placemark>> getAddressFromCoordinates(
       double latitude, double longitude) async {
     try {
       List<Placemark> placemarks =
           await placemarkFromCoordinates(latitude, longitude);
 
-      if (placemarks.isNotEmpty) {
-        final placemark = placemarks.first;
-        return "${placemark.street}, ${placemark.locality}, ${placemark.country}";
-      } else {
-        return "Unknown location";
-      }
+      return placemarks;
     } catch (e) {
       print("Error in reverse geocoding: $e");
-      return "Location not available";
+      return [];
     }
   }
 }

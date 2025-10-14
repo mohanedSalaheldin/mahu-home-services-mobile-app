@@ -8,7 +8,8 @@ import 'package:mahu_home_services_app/features/services/models/subscription_mod
 
 class SubscriptionServices {
   /// Get user's subscription
-  Future<Either<Failure, Subscription>> getUserSubscription(String userId) async {
+  Future<Either<Failure, Subscription>> getUserSubscription(
+      String userId) async {
     try {
       Response response = await RequestHundler.dio.get(
         '$apiBaseURL/subscription/users/$userId',
@@ -16,6 +17,7 @@ class SubscriptionServices {
           headers: {
             'Authorization': 'Bearer ${CacheHelper.getString('token')}',
             'Content-Type': 'application/json',
+            'Accept-Language': CacheHelper.getString(appLang) ?? 'en',
           },
         ),
       );
@@ -47,6 +49,7 @@ class SubscriptionServices {
           headers: {
             'Authorization': 'Bearer ${CacheHelper.getString('token')}',
             'Content-Type': 'application/json',
+            'Accept-Language': CacheHelper.getString(appLang) ?? 'en',
           },
         ),
       );

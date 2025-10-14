@@ -195,6 +195,7 @@ class UserBookingCubit extends Cubit<UserBookingState> {
             createdAt: DateTime.fromMillisecondsSinceEpoch(0),
             availableDays: const [],
             availableSlots: const [],
+            options: [],
             businessName: '',
             firstName: '',
             lastName: '',

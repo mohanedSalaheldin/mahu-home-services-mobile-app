@@ -26,6 +26,9 @@ class ServiceModel {
   final List<Review> reviews;
   final int v;
 
+  /// NEW FIELD
+  final List<ServiceOption> options;
+
   ServiceModel({
     required this.id,
     required this.name,
@@ -51,12 +54,12 @@ class ServiceModel {
     required this.lastName,
     required this.avatar,
     required this.v,
+    required this.options,
   });
 
-  // In your ServiceModel class
   ServiceModel copyWith({
     bool? active,
-    // Add other fields as needed
+    List<ServiceOption>? options,
   }) {
     return ServiceModel(
       id: id,
@@ -83,11 +86,11 @@ class ServiceModel {
       firstName: firstName,
       lastName: lastName,
       avatar: avatar,
+      options: options ?? this.options,
     );
   }
 
   factory ServiceModel.fromJson(Map<String, dynamic> json) {
-    // Handle provider data based on the actual response structure
     String providerId = '';
     String? businessName;
     String? firstName;
@@ -96,14 +99,12 @@ class ServiceModel {
 
     if (json['provider'] != null) {
       if (json['provider'] is String) {
-        // If provider is just an ID string
         providerId = json['provider'];
       } else if (json['provider'] is Map<String, dynamic>) {
         final providerData = json['provider'] as Map<String, dynamic>;
         providerId = providerData['_id'] ?? '';
         businessName = providerData['businessName'];
 
-        // Check if profile data exists in the response
         if (providerData['profile'] != null &&
             providerData['profile'] is Map<String, dynamic>) {
           final profileData = providerData['profile'] as Map<String, dynamic>;
@@ -111,7 +112,6 @@ class ServiceModel {
           lastName = profileData['lastName'];
           avatar = profileData['avatar'];
         } else {
-          // If no profile data, try to get from top level or use defaults
           firstName = providerData['firstName'];
           lastName = providerData['lastName'];
           avatar = providerData['avatar'];
@@ -132,12 +132,12 @@ class ServiceModel {
       image: json['image'] ?? '',
       averageRating: (json['averageRating'] ?? 0).toDouble(),
       totalReviews: json['totalReviews'] ?? 0,
-      avatar: avatar, // Use the extracted avatar
-      businessName: businessName, // Use the extracted businessName
-      firstName: firstName, // Use the extracted firstName
-      lastName: lastName, // Use the extracted lastName
+      avatar: avatar,
+      businessName: businessName,
+      firstName: firstName,
+      lastName: lastName,
       active: json['active'] ?? true,
-      provider: providerId, // Use the extracted provider ID
+      provider: providerId,
       isApproved: json['isApproved'] ?? false,
       createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
       availableDays: List<String>.from(json['availableDays'] ?? []),
@@ -145,7 +145,12 @@ class ServiceModel {
               ?.map((slot) => TimeSlot.fromJson(slot))
               .toList() ??
           [],
-      v: json['__v'] ?? 0, reviews: [],
+      options: (json['options'] as List<dynamic>?)
+              ?.map((opt) => ServiceOption.fromJson(opt))
+              .toList() ??
+          [],
+      v: json['__v'] ?? 0,
+      reviews: [],
     );
   }
 }
@@ -174,6 +179,49 @@ class TimeSlot {
       '_id': id,
       'startTime': startTime,
       'endTime': endTime,
+    };
+  }
+}
+
+class ServiceOption {
+  final String id ;
+  final String name;
+  final String description;
+  final double price;
+  final String pricingModel; // fixed | hourly | recurring
+  final bool active;
+  final String appliesTo; // one-time | recurring
+
+  ServiceOption({
+    required this.name,
+    required this.description,
+    this.id = '',
+    this.price = 0.0,
+    this.pricingModel = 'fixed',
+    this.active = true,
+    this.appliesTo = 'one-time',
+  });
+
+  factory ServiceOption.fromJson(Map<String, dynamic> json) {
+    return ServiceOption(
+      name: json['name'] ?? '',
+      id: json['_id'] ?? '',
+      description: json['description'] ?? '',
+      price: (json['price'] ?? 0).toDouble(),
+      pricingModel: json['pricingModel'] ?? 'fixed',
+      active: json['active'] ?? true,
+      appliesTo: json['appliesTo'] ?? 'one-time',
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'description': description,
+      'price': price,
+      'pricingModel': pricingModel,
+      'active': active,
+      'appliesTo': appliesTo,
     };
   }
 }

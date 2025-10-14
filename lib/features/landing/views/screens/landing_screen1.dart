@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:mahu_home_services_app/core/constants/app_const.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
 import 'package:mahu_home_services_app/core/models/landing_model.dart';
+import 'package:mahu_home_services_app/core/utils/helpers/localization_helper.dart';
 import 'package:mahu_home_services_app/core/utils/navigation_utils.dart';
 import 'package:mahu_home_services_app/features/landing/views/screens/landing_scren2.dart';
 import 'package:mahu_home_services_app/features/landing/views/widgets/landing_item.dart';
-import 'package:mahu_home_services_app/features/landing/views/widgets/next_button.dart';
+import 'package:mahu_home_services_app/generated/l10n.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
-import 'package:flutter/animation.dart';
 
 class LandingScreen1 extends StatefulWidget {
   const LandingScreen1({super.key});
@@ -18,22 +19,8 @@ class LandingScreen1 extends StatefulWidget {
   State<LandingScreen1> createState() => _LandingScreen1State();
 }
 
-class _LandingScreen1State extends State<LandingScreen1> with SingleTickerProviderStateMixin {
-  final List<LandingModel> landings = [
-    LandingModel(
-      img: 'assets/imgs/landing/landing1.jpg',
-      title: 'Professional Home Services\nAt Your Doorstep',
-      body: 'Book trusted professionals for cleaning, repairs, and maintenance with just a few taps',
-      icon: Icons.home_repair_service_rounded,
-    ),
-    LandingModel(
-      img: 'assets/imgs/landing/landing2.jpg',
-      title: 'Quality Service\nGuaranteed Satisfaction',
-      body: 'Every service comes with our quality promise and customer satisfaction guarantee',
-      icon: Icons.verified_user_rounded,
-    ),
-  ];
-
+class _LandingScreen1State extends State<LandingScreen1>
+    with SingleTickerProviderStateMixin {
   final PageController controller = PageController();
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -64,35 +51,72 @@ class _LandingScreen1State extends State<LandingScreen1> with SingleTickerProvid
 
   @override
   Widget build(BuildContext context) {
+    // هنستخدم S.of(context) هنا
+    final s = S.of(context);
+
+    final List<LandingModel> landings = [
+      LandingModel(
+        img: 'assets/imgs/landing/landing1.jpg',
+        title: s.landingTitle1,
+        body: s.landingBody1,
+        icon: Icons.home_repair_service_rounded,
+      ),
+      LandingModel(
+        img: 'assets/imgs/landing/landing2.jpg',
+        title: s.landingTitle2,
+        body: s.landingBody2,
+        icon: Icons.verified_user_rounded,
+      ),
+    ];
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: Column(
           children: [
-            // Skip Button (Top Right)
+            // Top Bar
             Align(
               alignment: Alignment.topRight,
               child: Padding(
                 padding: EdgeInsets.all(16.w),
-                child: TextButton(
-                  onPressed: () {
-                    navigateTo(context, const LandingScren2());
-                  },
-                  style: TextButton.styleFrom(
-                    foregroundColor: AppColors.textSecondary,
-                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-                  ),
-                  child: Text(
-                    'Skip',
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w500,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // Language Button (Top Left)
+                    IconButton(
+                      onPressed: () {
+                        context.read<LocaleCubit>().toggleLocale();
+                      },
+                      icon: const Icon(Icons.language_rounded),
+                      color: AppColors.primary,
+                      tooltip: s.landingChangeLanguage,
                     ),
-                  ),
+
+                    // Skip Button (Top Right)
+                    TextButton(
+                      onPressed: () {
+                        navigateTo(context, const LandingScren2());
+                      },
+                      style: TextButton.styleFrom(
+                        foregroundColor: AppColors.textSecondary,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 16.w,
+                          vertical: 8.h,
+                        ),
+                      ),
+                      child: Text(
+                        s.landingSkip,
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
-            
+
             // Main Content
             Expanded(
               child: PageView.builder(
@@ -114,7 +138,7 @@ class _LandingScreen1State extends State<LandingScreen1> with SingleTickerProvid
                 ),
               ),
             ),
-            
+
             // Bottom Controls
             Padding(
               padding: EdgeInsets.symmetric(
@@ -137,9 +161,9 @@ class _LandingScreen1State extends State<LandingScreen1> with SingleTickerProvid
                       paintStyle: PaintingStyle.fill,
                     ),
                   ),
-                  
+
                   Gap(24.h),
-                  
+
                   // Next Button
                   SizedBox(
                     width: double.infinity,
@@ -165,7 +189,7 @@ class _LandingScreen1State extends State<LandingScreen1> with SingleTickerProvid
                         shadowColor: AppColors.primary.withOpacity(0.3),
                       ),
                       child: Text(
-                        isLast ? 'Get Started' : 'Next',
+                        isLast ? s.landingGetStarted : s.landingNext,
                         style: TextStyle(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.w600,

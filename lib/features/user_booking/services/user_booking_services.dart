@@ -1,5 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
+import 'package:mahu_home_services_app/core/constants/app_const.dart';
 import 'package:mahu_home_services_app/core/errors/failures.dart';
 import 'package:mahu_home_services_app/core/utils/app_users_configs.dart';
 import 'package:mahu_home_services_app/core/utils/helpers/cache_helper.dart';
@@ -13,12 +14,13 @@ class UserBookingServices {
   Future<Either<Failure, List<ServiceModel>>> getAllServices() {
     // Get all services for all providers
     return RequestHundler.handleRequest<List<ServiceModel>>(
-      request: () => RequestHundler.dio.get(
+      request: (options) => RequestHundler.dio.get(
         '/services/list',
         data: {},
         options: Options(
           headers: {
             'Content-Type': 'application/json',
+            'x-vercel-protection-bypass': 'zfUQ9ZLDwFJu2T4hgp4j9KI9Q1DxesP0',
           },
         ),
       ),
@@ -26,6 +28,9 @@ class UserBookingServices {
         return (data['data'] as List)
             .map((service) => ServiceModel.fromJson(service))
             .toList();
+      },
+      headers: {
+        'Accept-Language': CacheHelper.getString(appLang) ?? 'en',
       },
     );
   }
@@ -34,12 +39,13 @@ class UserBookingServices {
       String referenceId) {
     // Get services for a specific provider
     return RequestHundler.handleRequest<List<ServiceModel>>(
-      request: () => RequestHundler.dio.get(
+      request: (options) => RequestHundler.dio.get(
         '/services/list/$referenceId',
         data: {},
         options: Options(
           headers: {
             'Content-Type': 'application/json',
+            'x-vercel-protection-bypass': 'zfUQ9ZLDwFJu2T4hgp4j9KI9Q1DxesP0',
           },
         ),
       ),
@@ -48,19 +54,23 @@ class UserBookingServices {
             .map((service) => ServiceModel.fromJson(service))
             .toList();
       },
+      headers: {
+        'Accept-Language': CacheHelper.getString(appLang) ?? 'en',
+      },
     );
   }
 
   Future<Either<Failure, bool>> cancelBooking(String bookingId, String token) {
     print('Cancelling booking: $bookingId');
     return RequestHundler.handleRequest<bool>(
-      request: () => RequestHundler.dio.delete(
-        '/bookings/${bookingId}/cancel',
+      request: (options) => RequestHundler.dio.delete(
+        '/bookings/$bookingId/cancel',
         data: {},
         options: Options(
           headers: {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer $token',
+            'x-vercel-protection-bypass': 'zfUQ9ZLDwFJu2T4hgp4j9KI9Q1DxesP0',
           },
         ),
       ),
@@ -81,6 +91,9 @@ class UserBookingServices {
         // If response is not a map but exists, assume success
         return true;
       },
+      headers: {
+        'Accept-Language': CacheHelper.getString(appLang) ?? 'en',
+      },
     );
   }
 
@@ -92,19 +105,24 @@ class UserBookingServices {
     print('Sending booking request: $bookingData');
 
     return RequestHundler.handleRequest<Unit>(
-      request: () => RequestHundler.dio.post(
+      request: (options) => RequestHundler.dio.post(
         '/bookings',
         data: bookingData,
         options: Options(
           headers: {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer $token',
+            'Accept-Language': CacheHelper.getString(appLang) ?? 'en',
+            'x-vercel-protection-bypass': 'zfUQ9ZLDwFJu2T4hgp4j9KI9Q1DxesP0',
           },
         ),
       ),
       onSuccess: (data) {
         print('Booking created successfully: $data');
         return unit;
+      },
+      headers: {
+        'Accept-Language': CacheHelper.getString(appLang) ?? 'en',
       },
     );
   }
@@ -114,11 +132,12 @@ class UserBookingServices {
     String token = CacheHelper.getString('token') ?? '';
 
     return RequestHundler.handleRequest<List<BookingNewModel>>(
-      request: () => RequestHundler.dio.get(
+      request: (options) => RequestHundler.dio.get(
         '/users/me/bookings',
         options: Options(headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
+          'x-vercel-protection-bypass': 'zfUQ9ZLDwFJu2T4hgp4j9KI9Q1DxesP0',
         }),
       ),
       onSuccess: (data) {
@@ -134,6 +153,9 @@ class UserBookingServices {
         }
         return [];
       },
+      headers: {
+        'Accept-Language': CacheHelper.getString(appLang) ?? 'en',
+      },
     );
   }
 
@@ -144,7 +166,7 @@ class UserBookingServices {
     String token = CacheHelper.getString('token') ?? '';
 
     return RequestHundler.handleRequest<Unit>(
-      request: () => RequestHundler.dio.post(
+      request: (options) => RequestHundler.dio.post(
         '/favorites',
         data: {
           "serviceId": serviceId,
@@ -152,11 +174,16 @@ class UserBookingServices {
         options: Options(headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
+          'Accept-Language': CacheHelper.getString(appLang) ?? 'en',
+          'x-vercel-protection-bypass': 'zfUQ9ZLDwFJu2T4hgp4j9KI9Q1DxesP0',
         }),
       ),
       onSuccess: (data) {
         print('Service added to favorites: $data');
         return unit;
+      },
+      headers: {
+        'Accept-Language': CacheHelper.getString(appLang) ?? 'en',
       },
     );
   }
@@ -166,16 +193,21 @@ class UserBookingServices {
     String token = CacheHelper.getString('token') ?? '';
 
     return RequestHundler.handleRequest<Unit>(
-      request: () => RequestHundler.dio.delete(
+      request: (options) => RequestHundler.dio.delete(
         '/favorites/$serviceId',
         options: Options(headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
+          'Accept-Language': CacheHelper.getString(appLang) ?? 'en',
+          'x-vercel-protection-bypass': 'zfUQ9ZLDwFJu2T4hgp4j9KI9Q1DxesP0',
         }),
       ),
       onSuccess: (data) {
         print('Service removed from favorites: $data');
         return unit;
+      },
+      headers: {
+        'Accept-Language': CacheHelper.getString(appLang) ?? 'en',
       },
     );
   }
@@ -185,11 +217,13 @@ class UserBookingServices {
     String token = CacheHelper.getString('token') ?? '';
 
     return RequestHundler.handleRequest<List<ServiceModel>>(
-      request: () => RequestHundler.dio.get(
+      request: (options) => RequestHundler.dio.get(
         '/favorites',
         options: Options(headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
+          'Accept-Language': CacheHelper.getString(appLang) ?? 'en',
+          'x-vercel-protection-bypass': 'zfUQ9ZLDwFJu2T4hgp4j9KI9Q1DxesP0',
         }),
       ),
       onSuccess: (data) {
@@ -199,6 +233,9 @@ class UserBookingServices {
             .map((service) => ServiceModel.fromJson(service))
             .toList();
       },
+      headers: {
+        'Accept-Language': CacheHelper.getString(appLang) ?? 'en',
+      },
     );
   }
 
@@ -207,17 +244,22 @@ class UserBookingServices {
     String token = CacheHelper.getString('token') ?? '';
 
     return RequestHundler.handleRequest<bool>(
-      request: () => RequestHundler.dio.get(
+      request: (options) => RequestHundler.dio.get(
         '/favorites/check/$serviceId',
         options: Options(headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
+          'Accept-Language': CacheHelper.getString(appLang) ?? 'en',
+          'x-vercel-protection-bypass': 'zfUQ9ZLDwFJu2T4hgp4j9KI9Q1DxesP0',
         }),
       ),
       onSuccess: (data) {
         // { success: true, data: { isFavorited: true/false } }
         final isFavorited = data['data']['isFavorited'] as bool;
         return isFavorited;
+      },
+      headers: {
+        'Accept-Language': CacheHelper.getString(appLang) ?? 'en',
       },
     );
   }
@@ -230,16 +272,20 @@ class UserBookingServices {
     String token = CacheHelper.getString('token') ?? '';
 
     return RequestHundler.handleRequest<Map<String, dynamic>>(
-      request: () => RequestHundler.dio.get(
+      request: (options) => RequestHundler.dio.get(
         '/favorites',
         queryParameters: {
           'page': page,
           'limit': limit,
         },
-        options: Options(headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        }),
+        options: Options(
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $token',
+            'Accept-Language': CacheHelper.getString(appLang) ?? 'en',
+            'x-vercel-protection-bypass': 'zfUQ9ZLDwFJu2T4hgp4j9KI9Q1DxesP0',
+          },
+        ),
       ),
       onSuccess: (data) {
         // { success: true, count: x, pagination: {...}, data: [ services ] }
@@ -253,6 +299,9 @@ class UserBookingServices {
           'count': data['count'],
           'pagination': data['pagination'],
         };
+      },
+      headers: {
+        'Accept-Language': CacheHelper.getString(appLang) ?? 'en',
       },
     );
   }

@@ -12,6 +12,7 @@ import 'package:mahu_home_services_app/features/auth/client_auth/views/widgets/c
 import 'package:mahu_home_services_app/features/auth/client_auth/views/widgets/o_t_p_form_filed.dart';
 import 'package:mahu_home_services_app/features/landing/views/widgets/app_filled_button.dart';
 import 'package:mahu_home_services_app/features/landing/views/widgets/have_or_not_an_account_row.dart';
+import 'package:mahu_home_services_app/generated/l10n.dart';
 
 class VerifyAccountScreen extends StatefulWidget {
   const VerifyAccountScreen({super.key, required this.otpChannel});
@@ -25,6 +26,7 @@ class _VerifyAccountScreenState extends State<VerifyAccountScreen> {
   final TextEditingController otpController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool passwordRemember = false;
+
   @override
   void dispose() {
     otpController.dispose();
@@ -35,7 +37,7 @@ class _VerifyAccountScreenState extends State<VerifyAccountScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Verify Account'),
+        title: Text(S.of(context).verifyAccountScreenTitle),
       ),
       body: BlocConsumer<AuthCubit, AuthState>(
         listener: (context, state) {
@@ -47,7 +49,7 @@ class _VerifyAccountScreenState extends State<VerifyAccountScreen> {
           } else if (state is OTPResendSucessededState) {
             showCustomSnackBar(
               context: context,
-              message: 'OTP sent, check your email',
+              message: S.of(context).verifyAccountScreenOtpResendSuccess,
               type: SnackBarType.success,
             );
           } else if (state is OTPResendFailedState) {
@@ -70,7 +72,7 @@ class _VerifyAccountScreenState extends State<VerifyAccountScreen> {
               state is OTPResendLoadingState) {
             return const Center(
               child: CircularProgressIndicator(
-                color: Colors.blue
+                color: Colors.blue,
               ),
             );
           }
@@ -86,7 +88,6 @@ class _VerifyAccountScreenState extends State<VerifyAccountScreen> {
               );
               print("Form is valid");
             } else {
-              // Invalid, show errors
               print("Form is invalid");
             }
           }
@@ -99,7 +100,8 @@ class _VerifyAccountScreenState extends State<VerifyAccountScreen> {
                 child: Column(
                   children: [
                     Text(
-                      'We have sent verification \n code to $idThanSendOTPTo',
+                      S.of(context).verifyAccountScreenVerificationMessage(
+                          idThanSendOTPTo),
                       style: TextStyle(
                         fontWeight: FontWeight.w300,
                         fontSize: 13,
@@ -117,16 +119,22 @@ class _VerifyAccountScreenState extends State<VerifyAccountScreen> {
                     Row(
                       children: [
                         HaveOrNotAnAccountRow(
-                          questionTxt: 'Don\'t receive OTP?',
-                          buttonTxt: 'Re-send Code',
-                          onPresseButton: () {},
+                          questionTxt:
+                              S.of(context).verifyAccountScreenNoOtpQuestion,
+                          buttonTxt:
+                              S.of(context).verifyAccountScreenResendButton,
+                          onPresseButton: () {
+                            // AuthCubit.get(context).resendOTP(
+                            //   channal: widget.otpChannel,
+                            // );
+                          },
                         ),
                       ],
                     ),
                     Gap(5.h),
                     AppFilledButton(
                       onPressed: onVerifyPressed,
-                      text: 'Verify',
+                      text: S.of(context).verifyAccountScreenVerifyButton,
                     ),
                   ],
                 ),

@@ -9,6 +9,7 @@ import 'package:mahu_home_services_app/features/user_booking/cubit/user_booking_
 import 'package:mahu_home_services_app/features/user_booking/views/screens/service_details_screen.dart';
 import 'package:mahu_home_services_app/features/user_booking/views/widgets/service_list_tile.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:mahu_home_services_app/generated/l10n.dart';
 
 class FavoritesScreen extends StatefulWidget {
   const FavoritesScreen({super.key});
@@ -21,7 +22,6 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   @override
   void initState() {
     super.initState();
-    // Initialize favorites when screen loads
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final cubit = BlocProvider.of<UserBookingCubit>(context);
       cubit.initializeFavorites();
@@ -33,28 +33,28 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'My Favorites',
+          S.of(context).favoritesScreenTitle,
           style: TextStyle(
             fontSize: 20.sp,
             fontWeight: FontWeight.bold,
           ),
         ),
         centerTitle: true,
-        
       ),
       body: BlocConsumer<UserBookingCubit, UserBookingState>(
         listener: (context, state) {
           if (state is FavoriteOperationError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('Error: ${state.failure.message}'),
+                content: Text(
+                    S.of(context).favoritesScreenError(state.failure.message)),
                 backgroundColor: Colors.red,
               ),
             );
           } else if (state is FavoriteRemovedSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Removed from favorites'),
+              SnackBar(
+                content: Text(S.of(context).favoritesScreenRemovedSuccess),
                 backgroundColor: Colors.green,
               ),
             );
@@ -62,7 +62,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         },
         builder: (context, state) {
           final cubit = BlocProvider.of<UserBookingCubit>(context);
-          final favoriteServices = cubit.favoriteServices.where((service) => service.active == true).toList();
+          final favoriteServices = cubit.favoriteServices
+              .where((service) => service.active == true)
+              .toList();
 
           if (state is FavoritesLoading) {
             return _buildLoadingState();
@@ -86,14 +88,14 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
           SizedBox(
             width: 60.w,
             height: 60.w,
-            child: CircularProgressIndicator(
+            child: const CircularProgressIndicator(
               strokeWidth: 3,
               color: AppColors.primary,
             ),
           ),
           Gap(24.h),
           Text(
-            'Loading your favorites...',
+            S.of(context).favoritesScreenLoading,
             style: TextStyle(
               fontSize: 16,
               color: Colors.grey.shade600,
@@ -118,7 +120,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             ),
             Gap(24.h),
             Text(
-              'Oops! Something went wrong',
+              S.of(context).favoritesScreenErrorTitle,
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -146,8 +148,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                 ),
               ),
               child: Text(
-                'Try Again',
-                style: TextStyle(
+                S.of(context).favoritesScreenTryAgain,
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
@@ -174,7 +176,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             ),
             Gap(32.h),
             Text(
-              'No favorites yet',
+              S.of(context).favoritesScreenEmptyTitle,
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -183,7 +185,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             ),
             Gap(16.h),
             Text(
-              'Start saving your favorite services\nby tapping the heart icon',
+              S.of(context).favoritesScreenEmptyMessage,
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.grey.shade600,
@@ -193,7 +195,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             ),
             Gap(32.h),
             Text(
-              '💡 Tip: You can favorite services from\nthe home screen or service details',
+              S.of(context).favoritesScreenEmptyTip,
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey.shade500,
@@ -208,10 +210,10 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     );
   }
 
-  Widget _buildFavoritesList(List<ServiceModel> favorites, UserBookingCubit cubit) {
+  Widget _buildFavoritesList(
+      List<ServiceModel> favorites, UserBookingCubit cubit) {
     return Column(
       children: [
-        // Header with count
         Container(
           width: double.infinity,
           padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 13.h),
@@ -225,7 +227,11 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '${favorites.length} ${favorites.length == 1 ? 'Favorite' : 'Favorites'}',
+                S.of(context).favoritesScreenCount(
+                    favorites.length,
+                    favorites.length == 1
+                        ? S.of(context).favoritesScreenFavoriteSingular
+                        : S.of(context).favoritesScreenFavoritePlural),
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -235,8 +241,6 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             ],
           ),
         ),
-        
-        // Favorites list
         Expanded(
           child: RefreshIndicator(
             onRefresh: () async {
@@ -253,7 +257,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                 final isFavorite = cubit.isServiceFavorited(service.id);
                 final isLoading = cubit.isServiceLoading(service.id);
 
-                return ServiceListTile(
+                return FavoriteServiceTile(
                   service: service,
                   isFavorite: isFavorite,
                   isLoading: isLoading,
@@ -266,10 +270,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       ],
     );
   }
-
 }
 
-// Enhanced ServiceListTile for favorites screen
 class FavoriteServiceTile extends StatelessWidget {
   final ServiceModel service;
   final bool isFavorite;
@@ -315,7 +317,6 @@ class FavoriteServiceTile extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Service Image
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12),
                   child: CachedNetworkImage(
@@ -337,8 +338,6 @@ class FavoriteServiceTile extends StatelessWidget {
                   ),
                 ),
                 Gap(16.w),
-                
-                // Service Info
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -363,7 +362,9 @@ class FavoriteServiceTile extends StatelessWidget {
                           ),
                           Gap(4.w),
                           Text(
-                            '${service.duration} hrs',
+                            S
+                                .of(context)
+                                .favoritesScreenDuration(service.duration),
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey.shade600,
@@ -396,8 +397,9 @@ class FavoriteServiceTile extends StatelessWidget {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          service.category.toUpperCase(),
-                          style: TextStyle(
+                          S.of(context).favoritesScreenCategory(
+                              service.category.toUpperCase()),
+                          style: const TextStyle(
                             fontSize: 10,
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -407,8 +409,6 @@ class FavoriteServiceTile extends StatelessWidget {
                     ],
                   ),
                 ),
-                
-                // Favorite Button
                 Padding(
                   padding: EdgeInsets.only(left: 8.w),
                   child: FavoriteButton(

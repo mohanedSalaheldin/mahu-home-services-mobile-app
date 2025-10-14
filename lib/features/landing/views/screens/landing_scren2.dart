@@ -5,10 +5,9 @@ import 'package:mahu_home_services_app/core/constants/app_const.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
 import 'package:mahu_home_services_app/core/utils/helpers/cache_helper.dart';
 import 'package:mahu_home_services_app/core/utils/navigation_utils.dart';
-import 'package:mahu_home_services_app/features/auth/client_auth/views/screens/login_screen.dart';
 import 'package:mahu_home_services_app/features/landing/views/screens/choose_rule_screen.dart';
-import 'package:mahu_home_services_app/features/landing/views/widgets/app_filled_button.dart';
 import 'package:flutter/animation.dart';
+import 'package:mahu_home_services_app/generated/l10n.dart'; // <-- مهم
 
 class LandingScren2 extends StatefulWidget {
   const LandingScren2({super.key});
@@ -56,6 +55,8 @@ class _LandingScren2State extends State<LandingScren2>
 
   @override
   Widget build(BuildContext context) {
+    final s = S.of(context);
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -141,7 +142,7 @@ class _LandingScren2State extends State<LandingScren2>
                           children: [
                             // Title
                             Text(
-                              'Welcome to\nMahu Home Services',
+                              s.landing2Title,
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 28.sp,
@@ -155,7 +156,7 @@ class _LandingScren2State extends State<LandingScren2>
 
                             // Subtitle
                             Text(
-                              'Experience professional home services with guaranteed satisfaction and competitive pricing',
+                              s.landing2Subtitle,
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 16.sp,
@@ -178,8 +179,6 @@ class _LandingScren2State extends State<LandingScren2>
                                     navigateTo(
                                       context,
                                       const RoleSelectionScreen(),
-                                      // withHero: true,
-                                      // heroTag: 'landing-hero',
                                     );
                                   }
                                 },
@@ -198,7 +197,7 @@ class _LandingScren2State extends State<LandingScren2>
                                       AppColors.primary.withOpacity(0.3),
                                 ),
                                 child: Text(
-                                  'Get Started',
+                                  s.landing2GetStarted,
                                   style: TextStyle(
                                     fontSize: 16.sp,
                                     fontWeight: FontWeight.w600,
@@ -207,25 +206,25 @@ class _LandingScren2State extends State<LandingScren2>
                               ),
                             ),
 
-                            Gap(16.h),
-
-                            // Login Option
-                            TextButton(
-                              onPressed: () async {
-                                await CacheHelper.saveBool('first_time', false);
-                                if (context.mounted) {
-                                  navigateTo(context, const LoginScreen());
-                                }
-                              },
-                              child: Text(
-                                'Already have an account? Sign In',
-                                style: TextStyle(
-                                  fontSize: 14.sp,
-                                  color: AppColors.textSecondary,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
+                            // Login Option (ممكن ترجعها لو عايز)
+                            // TextButton(
+                            //   onPressed: () async {
+                            //     await CacheHelper.saveBool('first_time', false);
+                            //     if (context.mounted) {
+                            //       navigateTo(context, const LoginScreen());
+                            //     }
+                            //   },
+                            //   child: Text(
+                            //     s.landing2Login,
+                            //     overflow: TextOverflow.ellipsis,
+                            //     maxLines: 3,
+                            //     style: TextStyle(
+                            //       fontSize: 14.sp,
+                            //       color: AppColors.textSecondary,
+                            //       fontWeight: FontWeight.w500,
+                            //     ),
+                            //   ),
+                            // ),
                           ],
                         ),
                       ),

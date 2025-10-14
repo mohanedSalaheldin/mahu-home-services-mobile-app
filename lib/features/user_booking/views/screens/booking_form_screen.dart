@@ -1,7 +1,9 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -15,6 +17,7 @@ import 'package:mahu_home_services_app/features/user_booking/cubit/user_booking_
 import 'package:mahu_home_services_app/features/user_booking/models/booking_model.dart';
 import 'package:mahu_home_services_app/features/services/models/service_model.dart';
 import 'package:mahu_home_services_app/features/user_booking/services/location_service.dart';
+import 'package:mahu_home_services_app/generated/l10n.dart';
 
 class BookingFormScreen extends StatefulWidget {
   const BookingFormScreen({
@@ -38,7 +41,7 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
   final TextEditingController _zipCodeController = TextEditingController();
   final TextEditingController _detailsController = TextEditingController();
 
-  bool _hasTools = false;
+  final bool _hasTools = false;
   String? _selectedRecurrence;
   String? _selectedDayOfWeek;
   String? _selectedTimeSlot;
@@ -49,43 +52,91 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
   bool _locationError = false;
   bool _showMap = false;
   String _locationAddress = '';
+  String? _country; // New field for country
+  final List<String> selectedOptions = [];
 
   int _selectedDuration = 1;
   double _totalPrice = 0.0;
-  TimeOfDay _selectedStartTime =
-      TimeOfDay(hour: 8, minute: 0); // Default start time
+  TimeOfDay _selectedStartTime = const TimeOfDay(hour: 8, minute: 0);
 
-  // Store the selected slot's start and end times
   TimeOfDay? _slotStartTime;
   TimeOfDay? _slotEndTime;
 
-  // Map controller
   final MapController _mapController = MapController();
 
   @override
   void initState() {
     super.initState();
-    _selectedRecurrence = widget.service.serviceType.toLowerCase() ==
-            'recurring'
-        ? widget.service.subType // Use the service's subtype (weekly/monthly)
-        : null;
+    _selectedRecurrence =
+        widget.service.serviceType.toLowerCase() == 'recurring'
+            ? widget.service.subType
+            : null;
     _selectedDuration = widget.service.duration.toInt();
     _selectedTimezone = 'Africa/Cairo';
+    _selectedDayOfWeek = getNextAvailableDay(widget.service.availableDays);
+    if (widget.service.availableSlots.isNotEmpty) {
+      final firstSlot = widget.service.availableSlots.first;
+      _selectedTimeSlot = '0-${firstSlot.startTime} - ${firstSlot.endTime}';
+      _slotStartTime = _parseTime(firstSlot.startTime);
+      _slotEndTime = _parseTime(firstSlot.endTime);
+      _selectedStartTime = _slotStartTime!;
+    }
     _calculateTotalPrice();
     _getCurrentLocation();
   }
 
+  String? getNextAvailableDay(List<String> availableDays) {
+    if (availableDays.isEmpty) return null;
+
+    DateTime now = DateTime.now();
+    int currentDayIndex = now.weekday;
+
+    List<String> weekDays = [
+      'monday',
+      'tuesday',
+      'wednesday',
+      'thursday',
+      'friday',
+      'saturday',
+      'sunday',
+    ];
+
+    List<String> availableDaysLower =
+        availableDays.map((day) => day.toLowerCase()).toList();
+
+    for (int i = 1; i <= 7; i++) {
+      int targetDayIndex = ((currentDayIndex - 1 + i) % 7);
+      String targetDay = weekDays[targetDayIndex];
+
+      if (availableDaysLower.contains(targetDay)) {
+        int originalIndex = availableDaysLower.indexOf(targetDay);
+        return availableDays[originalIndex];
+      }
+    }
+
+    return null;
+  }
+
   void _calculateTotalPrice() {
     setState(() {
+      double optionsTotal = 0.0;
+      for (var optionId in selectedOptions) {
+        final option = widget.service.options.firstWhere(
+          (opt) => opt.id == optionId,
+          orElse: () =>
+              ServiceOption(id: '', name: '', description: '', price: 0.0),
+        );
+        optionsTotal += option.price;
+      }
       if (widget.service.pricingModel == 'hourly') {
-        _totalPrice = widget.service.basePrice * _selectedDuration;
+        _totalPrice =
+            (widget.service.basePrice * _selectedDuration) + optionsTotal;
       } else {
-        _totalPrice = widget.service.basePrice;
+        _totalPrice = widget.service.basePrice + optionsTotal;
       }
     });
   }
 
-  // Parse time string (HH:mm) to TimeOfDay
   TimeOfDay _parseTime(String timeString) {
     final parts = timeString.split(':');
     final hour = int.parse(parts[0]);
@@ -93,12 +144,10 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
     return TimeOfDay(hour: hour, minute: minute);
   }
 
-  // Format TimeOfDay to HH:mm string
   String _formatTime(TimeOfDay time) {
     return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
   }
 
-  // Check if a time is within the selected slot
   bool _isTimeWithinSlot(TimeOfDay time) {
     if (_slotStartTime == null || _slotEndTime == null) return false;
 
@@ -109,7 +158,6 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
     return totalMinutes >= slotStartMinutes && totalMinutes <= slotEndMinutes;
   }
 
-  // Get available time steps within the slot (30-minute intervals)
   List<TimeOfDay> _getAvailableTimeSteps() {
     if (_slotStartTime == null || _slotEndTime == null) return [];
 
@@ -124,7 +172,6 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
 
       steps.add(currentTime);
 
-      // Add 30 minutes
       var newMinutes = currentTime.minute + 30;
       var newHour = currentTime.hour;
       if (newMinutes >= 60) {
@@ -137,7 +184,6 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
     return steps;
   }
 
-  // Get current time step index
   int _getCurrentTimeStepIndex() {
     final steps = _getAvailableTimeSteps();
     for (int i = 0; i < steps.length; i++) {
@@ -147,6 +193,18 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
       }
     }
     return 0;
+  }
+
+  List<dynamic> _getUniqueTimeSlots() {
+    final seen = <String>{};
+    final uniqueSlots = <dynamic>[];
+    for (var slot in widget.service.availableSlots) {
+      final slotText = '${slot.startTime} - ${slot.endTime}';
+      if (seen.add(slotText)) {
+        uniqueSlots.add(slot);
+      }
+    }
+    return uniqueSlots;
   }
 
   Future<void> _getCurrentLocation() async {
@@ -163,17 +221,30 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
       if (position != null) {
         _currentPosition = position;
 
-        // Get address from coordinates
-        final address = await LocationService.getAddressFromCoordinates(
+        List<Placemark> place = await LocationService.getAddressFromCoordinates(
           position.latitude,
           position.longitude,
         );
 
+        final address = place.isNotEmpty
+            ? '${place.first.street}, ${place.first.locality}, ${place.first.country}'
+            : S.of(context).bookingFormScreenUnknownLocation;
         setState(() {
-          _locationAddress = address ?? 'Current Location';
+          _locationAddress =
+              address ?? S.of(context).bookingFormScreenCurrentLocation;
+          _streetController.text =
+              place.isNotEmpty ? place.first.street ?? '' : '';
+          _cityController.text =
+              place.isNotEmpty ? place.first.locality ?? '' : '';
+          _stateController.text =
+              place.isNotEmpty ? place.first.administrativeArea ?? '' : '';
+          _zipCodeController.text =
+              place.isNotEmpty ? place.first.postalCode ?? '' : '';
+          _country = place.isNotEmpty
+              ? place.first.country?.toLowerCase() ?? 'egypt'
+              : 'egypt';
         });
 
-        // Small delay to ensure FlutterMap has been built
         WidgetsBinding.instance.addPostFrameCallback((_) {
           _mapController.move(
             LatLng(position.latitude, position.longitude),
@@ -201,7 +272,7 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Create Booking'),
+        title: Text(S.of(context).bookingFormScreenTitle),
         centerTitle: true,
         elevation: 0,
         backgroundColor: Colors.white,
@@ -212,7 +283,7 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
           if (state is CreateUserBookingSuccess) {
             showCustomSnackBar(
               context: context,
-              message: 'Booking created successfully!',
+              message: S.of(context).bookingFormScreenSuccessMessage,
               type: SnackBarType.success,
             );
             Navigator.pop(context);
@@ -231,50 +302,44 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Service Info
                 _buildServiceInfo(),
                 Gap(24.h),
-
-                // Location Section with Map Toggle
                 _buildLocationSection(),
                 Gap(16.h),
-
-                // Map View (conditionally shown)
                 if (_showMap && _currentPosition != null) ...[
                   _buildMapView(),
                   Gap(16.h),
                 ],
-
-                // Duration Selection with Stepper (only for hourly pricing)
                 if (widget.service.pricingModel == 'hourly') ...[
                   _buildDurationSelector(),
                   Gap(24.h),
                 ],
-
-                // Timezone Selection
-                const AppFieledLabelText(label: 'Timezone'),
+                AppFieledLabelText(
+                    label: S.of(context).bookingFormScreenTimezoneLabel),
                 DropdownButtonFormField<String>(
                   decoration: _inputDecoration(),
                   value: _selectedTimezone,
-                  items: const [
+                  items: [
                     DropdownMenuItem(
-                        value: 'Africa/Cairo', child: Text('Egypt (Cairo)')),
+                      value: 'Africa/Cairo',
+                      child: Text(S.of(context).bookingFormScreenTimezoneEgypt),
+                    ),
                     DropdownMenuItem(
-                        value: 'Asia/Dubai', child: Text('UAE (Dubai)')),
+                      value: 'Asia/Dubai',
+                      child: Text(S.of(context).bookingFormScreenTimezoneUae),
+                    ),
                   ],
                   onChanged: (val) => setState(() => _selectedTimezone = val),
                   validator: (value) {
                     if (value == null) {
-                      return 'Please select a timezone';
+                      return S.of(context).bookingFormScreenTimezoneError;
                     }
                     return null;
                   },
                 ),
                 Gap(16.h),
-
-                // Schedule Section
                 Text(
-                  'Schedule Details',
+                  S.of(context).bookingFormScreenScheduleSection,
                   style: TextStyle(
                     fontSize: 18.sp,
                     fontWeight: FontWeight.bold,
@@ -282,9 +347,8 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                   ),
                 ),
                 Gap(16.h),
-
-                // Day of Week
-                const AppFieledLabelText(label: 'Select Day'),
+                AppFieledLabelText(
+                    label: S.of(context).bookingFormScreenDayLabel),
                 DropdownButtonFormField<String>(
                   decoration: _inputDecoration(),
                   value: _selectedDayOfWeek,
@@ -303,65 +367,66 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                       _selectedTimeSlot = null;
                       _slotStartTime = null;
                       _slotEndTime = null;
-                      _selectedStartTime = TimeOfDay(hour: 8, minute: 0);
+                      _selectedStartTime = const TimeOfDay(hour: 8, minute: 0);
                     });
                   },
                   validator: (value) {
                     if (value == null) {
-                      return 'Please select a day';
+                      return S.of(context).bookingFormScreenDayError;
                     }
                     return null;
                   },
                 ),
                 Gap(12.h),
-
-                // Time Slot Selection
                 if (_selectedDayOfWeek != null) ...[
-                  const AppFieledLabelText(label: 'Select Time Slot'),
+                  AppFieledLabelText(
+                      label: S.of(context).bookingFormScreenTimeSlotLabel),
                   DropdownButtonFormField<String>(
                     decoration: _inputDecoration(),
                     value: _selectedTimeSlot,
-                    items: widget.service.availableSlots.map((slot) {
+                    items: widget.service.availableSlots
+                        .asMap()
+                        .entries
+                        .map((entry) {
+                      int index = entry.key;
+                      var slot = entry.value;
                       final slotText = '${slot.startTime} - ${slot.endTime}';
                       return DropdownMenuItem(
-                        value: slotText,
+                        value: '$index-$slotText',
                         child: Text(slotText),
                       );
                     }).toList(),
                     onChanged: (val) {
                       setState(() {
                         _selectedTimeSlot = val;
-                        // Parse the selected slot times
                         if (val != null) {
-                          final times = val.split(' - ');
-                          _slotStartTime = _parseTime(times[0]);
-                          _slotEndTime = _parseTime(times[1]);
-                          // Set initial start time to the slot's start time
+                          final index = int.parse(val.split('-')[0]);
+                          final slot = widget.service.availableSlots[index];
+                          _slotStartTime = _parseTime(slot.startTime);
+                          _slotEndTime = _parseTime(slot.endTime);
                           _selectedStartTime = _slotStartTime!;
                         }
                       });
                     },
                     validator: (value) {
                       if (value == null) {
-                        return 'Please select a time slot';
+                        return S.of(context).bookingFormScreenTimeSlotError;
                       }
                       return null;
                     },
                   ),
                   Gap(12.h),
                 ],
-
-                // Start Time Selection (only show when time slot is selected)
                 if (_selectedTimeSlot != null) ...[
-                  const AppFieledLabelText(label: 'Start Time'),
+                  AppFieledLabelText(
+                      label: S.of(context).bookingFormScreenStartTimeLabel),
                   _buildStartTimeSelector(),
                   Gap(12.h),
                 ],
-
-                // Recurrence for recurring services
                 if (widget.service.serviceType.toLowerCase() ==
                     'recurring') ...[
-                  const AppFieledLabelText(label: 'Recurrence Type'),
+                  AppFieledLabelText(
+                      label: S.of(context).bookingFormScreenRecurrenceLabel),
                   Container(
                     padding: EdgeInsets.all(16.w),
                     decoration: BoxDecoration(
@@ -389,22 +454,24 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                     ),
                   ),
                   Gap(12.h),
-
-                  // Start Date for recurrence
-                  // Start Date Picker (shown for both one-time and recurring)
                   GestureDetector(
-                    onTap: () => _pickDate(_startDateController, 'Start Date'),
+                    onTap: () => _pickDate(_startDateController,
+                        S.of(context).bookingFormScreenStartDateLabel),
                     child: AbsorbPointer(
                       child: CustomTextField(
-                        label: 'Start Date',
+                        label: S.of(context).bookingFormScreenStartDateLabel,
                         hint: widget.service.serviceType.toLowerCase() ==
                                 'recurring'
-                            ? 'Select start date for recurrence'
-                            : 'Select booking date',
+                            ? S
+                                .of(context)
+                                .bookingFormScreenStartDateRecurringHint
+                            : S.of(context).bookingFormScreenStartDateHint,
                         controller: _startDateController,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Start date is required';
+                            return S
+                                .of(context)
+                                .bookingFormScreenStartDateError;
                           }
                           return null;
                         },
@@ -413,10 +480,8 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                   ),
                   Gap(12.h),
                 ],
-
-                // Address Section
                 Text(
-                  'Address Details',
+                  S.of(context).bookingFormScreenAddressSection,
                   style: TextStyle(
                     fontSize: 18.sp,
                     fontWeight: FontWeight.bold,
@@ -424,65 +489,52 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                   ),
                 ),
                 Gap(16.h),
-
                 CustomTextField(
-                  label: 'Street Address',
-                  hint: 'Enter street address',
+                  label: S.of(context).bookingFormScreenStreetLabel,
+                  hint: S.of(context).bookingFormScreenStreetHint,
                   controller: _streetController,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Street address is required';
+                      return S.of(context).bookingFormScreenStreetError;
                     }
                     return null;
                   },
                 ),
                 Gap(12.h),
-
-                Row(
-                  children: [
-                    Expanded(
-                      child: CustomTextField(
-                        label: 'City',
-                        hint: 'Enter city',
-                        controller: _cityController,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'City is required';
-                          }
-                          return null;
-                        },
-                      ),
-                    ),
-                    Gap(12.w),
-                    Expanded(
-                      child: CustomTextField(
-                        label: 'State',
-                        hint: 'Enter state',
-                        controller: _stateController,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'State is required';
-                          }
-                          return null;
-                        },
-                      ),
-                    ),
-                  ],
+                CustomTextField(
+                  label: S.of(context).bookingFormScreenCityLabel,
+                  hint: S.of(context).bookingFormScreenCityHint,
+                  controller: _cityController,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return S.of(context).bookingFormScreenCityError;
+                    }
+                    return null;
+                  },
+                ),
+                Gap(12.w),
+                CustomTextField(
+                  label: S.of(context).bookingFormScreenStateLabel,
+                  hint: S.of(context).bookingFormScreenStateHint,
+                  controller: _stateController,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return S.of(context).bookingFormScreenStateError;
+                    }
+                    return null;
+                  },
                 ),
                 Gap(12.h),
-
                 CustomTextField(
-                  label: 'Zip Code (Optional)',
-                  hint: 'Enter zip code',
+                  label: S.of(context).bookingFormScreenZipCodeLabel,
+                  hint: S.of(context).bookingFormScreenZipCodeHint,
                   controller: _zipCodeController,
                   validator: (_) => null,
                   keyboardType: TextInputType.number,
                 ),
                 Gap(16.h),
-
-                // Additional Details
                 Text(
-                  'Additional Information',
+                  S.of(context).bookingFormScreenAdditionalInfoSection,
                   style: TextStyle(
                     fontSize: 18.sp,
                     fontWeight: FontWeight.bold,
@@ -490,42 +542,47 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                   ),
                 ),
                 Gap(16.h),
-
-                const AppFieledLabelText(
-                    label: 'Do you have tools for this service?'),
-                SwitchListTile(
-                  value: _hasTools,
-                  activeColor: AppColors.primary,
-                  activeTrackColor: AppColors.primary.withOpacity(0.5),
-                  onChanged: (val) {
-                    setState(() {
-                      _hasTools = val;
-                    });
-                  },
-                  title: Text('I have the required tools'),
-                  subtitle: Text('If not, the provider will bring their own'),
+                AppFieledLabelText(
+                    label: S.of(context).bookingFormScreenToolsLabel),
+                ListView(
+                  shrinkWrap: true,
+                  children: widget.service.options.map((option) {
+                    final isSelected = selectedOptions.contains(option.id);
+                    return SwitchListTile(
+                      value: isSelected,
+                      activeColor: AppColors.primary,
+                      activeTrackColor: AppColors.primary.withOpacity(0.5),
+                      onChanged: (val) {
+                        setState(() {
+                          if (val) {
+                            selectedOptions.add(option.id);
+                          } else {
+                            selectedOptions.remove(option.id);
+                          }
+                          _calculateTotalPrice();
+                        });
+                      },
+                      title: Text(
+                          '${option.name} (+${option.price.toStringAsFixed(2)})'),
+                      subtitle: Text(option.description),
+                    );
+                  }).toList(),
                 ),
                 Gap(16.h),
-
                 CustomTextField(
-                  label: 'Service Details (Optional)',
-                  hint: 'Describe any specific requirements...',
+                  label: S.of(context).bookingFormScreenDetailsLabel,
+                  hint: S.of(context).bookingFormScreenDetailsHint,
                   controller: _detailsController,
                   validator: (_) => null,
                   lines: 4,
                 ),
                 Gap(32.h),
-
-                // Price Display
                 _buildPriceDisplay(),
                 Gap(16.h),
-
-                // Submit Button
                 AppFilledButton(
                   onPressed: _validateAndSubmit,
                   fontSize: 16,
-                  text: "Create Booking",
-                  // isLoading: state is CreateUserBookingLoading,
+                  text: S.of(context).bookingFormScreenSubmitButton,
                 ),
                 Gap(24.h),
               ],
@@ -537,7 +594,7 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
   }
 
   Widget _buildMapView() {
-    if (_currentPosition == null) return SizedBox.shrink();
+    if (_currentPosition == null) return const SizedBox.shrink();
 
     return Container(
       height: 200.h,
@@ -599,7 +656,7 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Select Start Time:',
+                S.of(context).bookingFormScreenStartTimeSelectorLabel,
                 style: TextStyle(
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w600,
@@ -620,7 +677,6 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                // Previous Time Button
                 _buildTimeButton(
                   icon: Icons.arrow_back,
                   onPressed: currentIndex > 0
@@ -631,8 +687,6 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                         }
                       : null,
                 ),
-
-                // Time Display
                 Container(
                   width: 100.w,
                   padding:
@@ -652,8 +706,6 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                     ),
                   ),
                 ),
-
-                // Next Time Button
                 _buildTimeButton(
                   icon: Icons.arrow_forward,
                   onPressed: currentIndex < timeSteps.length - 1
@@ -668,26 +720,18 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
             ),
             Gap(8.h),
             Text(
-              'Available time slot: ${_formatTime(_slotStartTime!)} - ${_formatTime(_slotEndTime!)}',
-              style: TextStyle(
-                fontSize: 12.sp,
-                color: Colors.grey.shade600,
-              ),
+              S.of(context).bookingFormScreenTimeSlotInfo(
+                  _formatTime(_slotStartTime!), _formatTime(_slotEndTime!)),
+              style: TextStyle(fontSize: 12.sp, color: Colors.grey.shade600),
             ),
             Text(
-              '30-minute intervals',
-              style: TextStyle(
-                fontSize: 12.sp,
-                color: Colors.grey.shade600,
-              ),
+              S.of(context).bookingFormScreenTimeIntervalInfo,
+              style: TextStyle(fontSize: 12.sp, color: Colors.grey.shade600),
             ),
           ] else if (_selectedTimeSlot != null) ...[
             Text(
-              'No available time steps in this slot',
-              style: TextStyle(
-                fontSize: 14.sp,
-                color: Colors.grey.shade600,
-              ),
+              S.of(context).bookingFormScreenNoTimeSteps,
+              style: TextStyle(fontSize: 14.sp, color: Colors.grey.shade600),
             ),
           ],
         ],
@@ -715,7 +759,7 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const AppFieledLabelText(label: 'Duration (hours)'),
+        AppFieledLabelText(label: S.of(context).bookingFormScreenDurationLabel),
         Container(
           padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
@@ -728,14 +772,16 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Select Duration:',
+                    S.of(context).bookingFormScreenDurationSelectorLabel,
                     style: TextStyle(
                       fontSize: 16.sp,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                   Text(
-                    '$_selectedDuration hours',
+                    S
+                        .of(context)
+                        .bookingFormScreenDurationValue(_selectedDuration),
                     style: TextStyle(
                       fontSize: 18.sp,
                       fontWeight: FontWeight.bold,
@@ -748,7 +794,6 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  // Decrement Button
                   _buildDurationButton(
                     icon: Icons.remove,
                     onPressed: _selectedDuration > widget.service.duration
@@ -760,8 +805,6 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                           }
                         : null,
                   ),
-
-                  // Duration Display
                   Container(
                     width: 60.w,
                     padding:
@@ -781,8 +824,6 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                       ),
                     ),
                   ),
-
-                  // Increment Button
                   _buildDurationButton(
                     icon: Icons.add,
                     onPressed: () {
@@ -796,11 +837,10 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
               ),
               Gap(8.h),
               Text(
-                'Minimum: ${widget.service.duration} hours',
-                style: TextStyle(
-                  fontSize: 12.sp,
-                  color: Colors.grey.shade600,
-                ),
+                S
+                    .of(context)
+                    .bookingFormScreenDurationMinimum(widget.service.duration),
+                style: TextStyle(fontSize: 12.sp, color: Colors.grey.shade600),
               ),
             ],
           ),
@@ -850,7 +890,7 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
               Gap(8.w),
               Expanded(
                 child: Text(
-                  'Your Location',
+                  S.of(context).bookingFormScreenLocationLabel,
                   style: TextStyle(
                     fontSize: 16.sp,
                     fontWeight: FontWeight.bold,
@@ -862,7 +902,7 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                 SizedBox(
                   width: 20.w,
                   height: 20.w,
-                  child: CircularProgressIndicator(strokeWidth: 2),
+                  child: const CircularProgressIndicator(strokeWidth: 2),
                 ),
               if (!_isLoadingLocation && _locationError)
                 IconButton(
@@ -887,7 +927,8 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
           ),
           Gap(8.h),
           if (_isLoadingLocation)
-            Text('Getting your location...', style: TextStyle(fontSize: 14.sp)),
+            Text(S.of(context).bookingFormScreenLoadingLocation,
+                style: TextStyle(fontSize: 14.sp)),
           if (!_isLoadingLocation && _currentPosition != null)
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -904,7 +945,8 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                   Gap(4.h),
                 ],
                 Text(
-                  'Location accuracy: ±${_currentPosition!.accuracy.toStringAsFixed(2)} meters',
+                  S.of(context).bookingFormScreenLocationAccuracy(
+                      _currentPosition!.accuracy.toStringAsFixed(2)),
                   style:
                       TextStyle(fontSize: 12.sp, color: Colors.grey.shade600),
                 ),
@@ -916,7 +958,7 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                       });
                     },
                     child: Text(
-                      'Show on map',
+                      S.of(context).bookingFormScreenShowMap,
                       style: TextStyle(
                         color: AppColors.primary,
                         fontSize: 12.sp,
@@ -930,12 +972,12 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Unable to get your location. Please enable location services.',
+                  S.of(context).bookingFormScreenLocationError,
                   style: TextStyle(fontSize: 14.sp, color: Colors.red.shade700),
                 ),
                 Gap(8.h),
                 Text(
-                  'Location is required for service booking.',
+                  S.of(context).bookingFormScreenLocationRequired,
                   style:
                       TextStyle(fontSize: 12.sp, color: Colors.grey.shade600),
                 ),
@@ -976,13 +1018,26 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
           ),
           Gap(12.h),
           _buildServiceDetailRow(
-              'Category', _capitalizeFirstLetter(widget.service.category)),
+            S.of(context).bookingFormScreenCategoryLabel,
+            _capitalizeFirstLetter(widget.service.category),
+          ),
           _buildServiceDetailRow(
-              'Type', _capitalizeFirstLetter(widget.service.serviceType)),
-          _buildServiceDetailRow('Pricing',
-              '\$${widget.service.basePrice.toStringAsFixed(2)}/${widget.service.pricingModel == 'hourly' ? 'hour' : 'service'}'),
+            S.of(context).bookingFormScreenTypeLabel,
+            _capitalizeFirstLetter(widget.service.serviceType),
+          ),
           _buildServiceDetailRow(
-              'Minimum Duration', '${widget.service.duration} hours'),
+            S.of(context).bookingFormScreenPricingLabel,
+            S.of(context).bookingFormScreenPricingValue(
+                  widget.service.basePrice.toStringAsFixed(2),
+                  widget.service.pricingModel == 'hourly' ? 'hour' : 'service',
+                ),
+          ),
+          _buildServiceDetailRow(
+            S.of(context).bookingFormScreenMinDurationLabel,
+            S
+                .of(context)
+                .bookingFormScreenDurationValue(widget.service.duration),
+          ),
           if (widget.service.pricingModel == 'fixed') ...[
             Gap(8.h),
             Row(
@@ -991,7 +1046,7 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                 Gap(4.w),
                 Expanded(
                   child: Text(
-                    'Fixed price - duration cannot be changed',
+                    S.of(context).bookingFormScreenFixedPriceNote,
                     style: TextStyle(
                       fontSize: 12.sp,
                       color: Colors.orange.shade700,
@@ -1033,6 +1088,21 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
   }
 
   Widget _buildPriceDisplay() {
+    double optionsTotal = 0.0;
+    List<Map<String, dynamic>> selectedOptionDetails = [];
+    for (var optionId in selectedOptions) {
+      final option = widget.service.options.firstWhere(
+        (opt) => opt.id == optionId,
+        orElse: () =>
+            ServiceOption(id: '', name: '', description: '', price: 0.0),
+      );
+      optionsTotal += option.price;
+      selectedOptionDetails.add({
+        'name': option.name,
+        'price': option.price,
+      });
+    }
+
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
@@ -1049,7 +1119,7 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                   color: Colors.orange.shade700, size: 24.w),
               Gap(8.w),
               Text(
-                'Pricing Details',
+                S.of(context).bookingFormScreenPricingDetailsLabel,
                 style: TextStyle(
                   fontSize: 16.sp,
                   fontWeight: FontWeight.bold,
@@ -1060,20 +1130,49 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
           ),
           Gap(12.h),
           if (widget.service.pricingModel == 'hourly') ...[
-            _buildPriceRow('Hourly Rate:',
-                '\$${widget.service.basePrice.toStringAsFixed(2)}/hour'),
-            _buildPriceRow('Duration:', '$_selectedDuration hours'),
-            Divider(height: 16.h, color: Colors.orange.shade300),
+            _buildPriceRow(
+              S.of(context).bookingFormScreenHourlyRateLabel,
+              S.of(context).bookingFormScreenHourlyRateValue(
+                  widget.service.basePrice.toStringAsFixed(2)),
+            ),
+            _buildPriceRow(
+              S.of(context).bookingFormScreenDurationLabel,
+              S.of(context).bookingFormScreenDurationValue(_selectedDuration),
+            ),
           ],
+          if (selectedOptionDetails.isNotEmpty) ...[
+            Gap(8.h),
+            Text(
+              S.of(context).bookingFormScreenExtraFeesLabel,
+              style: TextStyle(
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey.shade700,
+              ),
+            ),
+            ...selectedOptionDetails.map((option) => _buildPriceRow(
+                  option['name'],
+                  S.of(context).bookingFormScreenTotalPriceValue(
+                      option['price'].toStringAsFixed(2)),
+                )),
+            _buildPriceRow(
+              S.of(context).bookingFormScreenExtraFeesTotalLabel,
+              S.of(context).bookingFormScreenTotalPriceValue(
+                  optionsTotal.toStringAsFixed(2)),
+              isTotal: true,
+            ),
+          ],
+          Divider(height: 16.h, color: Colors.orange.shade300),
           _buildPriceRow(
-            'Total Price:',
-            '\$${_totalPrice.toStringAsFixed(2)}',
+            S.of(context).bookingFormScreenTotalPriceLabel,
+            S.of(context).bookingFormScreenTotalPriceValue(
+                _totalPrice.toStringAsFixed(2)),
             isTotal: true,
           ),
           if (widget.service.pricingModel == 'fixed') ...[
             Gap(8.h),
             Text(
-              '* Fixed price for the entire service',
+              S.of(context).bookingFormScreenFixedPriceNote,
               style: TextStyle(
                 fontSize: 12.sp,
                 color: Colors.grey.shade600,
@@ -1118,7 +1217,8 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
       context: context,
       initialDate: DateTime.now(),
       firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(Duration(days: 365)),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+      helpText: title,
     ).then((date) {
       if (date != null) {
         setState(() {
@@ -1131,32 +1231,31 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
   void _validateAndSubmit() {
     final cubit = UserBookingCubit.get(context);
 
-    // Validate location
     if (_currentPosition == null) {
       showCustomSnackBar(
         context: context,
-        message: 'Please enable location services to continue',
+        message: S.of(context).bookingFormScreenLocationRequiredError,
         type: SnackBarType.failure,
       );
       return;
     }
 
-    // Validate duration (only for hourly pricing)
     if (widget.service.pricingModel == 'hourly' &&
         _selectedDuration < widget.service.duration) {
       showCustomSnackBar(
         context: context,
-        message: 'Duration must be at least ${widget.service.duration} hours',
+        message: S
+            .of(context)
+            .bookingFormScreenDurationError(widget.service.duration),
         type: SnackBarType.failure,
       );
       return;
     }
 
-    // Validate time slot selection
     if (_selectedDayOfWeek == null) {
       showCustomSnackBar(
         context: context,
-        message: 'Please select a day',
+        message: S.of(context).bookingFormScreenDayError,
         type: SnackBarType.failure,
       );
       return;
@@ -1165,83 +1264,111 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
     if (_selectedTimeSlot == null) {
       showCustomSnackBar(
         context: context,
-        message: 'Please select a time slot',
+        message: S.of(context).bookingFormScreenTimeSlotError,
         type: SnackBarType.failure,
       );
       return;
     }
 
-    // Validate start time is within selected slot
     if (!_isTimeWithinSlot(_selectedStartTime)) {
       showCustomSnackBar(
         context: context,
-        message: 'Selected start time must be within the chosen time slot',
+        message: S.of(context).bookingFormScreenStartTimeError,
         type: SnackBarType.failure,
       );
       return;
     }
 
-    // Validate address fields
     if (_streetController.text.isEmpty ||
         _cityController.text.isEmpty ||
         _stateController.text.isEmpty) {
       showCustomSnackBar(
         context: context,
-        message: 'Please fill in all address fields',
+        message: S.of(context).bookingFormScreenAddressError,
         type: SnackBarType.failure,
       );
       return;
     }
 
-    // For recurring services - validate recurrence fields
-    if (widget.service.serviceType.toLowerCase() == 'recurring') {
-      if (_selectedRecurrence == null) {
-        showCustomSnackBar(
-          context: context,
-          message: 'Please select recurrence type',
-          type: SnackBarType.failure,
-        );
-        return;
-      }
+    if (widget.service.serviceType.toLowerCase() == 'recurring' &&
+        _selectedRecurrence == null) {
+      showCustomSnackBar(
+        context: context,
+        message: S.of(context).bookingFormScreenRecurrenceError,
+        type: SnackBarType.failure,
+      );
+      return;
     }
 
-    // Create booking request according to server expectations
+    // Calculate endTime based on startTime + duration
+    final startTimeMinutes =
+        _selectedStartTime.hour * 60 + _selectedStartTime.minute;
+    final durationMinutes =
+        _selectedDuration * 60; // Convert hours to minutes for calculation
+    final endTimeMinutes = startTimeMinutes + durationMinutes;
+    final endTimeHour = (endTimeMinutes ~/ 60) % 24;
+    final endTimeMinute = endTimeMinutes % 60;
+    final endTime = TimeOfDay(hour: endTimeHour, minute: endTimeMinute);
+
+    // Validate that endTime is after startTime
+    if (endTimeMinutes <= startTimeMinutes) {
+      showCustomSnackBar(
+        context: context,
+        message: 'End time must be after start time',
+        type: SnackBarType.failure,
+      );
+      return;
+    }
+
     final bookingRequest = {
       "service": widget.serviceID,
       "provider": widget.service.provider,
-      "serviceType": widget.service.serviceType,
-      "duration": _selectedDuration,
-      "options": {
-        "hasTools": _hasTools,
-      },
+      "duration": _selectedDuration, // In hours
+      "country": _country ?? "egypt",
       "schedule": {
         "dayOfWeek": _selectedDayOfWeek!.toLowerCase(),
         "startTime": _formatTime(_selectedStartTime),
-        "timezone": _selectedTimezone ?? 'Africa/Cairo',
+        "endTime": _formatTime(endTime), // Add endTime
+        "timezone": _selectedTimezone ?? "Africa/Cairo",
+        if (widget.service.serviceType.toLowerCase() == 'recurring')
+          "recurrence": _selectedRecurrence,
       },
       "address": {
         "street": _streetController.text,
-        "city": _cityController.text,
-        "state": _stateController.text,
+        "city": _cityController.text.toLowerCase(),
+        "state": _stateController.text.toLowerCase(),
         if (_zipCodeController.text.isNotEmpty)
           "zipCode": _zipCodeController.text,
         "latitude": _currentPosition!.latitude,
         "longitude": _currentPosition!.longitude,
       },
+      if (selectedOptions.isNotEmpty) "selectedOptionIds": selectedOptions,
       if (_detailsController.text.isNotEmpty)
         "details": _detailsController.text,
     };
 
-    // Add recurrence fields for recurring services
-    if (widget.service.serviceType.toLowerCase() == 'recurring') {
-      (bookingRequest['schedule'] as Map<String, dynamic>)['recurrence'] =
-          _selectedRecurrence;
-      // (bookingRequest['schedule'] as Map<String, dynamic>)['recurrenceEndDate'] = _endDateController.text;
-    }
-
     print('Final booking request: $bookingRequest');
-
-    cubit.createBooking(bookingRequest);
+    try {
+      cubit.createBooking(bookingRequest);
+    } catch (e) {
+      print('Error details: $e');
+      if (e is DioException && e.response != null) {
+        print('Server response status: ${e.response?.statusCode}');
+        print('Server response data: ${e.response?.data}');
+        showCustomSnackBar(
+          context: context,
+          message:
+              'Booking failed: ${e.response?.data['message'] ?? e.message}',
+          type: SnackBarType.failure,
+        );
+      } else {
+        showCustomSnackBar(
+          context: context,
+          message: 'Booking failed: $e',
+          type: SnackBarType.failure,
+        );
+      }
+    }
   }
 
   String _capitalizeFirstLetter(String text) {

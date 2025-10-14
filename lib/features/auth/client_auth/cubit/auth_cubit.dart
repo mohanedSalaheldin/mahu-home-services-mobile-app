@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mahu_home_services_app/core/errors/failures.dart';
@@ -95,9 +96,12 @@ class AuthCubit extends Cubit<AuthState> {
   }) async {
     emit(LoginLoadingState());
 
+    String fcmToken = await FirebaseMessaging.instance.getToken() ?? '';
+
     final res = await _authServices.login(
       emailOrPhone: emailOrPhone,
       password: password,
+      fcmToken: fcmToken,
     );
 
     res.fold(
@@ -106,7 +110,8 @@ class AuthCubit extends Cubit<AuthState> {
       },
       (loginResponse) async {
         await CacheHelper.saveString('token', loginResponse.token);
-        await CacheHelper.saveString('serviceProviderCategory', loginResponse.serviceProviderCategory);
+        await CacheHelper.saveString(
+            'serviceProviderCategory', loginResponse.serviceProviderCategory);
         await CacheHelper.saveString(
             'referenceId', loginResponse.businessRegistration.toString());
         await CacheHelper.saveString('userId', loginResponse.user.id);

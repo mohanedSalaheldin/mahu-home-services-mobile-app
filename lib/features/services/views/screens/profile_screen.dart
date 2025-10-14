@@ -5,6 +5,8 @@ import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
 import 'package:mahu_home_services_app/core/utils/helpers/cache_helper.dart';
+import 'package:mahu_home_services_app/core/utils/helpers/localization_helper.dart';
+import 'package:mahu_home_services_app/core/utils/navigation_utils.dart';
 import 'package:mahu_home_services_app/features/auth/client_auth/views/screens/login_screen.dart';
 import 'package:mahu_home_services_app/features/landing/views/screens/choose_rule_screen.dart';
 import 'package:mahu_home_services_app/features/services/cubit/services_cubit.dart';
@@ -15,7 +17,7 @@ import 'package:mahu_home_services_app/features/services/models/user_base_profil
 import 'package:mahu_home_services_app/features/services/services/subscription_services.dart';
 import 'package:mahu_home_services_app/features/services/views/screens/editprofile_screen.dart';
 import 'package:mahu_home_services_app/features/services/views/screens/upgrade_plan_screen.dart';
-import 'package:mahu_home_services_app/features/user_booking/views/screens/profile_screen.dart';
+import 'package:mahu_home_services_app/generated/l10n.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -45,9 +47,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final result = await _subscriptionServices.getUserSubscription(userId);
     result.fold(
       (failure) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(failure.message)),
-        );
+        // ScaffoldMessenger.of(context).showSnackBar(
+        //   SnackBar(content: Text(failure.message)),
+        // );
       },
       (subscription) {
         setState(() {
@@ -73,15 +75,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
           if (state is ServiceErrorState) {
             return Center(
               child: Text(
-                "Error: ${state.message}",
+                S.of(context).profileScreenError(state.message),
                 style: const TextStyle(color: Colors.red, fontSize: 16),
                 textAlign: TextAlign.center,
               ),
             );
-          }
-
-          if (cubit.profile == null) {
-            return const Center(child: Text("No profile loaded"));
           }
 
           final user = cubit.profile;
@@ -99,7 +97,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Gap(24.h),
                   _buildResponseTimeSection(),
                   Gap(24.h),
-                  // _buildSubscriptionSection(),
+                  _buildSubscriptionSection(),
                   // Gap(24.h),
                   _buildSettingsSection(user),
                   Gap(32.h),
@@ -114,12 +112,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  void _showChangeLanguageDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(S.of(context).changeLanguageTitle),
+        content: Text(S.of(context).changeLanguageConfirmation),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(S.of(context).profileScreenCancelButton),
+          ),
+          TextButton(
+            onPressed: () async {
+              context.read<LocaleCubit>().toggleLocale();
+            },
+            child: Text(
+              S.of(context).confirmButton,
+              style: const TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildHeaderSection(
       UserBaseProfileModel user, ProviderPerformanceModel performance) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Profile Avatar
         Container(
           width: 80.w,
           height: 80.w,
@@ -127,7 +149,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             shape: BoxShape.circle,
             color: Colors.grey.shade200,
             image: DecorationImage(
-              image: (user.avatar != null && user.avatar.isNotEmpty)
+              image: (user.avatar.isNotEmpty)
                   ? NetworkImage(user.avatar)
                   : const AssetImage('assets/imgs/no_avatar.png')
                       as ImageProvider,
@@ -135,17 +157,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
         ),
-
         Gap(16.w),
-
-        // Company Info
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 '${user.firstName} ${user.lastName}',
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
                 ),
@@ -160,8 +179,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               Gap(4.w),
               Text(
-                'The Reference Id : ${CacheHelper.getString("referenceId")}',
-                style: TextStyle(
+                S.of(context).profileScreenReferenceId(
+                    CacheHelper.getString("referenceId")!),
+                style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
@@ -169,15 +189,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Gap(8.h),
               Row(
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.star,
                     color: Colors.amber,
                     size: 18,
                   ),
                   Gap(4.w),
                   Text(
-                    '${performance.averageRating.toStringAsFixed(1)} (${performance.totalBookings} reviews)',
-                    style: TextStyle(
+                    '${performance.averageRating.toStringAsFixed(1)} (${performance.totalBookings} ${S.of(context).profileScreenReviews})',
+                    style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                     ),
@@ -196,8 +216,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Stats',
-          style: TextStyle(
+          S.of(context).profileScreenStatsTitle,
+          style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
@@ -206,10 +226,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            _buildStatItem('Completed', performance.completed.toString()),
-            _buildStatItem('Total Earnings',
+            _buildStatItem(S.of(context).profileScreenStatsCompleted,
+                performance.completed.toString()),
+            _buildStatItem(S.of(context).profileScreenStatsTotalEarnings,
                 '\$${performance.totalEarnings.toStringAsFixed(2)}'),
-            _buildStatItem('All Jobs', performance.totalBookings.toString()),
+            _buildStatItem(S.of(context).profileScreenStatsAllJobs,
+                performance.totalBookings.toString()),
           ],
         ),
       ],
@@ -229,7 +251,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Gap(8.h),
         Text(
           value,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
@@ -243,15 +265,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Avg. Response Time',
-          style: TextStyle(
+          S.of(context).profileScreenResponseTimeTitle,
+          style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
         ),
         Gap(8.h),
         Text(
-          'Within 1 hour', // You can make this dynamic
+          S.of(context).profileScreenResponseTimeValue,
           style: TextStyle(
             fontSize: 16,
             color: Colors.grey.shade600,
@@ -261,175 +283,179 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+//
   Widget _buildSubscriptionSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Subscription Plan',
-          style: TextStyle(
+          S.of(context).profileScreenSubscriptionPlanTitle,
+          style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
         ),
         Gap(12.h),
-        _isLoadingSubscription
-            ? const CircularProgressIndicator(color: Colors.blue)
-            : _currentSubscription == null
-                ? Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        padding: EdgeInsets.all(16.w),
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade100,
-                          borderRadius: BorderRadius.circular(12.0),
-                        ),
-                        child: Text(
-                          'You are not subscribed to any plan yet.',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey.shade700,
-                          ),
-                        ),
-                      ),
-                      Gap(12.h),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            padding: EdgeInsets.symmetric(vertical: 16.h),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8.0),
-                            ),
-                          ),
-                          onPressed: () {
-                            final userId =
-                                context.read<ServiceCubit>().profile!.id;
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    UpgradePlanScreen(userId: userId),
-                              ),
-                            ).then((_) => _loadUserSubscription());
-                          },
-                          child: Text(
-                            'Subscribe Now',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  )
-                : Container(
-                    padding: EdgeInsets.all(16.0.w),
+        // _isLoadingSubscription
+        //     ? const CircularProgressIndicator(color: Colors.blue)
+        //     :
+        _currentSubscription == null
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(16.w),
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade50,
+                      color: Colors.grey.shade100,
                       borderRadius: BorderRadius.circular(12.0),
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              width: 40.w,
-                              height: 40.w,
-                              decoration: BoxDecoration(
-                                color: AppColors.primary.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(8.0),
-                              ),
-                              child: Icon(
-                                Icons.workspace_premium,
-                                color: AppColors.primary,
-                              ),
-                            ),
-                            Gap(12.w),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  _currentSubscription!.plan.name,
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                Text(
-                                  '\$${_currentSubscription!.plan.price.toStringAsFixed(2)}/${_currentSubscription!.plan.duration} month(s)',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.grey.shade600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
+                    child: Text(
+                      S.of(context).profileScreenNoSubscription,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey.shade700,
+                      ),
+                    ),
+                  ),
+                  Gap(12.h),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        padding: EdgeInsets.symmetric(vertical: 16.h),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.0),
                         ),
-                        Gap(16.h),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Start Date',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey.shade600,
-                                  ),
-                                ),
-                                Text(
-                                  DateFormat('MMM d, yyyy')
-                                      .format(_currentSubscription!.startDate),
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'End Date',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey.shade600,
-                                  ),
-                                ),
-                                Text(
-                                  DateFormat('MMM d, yyyy')
-                                      .format(_currentSubscription!.endDate),
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        Gap(12.h),
-                        Text(
-                          'Status: ${_currentSubscription!.status}',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color:
-                                _getStatusColor(_currentSubscription!.status),
+                      ),
+                      onPressed: () {
+                        final userId = context.read<ServiceCubit>().profile.id;
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => UpgradePlanScreen(userId: userId),
                           ),
+                        ).then((_) => _loadUserSubscription());
+                      },
+                      child: Text(
+                        S.of(context).profileScreenSubscribeButton,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              )
+            : Container(
+                padding: EdgeInsets.all(16.0.w),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade50,
+                  borderRadius: BorderRadius.circular(12.0),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 40.w,
+                          height: 40.w,
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                          child: const Icon(
+                            Icons.workspace_premium,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                        Gap(12.w),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _currentSubscription!.plan.name,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              S.of(context).profileScreenSubscriptionPrice(
+                                  _currentSubscription!.plan.price
+                                      .toStringAsFixed(2),
+                                  _currentSubscription!.plan.duration
+                                      .toString()),
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                  ),
+                    Gap(16.h),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              S.of(context).profileScreenSubscriptionStartDate,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                            Text(
+                              DateFormat('MMM d, yyyy')
+                                  .format(_currentSubscription!.startDate),
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              S.of(context).profileScreenSubscriptionEndDate,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                            Text(
+                              DateFormat('MMM d, yyyy')
+                                  .format(_currentSubscription!.endDate),
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    Gap(12.h),
+                    Text(
+                      S.of(context).profileScreenSubscriptionStatus(
+                          _currentSubscription!.status),
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: _getStatusColor(_currentSubscription!.status),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
       ],
     );
   }
@@ -452,20 +478,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Settings',
-          style: TextStyle(
+          S.of(context).profileScreenSettingsTitle,
+          style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
         ),
         Gap(16.h),
-        _buildSettingOption(Icons.edit, 'Edit Profile', () {
+        _buildSettingOption(Icons.edit, S.of(context).profileScreenEditProfile,
+            () {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => EditProfileScreen(user: user)),
           );
         }),
-        _buildSettingOption(Icons.logout, 'Log Out', () {
+        // ✅ زر تغيير اللغة
+        _buildSettingOption(
+          Icons.language,
+          S.of(context).changeLanguageButton,
+          _showChangeLanguageDialog,
+        ),
+        _buildSettingOption(Icons.logout, S.of(context).profileScreenLogOut,
+            () {
           _showLogoutConfirmation();
         }),
       ],
@@ -487,7 +521,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Gap(16.w),
             Text(
               label,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 16,
               ),
             ),
@@ -521,13 +555,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
               builder: (_) => UpgradePlanScreen(userId: userId),
             ),
           ).then((_) {
-            // Refresh subscription data when returning from upgrade screen
             _loadUserSubscription();
           });
         },
         child: Text(
-          _currentSubscription == null ? 'Subscribe Now' : 'Upgrade Plan',
-          style: TextStyle(
+          _currentSubscription == null
+              ? S.of(context).profileScreenSubscribeButton
+              : S.of(context).profileScreenUpgradePlanButton,
+          style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
             color: Colors.white,
@@ -541,32 +576,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Log Out'),
-        content: const Text('Are you sure you want to log out?'),
+        title: Text(S.of(context).profileScreenLogOutTitle),
+        content: Text(S.of(context).profileScreenLogOutConfirmation),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(S.of(context).profileScreenCancelButton),
           ),
           TextButton(
             onPressed: () async {
-              // Remove token from SharedPreferences
-              final prefs = await SharedPreferences.getInstance();
-              await prefs.remove('auth_token');
-
-              // Reset ServiceCubit state
-              context.read<ServiceCubit>().close();
-
-              // Navigate to ChooseRuleScreen and clear navigation stack
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (_) => const LoginScreen()),
-                (Route<dynamic> route) => false, // Remove all previous routes
-              );
+              CacheHelper.remove('token');
+              navigateToAndKill(context, const RoleSelectionScreen());
             },
-            child: const Text(
-              'Log Out',
-              style: TextStyle(color: Colors.red),
+            child: Text(
+              S.of(context).profileScreenLogOutButton,
+              style: const TextStyle(color: Colors.red),
             ),
           ),
         ],
@@ -575,5 +599,4 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 }
 
-class UserProfileLoading {
-}
+class UserProfileLoading {}

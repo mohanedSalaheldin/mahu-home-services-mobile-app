@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
-// import 'package:mahu_home_services_app/core/constants/colors.dart';
 import 'package:mahu_home_services_app/features/services/models/service_model.dart';
-import 'package:mahu_home_services_app/features/services/views/screens/service_provider_jobs.dart';
-import 'package:mahu_home_services_app/features/user_booking/views/widgets/favorite_button.dart';
 import 'package:mahu_home_services_app/features/user_booking/views/screens/service_details_screen.dart';
+import 'package:intl/intl.dart';
+import 'package:mahu_home_services_app/generated/l10n.dart';
 
 class ServiceListTile extends StatelessWidget {
   final ServiceModel service;
@@ -25,7 +24,6 @@ class ServiceListTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        // Navigate to Service Details Screen
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -50,7 +48,8 @@ class ServiceListTile extends StatelessWidget {
           children: [
             // Service Image
             ClipRRect(
-              borderRadius: const BorderRadius.horizontal(left: Radius.circular(12)),
+              borderRadius:
+                  const BorderRadius.horizontal(left: Radius.circular(12)),
               child: Image.network(
                 service.image,
                 width: 80.w,
@@ -65,7 +64,7 @@ class ServiceListTile extends StatelessWidget {
               ),
             ),
             Gap(12.w),
-            
+
             // Service Info
             Expanded(
               child: Padding(
@@ -74,8 +73,8 @@ class ServiceListTile extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      service.name,
-                      style: TextStyle(
+                      _getLocalizedServiceName(context, service.name),
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
@@ -84,7 +83,8 @@ class ServiceListTile extends StatelessWidget {
                     ),
                     Gap(4.h),
                     Text(
-                      '${service.duration} hrs • \$${service.basePrice}',
+                      _getLocalizedDurationAndPrice(
+                          context, service.duration.toDouble(), service.basePrice.toDouble()),
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey.shade600,
@@ -92,7 +92,7 @@ class ServiceListTile extends StatelessWidget {
                     ),
                     Gap(4.h),
                     Text(
-                      service.category.capitalize(),
+                      _getLocalizedCategory(context, service.category),
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.grey.shade500,
@@ -102,8 +102,8 @@ class ServiceListTile extends StatelessWidget {
                 ),
               ),
             ),
-            
-            // Favorite Button
+
+            // Favorite Button (Commented out in original code)
             // Padding(
             //   padding: EdgeInsets.all(8.w),
             //   child: FavoriteButton(
@@ -116,5 +116,49 @@ class ServiceListTile extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _getLocalizedServiceName(BuildContext context, String name) {
+    // Placeholder: Replace with actual localization logic based on service name
+    switch (name.toLowerCase()) {
+      case 'deep clean':
+        return S.of(context).serviceListTileDeepCleanName;
+      case 'recurring':
+        return S.of(context).serviceListTileRecurringName;
+      case 'one-time':
+        return S.of(context).serviceListTileOneTimeName;
+      default:
+        return name; // Fallback to original name if not localized
+    }
+  }
+
+  String _getLocalizedCategory(BuildContext context, String category) {
+    // Placeholder: Replace with actual localization logic based on category
+    switch (category.toLowerCase()) {
+      case 'cleaning':
+        return S.of(context).serviceListTileCleaningCategory;
+      case 'painting':
+        return S.of(context).serviceListTilePaintingCategory;
+      default:
+        return category.capitalize(); // Fallback to capitalized category
+    }
+  }
+
+  String _getLocalizedDurationAndPrice(
+      BuildContext context, double duration, double price) {
+    final currencyFormat = NumberFormat.currency(
+      locale: Localizations.localeOf(context).languageCode,
+      symbol: S.of(context).serviceListTileCurrencySymbol,
+      decimalDigits: 0,
+    );
+    return S.of(context)
+        .serviceListTileDurationAndPrice(duration.toString(), currencyFormat.format(price));
+  }
+}
+
+// Extension to capitalize strings (used for fallback)
+extension StringExtension on String {
+  String capitalize() {
+    return "${this[0].toUpperCase()}${substring(1)}";
   }
 }

@@ -11,6 +11,7 @@ import 'package:mahu_home_services_app/features/services/cubit/services_state.da
 import 'package:mahu_home_services_app/features/services/models/booking_model.dart';
 import 'package:mahu_home_services_app/features/services/views/screens/booking_details_screen.dart'
     as booking_details;
+import 'package:mahu_home_services_app/generated/l10n.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ServiceProviderBookingsScreen extends StatefulWidget {
@@ -38,7 +39,7 @@ class _ServiceProviderBookingsScreenState
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Bookings"),
+        title: Text(S.of(context).serviceProviderBookingsScreenTitle),
         centerTitle: false,
         elevation: 0,
         actions: [
@@ -50,13 +51,12 @@ class _ServiceProviderBookingsScreenState
               });
             },
             itemBuilder: (context) => [
-              const PopupMenuItem(value: 'All', child: Text('All Bookings')),
-              const PopupMenuItem(value: 'pending', child: Text('Pending')),
-              const PopupMenuItem(value: 'confirmed', child: Text('Confirmed')),
-              const PopupMenuItem(
-                  value: 'confirmed', child: Text('In Progress')),
-              const PopupMenuItem(value: 'completed', child: Text('Completed')),
-              const PopupMenuItem(value: 'cancelled', child: Text('Cancelled')),
+              PopupMenuItem(value: 'All', child: Text(S.of(context).serviceProviderBookingsScreenFilterAll)),
+              PopupMenuItem(value: 'pending', child: Text(S.of(context).serviceProviderBookingsScreenFilterPending)),
+              PopupMenuItem(value: 'confirmed', child: Text(S.of(context).serviceProviderBookingsScreenFilterConfirmed)),
+              PopupMenuItem(value: 'in-progress', child: Text(S.of(context).serviceProviderBookingsScreenFilterInProgress)),
+              PopupMenuItem(value: 'completed', child: Text(S.of(context).serviceProviderBookingsScreenFilterCompleted)),
+              PopupMenuItem(value: 'cancelled', child: Text(S.of(context).serviceProviderBookingsScreenFilterCancelled)),
             ],
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -85,11 +85,11 @@ class _ServiceProviderBookingsScreenState
         },
         builder: (context, state) {
           if (state is GetMyBookingsLoadingState) {
-            return const Center(
+            return Center(
                 child: CircularProgressIndicator(color: Colors.blue));
           }
           if (state is GetMyBookingsFailedState) {
-            return Center(child: Text('Error: ${state.failure}'));
+            return Center(child: Text(S.of(context).serviceProviderBookingsScreenError(state.failure.msg)));
           }
 
           return Column(
@@ -135,9 +135,9 @@ class _ServiceProviderBookingsScreenState
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildStatItem('Completed', completedCount, Colors.green),
-              _buildStatItem('Confirmed', confirmedCount, AppColors.blue),
-              _buildStatItem('Total', _bookings.length, Colors.grey.shade600),
+              _buildStatItem(S.of(context).serviceProviderBookingsScreenStatsCompleted, completedCount, Colors.green),
+              _buildStatItem(S.of(context).serviceProviderBookingsScreenStatsConfirmed, confirmedCount, AppColors.blue),
+              _buildStatItem(S.of(context).serviceProviderBookingsScreenStatsTotal, _bookings.length, Colors.grey.shade600),
             ],
           ),
         ],
@@ -151,7 +151,7 @@ class _ServiceProviderBookingsScreenState
       path: phoneNumber,
     );
     if (!await launchUrl(launchUri)) {
-      throw Exception('Could not launch $phoneNumber');
+      throw Exception(S.of(context).serviceProviderBookingsScreenCallError(phoneNumber));
     }
   }
 
@@ -190,8 +190,8 @@ class _ServiceProviderBookingsScreenState
           Gap(16.h),
           Text(
             _selectedFilter == 'All'
-                ? "No bookings for this day"
-                : "No $_selectedFilter bookings",
+                ? S.of(context).serviceProviderBookingsScreenNoBookingsDay
+                : S.of(context).serviceProviderBookingsScreenNoBookingsFilter(_selectedFilter),
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w500,
@@ -200,7 +200,7 @@ class _ServiceProviderBookingsScreenState
           ),
           Gap(8.h),
           Text(
-            "You have no scheduled services for ${DateFormat('MMM d, yyyy').format(_selectedDate)}",
+            S.of(context).serviceProviderBookingsScreenNoBookingsSubtitle(DateFormat('MMM d, yyyy').format(_selectedDate)),
             style: TextStyle(
               fontSize: 14,
               color: Colors.grey.shade400,
@@ -213,7 +213,6 @@ class _ServiceProviderBookingsScreenState
   }
 
   Widget _buildBookingCard(BuildContext context, BookingModel booking) {
-    // Get the booking date from schedule or use createdAt as fallback
     DateTime bookingDate = booking.schedule?.startDate ?? booking.createdAt;
     String clientName =
         "${booking.user.profile.firstName} ${booking.user.profile.lastName}";
@@ -309,7 +308,7 @@ class _ServiceProviderBookingsScreenState
                         ),
                         Gap(4.h),
                         Text(
-                          "with $clientName",
+                          S.of(context).serviceProviderBookingsScreenWithClient(clientName),
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.grey.shade600,
@@ -371,7 +370,7 @@ class _ServiceProviderBookingsScreenState
                   ),
                   const Spacer(),
                   Text(
-                    "Payment: ${_formatPaymentStatus(booking.paymentStatus)}",
+                    S.of(context).serviceProviderBookingsScreenPaymentStatus(_formatPaymentStatus(booking.paymentStatus)),
                     style: TextStyle(
                       fontSize: 12,
                       color: _getPaymentStatusColor(booking.paymentStatus),
@@ -389,11 +388,10 @@ class _ServiceProviderBookingsScreenState
                         side: const BorderSide(color: AppColors.blue),
                       ),
                       onPressed: () {
-                        // Handle message/contact client
                         _showContactOptions(context, booking);
                       },
-                      child: const Text(
-                        "Contact",
+                      child: Text(
+                        S.of(context).serviceProviderBookingsScreenContactButton,
                         style: TextStyle(color: AppColors.blue),
                       ),
                     ),
@@ -407,7 +405,7 @@ class _ServiceProviderBookingsScreenState
                       ),
                       onPressed: () => _handleStatusAction(context, booking),
                       child: Text(
-                        _getActionButtonText(booking.status),
+                        _getActionButtonText(booking.status, context),
                         style: const TextStyle(color: Colors.white),
                       ),
                     ),
@@ -431,7 +429,7 @@ class _ServiceProviderBookingsScreenState
           children: [
             ListTile(
               leading: const Icon(Icons.phone),
-              title: Text('Call ${booking.user.profile.firstName}'),
+              title: Text(S.of(context).serviceProviderBookingsScreenCallClient(booking.user.profile.firstName)),
               subtitle: Text(booking.user.phone),
               onTap: () {
                 _makePhoneCall(booking.user.phone);
@@ -447,15 +445,15 @@ class _ServiceProviderBookingsScreenState
     switch (booking.status) {
       case 'pending':
         _showStatusChangeDialog(
-            context, booking, 'confirmed', 'Confirm this booking?');
+            context, booking, 'confirmed', S.of(context).serviceProviderBookingsScreenConfirmDialog);
         break;
       case 'confirmed':
         _showStatusChangeDialog(
-            context, booking, 'in-progress', 'Start this job?');
+            context, booking, 'in-progress', S.of(context).serviceProviderBookingsScreenStartJobDialog);
         break;
       case 'in-progress':
         _showStatusChangeDialog(
-            context, booking, 'completed', 'Mark as completed?');
+            context, booking, 'completed', S.of(context).serviceProviderBookingsScreenCompleteDialog);
         break;
       case 'completed':
         Navigator.push(
@@ -492,12 +490,12 @@ class _ServiceProviderBookingsScreenState
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Confirm Action'),
+        title: Text(S.of(context).serviceProviderBookingsScreenConfirmActionTitle),
         content: Text(message),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(S.of(context).serviceProviderBookingsScreenCancelButton),
           ),
           ElevatedButton(
             onPressed: () {
@@ -506,7 +504,7 @@ class _ServiceProviderBookingsScreenState
                   .read<ServiceCubit>()
                   .changeBookingStatus(booking.id, newStatus);
             },
-            child: const Text('Confirm'),
+            child: Text(S.of(context).serviceProviderBookingsScreenConfirmButton),
           ),
         ],
       ),
@@ -541,7 +539,7 @@ class _ServiceProviderBookingsScreenState
                   });
                 },
                 child: Text(
-                  'Today',
+                  S.of(context).serviceProviderBookingsScreenTodayButton,
                   style: TextStyle(
                     fontSize: 14,
                     color: AppColors.blue,
@@ -654,16 +652,21 @@ class _ServiceProviderBookingsScreenState
   }
 
   Widget _buildWeekdayHeaders() {
-    const weekdays = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
     return Row(
-      children: weekdays
-          .map(
-            (day) => Expanded(
+      children: [
+        S.of(context).serviceProviderBookingsScreenWeekdaySunday,
+        S.of(context).serviceProviderBookingsScreenWeekdayMonday,
+        S.of(context).serviceProviderBookingsScreenWeekdayTuesday,
+        S.of(context).serviceProviderBookingsScreenWeekdayWednesday,
+        S.of(context).serviceProviderBookingsScreenWeekdayThursday,
+        S.of(context).serviceProviderBookingsScreenWeekdayFriday,
+        S.of(context).serviceProviderBookingsScreenWeekdaySaturday,
+      ].asMap().entries.map((entry) => Expanded(
               child: Container(
                 alignment: Alignment.center,
                 padding: EdgeInsets.symmetric(vertical: 8.h),
                 child: Text(
-                  day,
+                  entry.value,
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
@@ -671,24 +674,22 @@ class _ServiceProviderBookingsScreenState
                   ),
                 ),
               ),
-            ),
-          )
-          .toList(),
+            )).toList(),
     );
   }
 
   String _formatStatus(String status) {
     switch (status) {
       case 'pending':
-        return 'Pending';
+        return S.of(context).serviceProviderBookingsScreenStatusPending;
       case 'confirmed':
-        return 'Confirmed';
+        return S.of(context).serviceProviderBookingsScreenStatusConfirmed;
       case 'in-progress':
-        return 'In Progress';
+        return S.of(context).serviceProviderBookingsScreenStatusInProgress;
       case 'completed':
-        return 'Completed';
+        return S.of(context).serviceProviderBookingsScreenStatusCompleted;
       case 'cancelled':
-        return 'Cancelled';
+        return S.of(context).serviceProviderBookingsScreenStatusCancelled;
       default:
         return status.toUpperCase();
     }
@@ -697,11 +698,11 @@ class _ServiceProviderBookingsScreenState
   String _formatPaymentStatus(String paymentStatus) {
     switch (paymentStatus.toLowerCase()) {
       case 'paid':
-        return 'Paid';
+        return S.of(context).serviceProviderBookingsScreenPaymentStatusPaid;
       case 'pending':
-        return 'Pending';
+        return S.of(context).serviceProviderBookingsScreenPaymentStatusPending;
       case 'failed':
-        return 'Failed';
+        return S.of(context).serviceProviderBookingsScreenPaymentStatusFailed;
       default:
         return paymentStatus;
     }
@@ -754,20 +755,20 @@ class _ServiceProviderBookingsScreenState
     }
   }
 
-  String _getActionButtonText(String status) {
+  String _getActionButtonText(String status, BuildContext context) {
     switch (status) {
       case 'pending':
-        return 'Confirm';
+        return S.of(context).serviceProviderBookingsScreenActionConfirm;
       case 'confirmed':
-        return 'Start Job';
+        return S.of(context).serviceProviderBookingsScreenActionStartJob;
       case 'in-progress':
-        return 'Complete';
+        return S.of(context).serviceProviderBookingsScreenActionComplete;
       case 'completed':
-        return 'View Details';
+        return S.of(context).serviceProviderBookingsScreenActionViewDetails;
       case 'cancelled':
-        return 'Reschedule';
+        return S.of(context).serviceProviderBookingsScreenActionReschedule;
       default:
-        return 'Action';
+        return S.of(context).serviceProviderBookingsScreenActionDefault;
     }
   }
 

@@ -7,10 +7,11 @@ import 'package:latlong2/latlong.dart' as latlng;
 import 'package:intl/intl.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
 import 'package:geocoding/geocoding.dart' as geo;
+import 'package:mahu_home_services_app/generated/l10n.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../cubit/services_cubit.dart';
-import '../../models/booking_model.dart'; // Import your updated BookingModel
+import '../../models/booking_model.dart';
 
 class BookingDetailsScreen extends StatefulWidget {
   final BookingModel booking;
@@ -34,14 +35,11 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
 
   Future<void> _determineLocation() async {
     try {
-      // Use coordinates from address
       if (widget.booking.address.coordinates.isNotEmpty &&
           widget.booking.address.coordinates.length >= 2) {
         _setLocationWithCoordinates();
         return;
       }
-
-      // If coordinates not available, try to geocode the address
       await _geocodeAddress();
     } catch (e) {
       print("Error determining location: $e");
@@ -67,8 +65,6 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
 
       if (locations.isNotEmpty) {
         final location = locations.first;
-
-        // Reverse geocode to get country information
         final places = await geo.placemarkFromCoordinates(
           location.latitude,
           location.longitude,
@@ -99,8 +95,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
   }
 
   void _setFallbackLocation() {
-    // Determine fallback based on booking state or default to Egypt
-    final fallbackState = widget.booking.address.state?.toLowerCase();
+    final fallbackState = widget.booking.address.state.toLowerCase();
     latlng.LatLng fallbackLocation;
 
     if (fallbackState == 'dubai' || fallbackState == 'uae') {
@@ -114,7 +109,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
     setState(() {
       _serviceLocation = fallbackLocation;
       _isMapLoading = false;
-      _mapError = "Showing approximate location";
+      _mapError = S.of(context).bookingDetailsScreenMapError;
     });
   }
 
@@ -124,7 +119,9 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
       path: phoneNumber,
     );
     if (!await launchUrl(launchUri)) {
-      throw Exception('Could not launch $phoneNumber');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(S.of(context).bookingDetailsScreenPhoneError)),
+      );
     }
   }
 
@@ -146,7 +143,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
 
     if (!await launchUrl(uri)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not open maps app')),
+        SnackBar(content: Text(S.of(context).bookingDetailsScreenMapsError)),
       );
     }
   }
@@ -171,11 +168,45 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
     }
   }
 
+  String _getFormattedStatus(String status) {
+    switch (status.toLowerCase()) {
+      case 'pending':
+        return S.of(context).bookingDetailsScreenStatusPending;
+      case 'confirmed':
+        return S.of(context).bookingDetailsScreenStatusConfirmed;
+      case 'in-progress':
+        return S.of(context).bookingDetailsScreenStatusInProgress;
+      case 'completed':
+        return S.of(context).bookingDetailsScreenStatusCompleted;
+      case 'cancelled':
+        return S.of(context).bookingDetailsScreenStatusCancelled;
+      default:
+        return status;
+    }
+  }
+
+  String _getActionButtonText(String status) {
+    switch (status.toLowerCase()) {
+      case 'pending':
+        return S.of(context).bookingDetailsScreenActionConfirm;
+      case 'confirmed':
+        return S.of(context).bookingDetailsScreenActionStart;
+      case 'in-progress':
+        return S.of(context).bookingDetailsScreenActionComplete;
+      case 'completed':
+        return S.of(context).bookingDetailsScreenActionReceipt;
+      case 'cancelled':
+        return S.of(context).bookingDetailsScreenActionReschedule;
+      default:
+        return S.of(context).bookingDetailsScreenActionDefault;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Booking Details"),
+        title: Text(S.of(context).bookingDetailsScreenTitle),
         centerTitle: false,
         elevation: 0,
         backgroundColor: Colors.white,
@@ -224,7 +255,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                "📍 Service Location",
+                S.of(context).bookingDetailsScreenLocationTitle,
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
@@ -232,9 +263,9 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                 ),
               ),
               IconButton(
-                icon: Icon(Icons.directions, color: AppColors.primary),
+                icon: const Icon(Icons.directions, color: AppColors.primary),
                 onPressed: _openMapsApp,
-                tooltip: 'Open in Maps',
+                tooltip: S.of(context).bookingDetailsScreenDirectionsTooltip,
               ),
             ],
           ),
@@ -272,13 +303,13 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(
+          const CircularProgressIndicator(
             color: AppColors.primary,
             strokeWidth: 2,
           ),
           Gap(12.h),
           Text(
-            'Loading map...',
+            S.of(context).bookingDetailsScreenMapLoading,
             style: TextStyle(
               color: Colors.grey.shade600,
               fontSize: 14,
@@ -294,11 +325,11 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.error_outline, color: Colors.red, size: 40),
+          const Icon(Icons.error_outline, color: Colors.red, size: 40),
           Gap(8.h),
           Text(
-            'Location not available',
-            style: TextStyle(color: Colors.red),
+            S.of(context).bookingDetailsScreenMapNotAvailable,
+            style: const TextStyle(color: Colors.red),
           ),
         ],
       ),
@@ -361,7 +392,8 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
             onPressed: () {
               _mapController.move(_serviceLocation!, _getInitialZoom());
             },
-            child: Icon(Icons.my_location, color: AppColors.primary, size: 20),
+            child: const Icon(Icons.my_location,
+                color: AppColors.primary, size: 20),
           ),
         ),
       ],
@@ -411,7 +443,9 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
               children: [
                 if (_detectedCountry != null)
                   Text(
-                    'Location: $_detectedCountry',
+                    S
+                        .of(context)
+                        .bookingDetailsScreenLocation(_detectedCountry!),
                     style: TextStyle(
                       fontSize: 12,
                       color: Colors.blue.shade800,
@@ -438,11 +472,11 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
     return SizedBox(
       width: double.infinity,
       child: OutlinedButton.icon(
-        icon: Icon(Icons.directions, size: 20),
-        label: Text('Get Directions'),
+        icon: const Icon(Icons.directions, size: 20),
+        label: Text(S.of(context).bookingDetailsScreenDirectionsButton),
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.primary,
-          side: BorderSide(color: AppColors.primary),
+          side: const BorderSide(color: AppColors.primary),
           padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
@@ -489,7 +523,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  widget.booking.status.toUpperCase(),
+                  _getFormattedStatus(widget.booking.status),
                   style: TextStyle(
                     fontSize: 12,
                     color: _getStatusColor(widget.booking.status),
@@ -539,7 +573,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "👤 Client Information",
+            S.of(context).bookingDetailsScreenClientTitle,
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w700,
@@ -568,14 +602,15 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                         child: Image.network(
                           widget.booking.user.profile.avatar!,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => Icon(
+                          errorBuilder: (context, error, stackTrace) =>
+                              const Icon(
                             Icons.person,
                             color: AppColors.primary,
                             size: 28,
                           ),
                         ),
                       )
-                    : Icon(
+                    : const Icon(
                         Icons.person,
                         color: AppColors.primary,
                         size: 28,
@@ -598,10 +633,12 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                     if (widget.booking.service.averageRating > 0)
                       Row(
                         children: [
-                          Icon(Icons.star, color: Colors.amber, size: 16),
+                          const Icon(Icons.star, color: Colors.amber, size: 16),
                           Gap(4.w),
                           Text(
-                            "${widget.booking.service.averageRating} (${widget.booking.service.totalReviews} reviews)",
+                            S.of(context).bookingDetailsScreenRating(
+                                widget.booking.service.averageRating,
+                                widget.booking.service.totalReviews),
                             style: TextStyle(
                               fontSize: 14,
                               color: Colors.grey.shade600,
@@ -619,7 +656,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
           Gap(16.h),
           _buildInfoRow(
             icon: Icons.phone,
-            title: "Phone Number",
+            title: S.of(context).bookingDetailsScreenPhoneLabel,
             value: widget.booking.user.phone,
             isClickable: true,
             onTap: () => _makePhoneCall(widget.booking.user.phone),
@@ -627,7 +664,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
           Gap(12.h),
           _buildInfoRow(
             icon: Icons.email,
-            title: "Email",
+            title: S.of(context).bookingDetailsScreenEmailLabel,
             value: widget.booking.user.email,
             isClickable: true,
             onTap: () => _launchEmail(widget.booking.user.email),
@@ -643,7 +680,9 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
       path: email,
     );
     if (!await launchUrl(emailUri)) {
-      throw Exception('Could not launch email');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(S.of(context).bookingDetailsScreenEmailError)),
+      );
     }
   }
 
@@ -665,7 +704,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "🛠️ Service Details",
+            S.of(context).bookingDetailsScreenServiceTitle,
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w700,
@@ -674,34 +713,36 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
           ),
           Gap(16.h),
           if (widget.booking.schedule?.startDate != null)
-          _buildInfoRow(
-            icon: Icons.calendar_today,
-            title: "Scheduled Date",
-            value: DateFormat('MMM d, yyyy')
-                .format(widget.booking.schedule!.startDate ?? DateTime.now()),
-            isClickable: false,
-          ),
-          if (widget.booking.schedule?.startTime != null && widget.booking.schedule?.endTime != null) ...[
-          Gap(12.h),
-          _buildInfoRow(
-            icon: Icons.access_time,
-            title: "Time Slot",
-            value:
-                '${widget.booking.schedule!.startTime} - ${widget.booking.schedule!.endTime}',
-            isClickable: false,
-          ),
+            _buildInfoRow(
+              icon: Icons.calendar_today,
+              title: S.of(context).bookingDetailsScreenDateLabel,
+              value: DateFormat('MMM d, yyyy')
+                  .format(widget.booking.schedule!.startDate ?? DateTime.now()),
+              isClickable: false,
+            ),
+          if (widget.booking.schedule?.startTime != null &&
+              widget.booking.schedule?.endTime != null) ...[
+            Gap(12.h),
+            _buildInfoRow(
+              icon: Icons.access_time,
+              title: S.of(context).bookingDetailsScreenTimeSlotLabel,
+              value:
+                  '${widget.booking.schedule!.startTime} - ${widget.booking.schedule!.endTime}',
+              isClickable: false,
+            ),
           ],
           Gap(12.h),
           _buildInfoRow(
             icon: Icons.timer,
-            title: "Duration",
-            value: "${widget.booking.duration / 60} hours",
+            title: S.of(context).bookingDetailsScreenDurationLabel,
+            value: S.of(context).bookingDetailsScreenDurationValue(
+                widget.booking.duration / 60),
             isClickable: false,
           ),
           Gap(12.h),
           _buildInfoRow(
             icon: Icons.description,
-            title: "Service Description",
+            title: S.of(context).bookingDetailsScreenDescriptionLabel,
             value: widget.booking.service.description,
             isClickable: false,
           ),
@@ -710,7 +751,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
             Gap(12.h),
             _buildInfoRow(
               icon: Icons.note,
-              title: "Special Instructions",
+              title: S.of(context).bookingDetailsScreenInstructionsLabel,
               value: widget.booking.details!,
               isClickable: false,
             ),
@@ -718,10 +759,10 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
           Gap(12.h),
           _buildInfoRow(
             icon: Icons.build,
-            title: "Tools Required",
+            title: S.of(context).bookingDetailsScreenToolsLabel,
             value: widget.booking.option.hasTools
-                ? "Client has tools"
-                : "Bring your own tools",
+                ? S.of(context).bookingDetailsScreenToolsClient
+                : S.of(context).bookingDetailsScreenToolsProvider,
             isClickable: false,
           ),
         ],
@@ -747,7 +788,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "💰 Payment Information",
+            S.of(context).bookingDetailsScreenPaymentTitle,
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w700,
@@ -759,15 +800,16 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                "Service Fee",
+                S.of(context).bookingDetailsScreenServiceFeeLabel,
                 style: TextStyle(
                   fontSize: 14,
                   color: Colors.grey.shade600,
                 ),
               ),
               Text(
-                "\$${widget.booking.price.toStringAsFixed(2)}",
-                style: TextStyle(
+                S.of(context).bookingDetailsScreenPrice(
+                    widget.booking.price.toStringAsFixed(2)),
+                style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
@@ -779,15 +821,15 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                "Tax",
+                S.of(context).bookingDetailsScreenTaxLabel,
                 style: TextStyle(
                   fontSize: 14,
                   color: Colors.grey.shade600,
                 ),
               ),
-              const Text(
-                "\$0.00",
-                style: TextStyle(
+              Text(
+                S.of(context).bookingDetailsScreenTaxValue,
+                style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
@@ -801,15 +843,16 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                "Total Amount",
-                style: TextStyle(
+                S.of(context).bookingDetailsScreenTotalLabel,
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
               ),
               Text(
-                "\$${widget.booking.price.toStringAsFixed(2)}",
-                style: TextStyle(
+                S.of(context).bookingDetailsScreenPrice(
+                    widget.booking.price.toStringAsFixed(2)),
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                   color: AppColors.primary,
@@ -822,7 +865,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                "Payment Status",
+                S.of(context).bookingDetailsScreenPaymentStatusLabel,
                 style: TextStyle(
                   fontSize: 14,
                   color: Colors.grey.shade600,
@@ -836,7 +879,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  widget.booking.paymentStatus.toUpperCase(),
+                  _getFormattedStatus(widget.booking.paymentStatus),
                   style: TextStyle(
                     fontSize: 12,
                     color: _getPaymentStatusColor(widget.booking.paymentStatus),
@@ -889,7 +932,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                 _showCancelDialog(context);
               },
               child: Text(
-                "Cancel Booking",
+                S.of(context).bookingDetailsScreenCancelButton,
                 style: TextStyle(color: Colors.red.shade400),
               ),
             ),
@@ -978,7 +1021,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(S.of(context).bookingDetailsScreenDialogCancel),
           ),
           ElevatedButton(
             onPressed: () {
@@ -986,18 +1029,17 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
               context
                   .read<ServiceCubit>()
                   .changeBookingStatus(widget.booking.id, newStatus);
-              // Update the booking status locally
               setState(() {
                 widget.booking.status = newStatus;
               });
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text(
-                      'Booking status updated to ${_formatStatus(newStatus)}'),
+                  content: Text(S.of(context).bookingDetailsScreenStatusUpdated(
+                      _getFormattedStatus(newStatus))),
                 ),
               );
             },
-            child: const Text('Confirm'),
+            child: Text(S.of(context).bookingDetailsScreenDialogConfirm),
           ),
         ],
       ),
@@ -1008,13 +1050,12 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Cancel Booking'),
-        content: const Text(
-            'Are you sure you want to cancel this booking? This action cannot be undone.'),
+        title: Text(S.of(context).bookingDetailsScreenCancelTitle),
+        content: Text(S.of(context).bookingDetailsScreenCancelMessage),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Go Back'),
+            child: Text(S.of(context).bookingDetailsScreenDialogGoBack),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
@@ -1027,8 +1068,9 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                 widget.booking.status = 'cancelled';
               });
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Booking has been cancelled'),
+                SnackBar(
+                  content:
+                      Text(S.of(context).bookingDetailsScreenCancelSuccess),
                   backgroundColor: Colors.red,
                 ),
               );
@@ -1036,8 +1078,10 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                 Navigator.pop(context);
               });
             },
-            child: const Text('Cancel Booking',
-                style: TextStyle(color: Colors.white)),
+            child: Text(
+              S.of(context).bookingDetailsScreenCancelButton,
+              style: const TextStyle(color: Colors.white),
+            ),
           ),
         ],
       ),
@@ -1047,16 +1091,25 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
   void _handleStatusAction(BuildContext context) {
     switch (widget.booking.status.toLowerCase()) {
       case 'pending':
-        _showConfirmationDialog(context, 'Confirm Booking',
-            'Are you sure you want to confirm this booking?', 'confirmed');
+        _showConfirmationDialog(
+            context,
+            S.of(context).bookingDetailsScreenConfirmTitle,
+            S.of(context).bookingDetailsScreenConfirmMessage,
+            'confirmed');
         break;
       case 'confirmed':
-        _showConfirmationDialog(context, 'Start Job',
-            'Are you ready to start this job?', 'in-progress');
+        _showConfirmationDialog(
+            context,
+            S.of(context).bookingDetailsScreenStartTitle,
+            S.of(context).bookingDetailsScreenStartMessage,
+            'in-progress');
         break;
       case 'in-progress':
-        _showConfirmationDialog(context, 'Complete Job',
-            'Have you completed all the work?', 'completed');
+        _showConfirmationDialog(
+            context,
+            S.of(context).bookingDetailsScreenCompleteTitle,
+            S.of(context).bookingDetailsScreenCompleteMessage,
+            'completed');
         break;
       case 'completed':
         break;
@@ -1109,40 +1162,6 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
         return Colors.grey;
       default:
         return AppColors.primary;
-    }
-  }
-
-  String _getActionButtonText(String status) {
-    switch (status.toLowerCase()) {
-      case 'pending':
-        return 'Confirm Booking';
-      case 'confirmed':
-        return 'Start Job';
-      case 'in-progress':
-        return 'Mark as Completed';
-      case 'completed':
-        return 'View Receipt';
-      case 'cancelled':
-        return 'Reschedule';
-      default:
-        return 'Action';
-    }
-  }
-
-  String _formatStatus(String status) {
-    switch (status.toLowerCase()) {
-      case 'pending':
-        return 'Pending';
-      case 'confirmed':
-        return 'Confirmed';
-      case 'in-progress':
-        return 'In Progress';
-      case 'completed':
-        return 'Completed';
-      case 'cancelled':
-        return 'Cancelled';
-      default:
-        return status;
     }
   }
 }

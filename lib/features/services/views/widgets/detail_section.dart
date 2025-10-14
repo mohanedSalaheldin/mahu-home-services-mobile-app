@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:mahu_home_services_app/features/services/models/service_model.dart';
 import 'package:mahu_home_services_app/features/services/views/screens/service_details_screen.dart';
+import 'package:mahu_home_services_app/generated/l10n.dart';
 
 class DetailSection extends StatelessWidget {
   final ServiceModel service;
@@ -15,20 +16,37 @@ class DetailSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Service Details',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          S.of(context).detailSectionTitle,
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         Gap(16.h),
-        DetailRow(label: "Category", value: service.category),
-        DetailRow(label: "Service Type", value: service.serviceType),
-        DetailRow(label: "Sub-Type", value: service.subType),
-        DetailRow(label: "Pricing Model", value: service.pricingModel),
         DetailRow(
-            label: service.serviceType == "recurring" ? "Price of service" : "Price of each hour", value: '\$${service.basePrice.toStringAsFixed(2)}'),
+          label: S.of(context).detailSectionCategoryLabel,
+          value: service.category,
+        ),
         DetailRow(
-          label: "Duration",
-          value:
-              "${service.duration} hours",
+          label: S.of(context).detailSectionServiceTypeLabel,
+          value: service.serviceType,
+        ),
+        DetailRow(
+          label: S.of(context).detailSectionSubTypeLabel,
+          value: service.subType,
+        ),
+        DetailRow(
+          label: S.of(context).detailSectionPricingModelLabel,
+          value: service.pricingModel,
+        ),
+        DetailRow(
+          label: service.serviceType == "recurring"
+              ? S.of(context).detailSectionPriceRecurringLabel
+              : S.of(context).detailSectionPriceHourlyLabel,
+          value: S
+              .of(context)
+              .detailSectionPriceValue(service.basePrice.toStringAsFixed(2)),
+        ),
+        DetailRow(
+          label: S.of(context).detailSectionDurationLabel,
+          value: S.of(context).detailSectionDurationValue(service.duration),
         ),
       ],
     );
@@ -62,7 +80,7 @@ class DetailRow extends StatelessWidget {
           Expanded(
             child: Text(
               value,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),

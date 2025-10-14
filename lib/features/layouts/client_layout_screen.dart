@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
-// C:\nodejs-projects\mahu-app-veersion2\mahu-home-services-mobile-app\lib\features\user_booking\views\screens\my_bookings_screen.dart
 import 'package:mahu_home_services_app/features/user_booking/views/screens/my_bookings_screen.dart';
 import 'package:mahu_home_services_app/features/user_booking/views/screens/customer_home_screen.dart';
 import 'package:mahu_home_services_app/features/user_booking/views/screens/profile_screen.dart';
 import 'package:mahu_home_services_app/features/user_booking/views/screens/my_favorite_services_screen.dart';
+import 'package:mahu_home_services_app/generated/l10n.dart';
+
 class ClientLayoutScreen extends StatelessWidget {
   ClientLayoutScreen({super.key});
 
@@ -67,28 +68,28 @@ class CustomBottomNavBar extends StatelessWidget {
           _NavBarItem(
             icon: Icons.home_outlined,
             activeIcon: Icons.home_rounded,
-            label: 'Home',
+            label: S.of(context).clientLayoutScreenHomeLabel,
             isActive: currentIndex == 0,
             onTap: () => onTap(0),
           ),
           _NavBarItem(
             icon: Icons.calendar_today_outlined,
             activeIcon: Icons.calendar_today_rounded,
-            label: 'Bookings',
+            label: S.of(context).clientLayoutScreenBookingsLabel,
             isActive: currentIndex == 1,
             onTap: () => onTap(1),
           ),
           _NavBarItem(
             icon: Icons.favorite_outline,
             activeIcon: Icons.favorite_rounded,
-            label: 'Favorites',
+            label: S.of(context).clientLayoutScreenFavoritesLabel,
             isActive: currentIndex == 2,
             onTap: () => onTap(2),
           ),
           _NavBarItem(
             icon: Icons.person_outline,
             activeIcon: Icons.person_rounded,
-            label: 'Profile',
+            label: S.of(context).clientLayoutScreenProfileLabel,
             isActive: currentIndex == 3,
             onTap: () => onTap(3),
           ),
@@ -128,7 +129,9 @@ class _NavBarItem extends StatelessWidget {
               duration: const Duration(milliseconds: 200),
               padding: EdgeInsets.all(8.w),
               decoration: BoxDecoration(
-                color: isActive ? Colors.blue.withOpacity(0.2) : Colors.transparent,
+                color: isActive
+                    ? Colors.blue.withOpacity(0.2)
+                    : Colors.transparent,
                 shape: BoxShape.circle,
               ),
               child: Icon(

@@ -6,6 +6,7 @@ import 'package:mahu_home_services_app/core/utils/navigation_utils.dart';
 import 'package:mahu_home_services_app/features/landing/views/widgets/app_filled_button.dart';
 import 'package:mahu_home_services_app/features/user_booking/views/screens/select_address_screen.dart';
 import 'package:mahu_home_services_app/features/user_booking/views/widgets/select_room_count_list_tile_widget.dart';
+import 'package:mahu_home_services_app/generated/l10n.dart';
 
 class SelectRoomsScreen extends StatelessWidget {
   const SelectRoomsScreen({super.key});
@@ -14,7 +15,7 @@ class SelectRoomsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Select Rooms'),
+        title: Text(S.of(context).selectRoomsScreenTitle),
         centerTitle: true,
         leading: const BackButton(
           style: ButtonStyle(),
@@ -25,7 +26,7 @@ class SelectRoomsScreen extends StatelessWidget {
         child: Column(
           children: [
             SelectRoomCountListTileWidget(
-              label: 'Living Room',
+              label: S.of(context).selectRoomsScreenLivingRoomLabel,
               icon: Icons.meeting_room,
               onChanged: (int value) {
                 // print('عدد الغرف: $value');
@@ -33,15 +34,15 @@ class SelectRoomsScreen extends StatelessWidget {
             ),
             Gap(20.h),
             SelectRoomCountListTileWidget(
-              label: 'Living Room',
-              icon: Icons.chair, // أو أيقونة مناسبة
+              label: S.of(context).selectRoomsScreenLivingRoomLabel,
+              icon: Icons.chair,
               onChanged: (value) {
                 print('Living Room: $value');
               },
             ),
             Gap(20.h),
             SelectRoomCountListTileWidget(
-              label: 'Bedroom',
+              label: S.of(context).selectRoomsScreenBedroomLabel,
               icon: Icons.bed,
               onChanged: (value) {
                 print('Bedroom: $value');
@@ -49,7 +50,7 @@ class SelectRoomsScreen extends StatelessWidget {
             ),
             Gap(20.h),
             SelectRoomCountListTileWidget(
-              label: 'Dining Room',
+              label: S.of(context).selectRoomsScreenDiningRoomLabel,
               icon: Icons.local_dining,
               onChanged: (value) {
                 print('Dining Room: $value');
@@ -57,7 +58,7 @@ class SelectRoomsScreen extends StatelessWidget {
             ),
             Gap(20.h),
             SelectRoomCountListTileWidget(
-              label: 'Bathroom',
+              label: S.of(context).selectRoomsScreenBathroomLabel,
               icon: Icons.bathtub,
               onChanged: (value) {
                 print('Bathroom: $value');
@@ -65,7 +66,7 @@ class SelectRoomsScreen extends StatelessWidget {
             ),
             Gap(20.h),
             SelectRoomCountListTileWidget(
-              label: 'Kitchen',
+              label: S.of(context).selectRoomsScreenKitchenLabel,
               icon: Icons.kitchen,
               onChanged: (value) {
                 print('Kitchen: $value');
@@ -77,7 +78,7 @@ class SelectRoomsScreen extends StatelessWidget {
                 navigateTo(context, const SelectAddressScreen());
               },
               fontSize: 15,
-              text: "Continue",
+              text: S.of(context).selectRoomsScreenContinue,
             ),
           ],
         ),

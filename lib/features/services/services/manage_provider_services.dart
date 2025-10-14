@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:mahu_home_services_app/core/constants/app_const.dart';
 import 'package:mahu_home_services_app/core/errors/failures.dart';
 import 'package:mahu_home_services_app/core/utils/helpers/request_hundler.dart';
 import 'package:mahu_home_services_app/core/utils/helpers/cache_helper.dart';
@@ -35,7 +36,7 @@ class ManageProviderServices {
     }
 
     return RequestHundler.handleRequest<Unit>(
-      request: () => RequestHundler.dio.post(
+      request: (options) => RequestHundler.dio.post(
         '/services',
         data: {
           "name": service.name,
@@ -57,6 +58,16 @@ class ManageProviderServices {
                     "endTime": slot.endTime,
                   })
               .toList(),
+          'options': service.options
+              .map((option) => {
+                    "name": option.name,
+                    "price": option.price,
+                    'description': option.description,
+                    'pricingModel': service.pricingModel,
+                    'appliesTo': service.serviceType,
+                    'active': true,
+                  })
+              .toList(),
         },
         options: Options(
           headers: {
@@ -69,51 +80,56 @@ class ManageProviderServices {
         print('Service added successfully: $data');
         return unit;
       },
+      headers: {"Accept-Language": CacheHelper.getString(appLang) ?? 'en'},
     );
   }
 
   // Example method to change active servicevice
   Future<Either<Failure, Unit>> toggleServiceStatus(
-    String serviceId, bool isActive) async {
-  final token = CacheHelper.getString('token') ?? '';
+      String serviceId, bool isActive) async {
+    final token = CacheHelper.getString('token') ?? '';
 
-  final String endpoint = isActive
-      ? '/services/unactive/$serviceId'
-      : '/services/active/$serviceId';
+    final String endpoint = isActive
+        ? '/services/unactive/$serviceId'
+        : '/services/active/$serviceId';
 
-  try {
-    return RequestHundler.handleRequest<Unit>(
-      request: () => RequestHundler.dio.put(
-        endpoint,
-        options: Options(
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer $token',
-          },
+    try {
+      return RequestHundler.handleRequest<Unit>(
+        request: (options) => RequestHundler.dio.put(
+          endpoint,
+          options: Options(
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $token',
+            },
+          ),
         ),
-      ),
-      onSuccess: (data) {
-        debugPrint(
-          'Service ${isActive ? "deactivated" : "activated"} successfully → $serviceId',
-        );
-        return unit; // No payload expected, just success
-      },
-    );
-  } catch (e, stack) {
-    debugPrint('Unexpected error while toggling service $serviceId: $e\n$stack');
-    return left(Failure('Unexpected error occurred'));
+        onSuccess: (data) {
+          debugPrint(
+            'Service ${isActive ? "deactivated" : "activated"} successfully → $serviceId',
+          );
+          return unit; // No payload expected, just success
+        },
+        headers: {"Accept-Language": CacheHelper.getString(appLang) ?? 'en'},
+      );
+    } catch (e, stack) {
+      debugPrint(
+          'Unexpected error while toggling service $serviceId: $e\n$stack');
+      return left(Failure('Unexpected error occurred'));
+    }
   }
-}
 
   Future<Either<Failure, Unit>> updateService(ServiceModel service) async {
     String token = CacheHelper.getString('token') ?? '';
     String imageUrl = '';
-    if (service.image.isNotEmpty) {
+    if (service.image.isNotEmpty &&
+        (service.image.startsWith('file://') ||
+            !service.image.startsWith('http'))) {
       imageUrl = await UploadMediaHelper.uploadImage(File(service.image)) ?? '';
     }
 
     return RequestHundler.handleRequest<Unit>(
-      request: () {
+      request: (options) {
         var data2 = {
           "name": service.name,
           "description": service.description,
@@ -124,6 +140,16 @@ class ManageProviderServices {
               .map((slot) => {
                     "startTime": slot.startTime,
                     "endTime": slot.endTime,
+                  })
+              .toList(),
+          'options': service.options
+              .map((option) => {
+                    "name": option.name,
+                    "price": option.price,
+                    'description': option.description,
+                    'pricingModel': service.pricingModel,
+                    'appliesTo': service.serviceType,
+                    'active': true,
                   })
               .toList(),
         };
@@ -145,6 +171,7 @@ class ManageProviderServices {
         print('Service added successfully: $data');
         return unit;
       },
+      headers: {"Accept-Language": CacheHelper.getString(appLang) ?? 'en'},
     );
   }
 
@@ -155,7 +182,7 @@ class ManageProviderServices {
     print(token);
     print('--------------------');
     return RequestHundler.handleRequest<List<ServiceModel>>(
-      request: () => RequestHundler.dio.get(
+      request: (options) => RequestHundler.dio.get(
         '/services/mine',
         data: {},
         options: Options(
@@ -170,13 +197,14 @@ class ManageProviderServices {
             .map((service) => ServiceModel.fromJson(service))
             .toList();
       },
+      headers: {"Accept-Language": CacheHelper.getString(appLang) ?? 'en'},
     );
   }
 
   Future<Either<Failure, ProviderPerformanceModel>> getProviderPerformance() {
     String token = CacheHelper.getString('token') ?? '';
     return RequestHundler.handleRequest<ProviderPerformanceModel>(
-      request: () => RequestHundler.dio.get('/providers/me/performance',
+      request: (options) => RequestHundler.dio.get('/providers/me/performance',
           data: {},
           options: Options(headers: {
             'Content-Type': 'application/json',
@@ -185,6 +213,7 @@ class ManageProviderServices {
       onSuccess: (data) {
         return ProviderPerformanceModel.fromJson(data['data']);
       },
+      headers: {"Accept-Language": CacheHelper.getString(appLang) ?? 'en'},
     );
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:mahu_home_services_app/features/services/models/service_model.dart';
 import 'package:mahu_home_services_app/features/user_booking/views/widgets/service_card.dart';
+import 'package:mahu_home_services_app/generated/l10n.dart';
 
 class AllServicesScreen extends StatelessWidget {
   final List<ServiceModel> services;
@@ -12,7 +13,7 @@ class AllServicesScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('All Services'),
+        title: Text(S.of(context).allServicesScreenTitle),
         centerTitle: true,
       ),
       body: Padding(

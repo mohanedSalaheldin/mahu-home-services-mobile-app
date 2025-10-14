@@ -2,6 +2,7 @@ import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:mahu_home_services_app/core/constants/app_const.dart';
 import 'package:mahu_home_services_app/core/errors/failures.dart';
+import 'package:mahu_home_services_app/core/utils/helpers/cache_helper.dart';
 import 'package:mahu_home_services_app/core/utils/helpers/request_hundler.dart';
 
 class ReviewServices {
@@ -12,7 +13,7 @@ class ReviewServices {
     required String token,
   }) {
     return RequestHundler.handleRequest<bool>(
-      request: () => RequestHundler.dio.post(
+      request: (options) => RequestHundler.dio.post(
         '$apiBaseURL/services/$serviceId/reviews',
         data: {
           'rating': rating,
@@ -22,6 +23,7 @@ class ReviewServices {
           headers: {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer $token',
+            'Accept-Language': CacheHelper.getString(appLang) ?? 'en',
           },
         ),
       ),
@@ -34,8 +36,14 @@ class ReviewServices {
   Future<Either<Failure, Map<String, dynamic>>> getServiceReviews(
       String serviceId) {
     return RequestHundler.handleRequest<Map<String, dynamic>>(
-      request: () => RequestHundler.dio.get(
+      request: (options) => RequestHundler.dio.get(
         '/services/$serviceId/reviews',
+        options: Options(
+          headers: {
+            'Content-Type': 'application/json',
+            "Accept-Language": CacheHelper.getString(appLang) ?? 'en',
+          },
+        ),
       ),
       onSuccess: (data) {
         print('Full API response: $data');
@@ -60,11 +68,12 @@ class ReviewServices {
   Future<Either<Failure, Map<String, dynamic>?>> getMyReviewForService(
       String serviceId, String token) {
     return RequestHundler.handleRequest<Map<String, dynamic>?>(
-      request: () => RequestHundler.dio.get(
+      request: (options) => RequestHundler.dio.get(
         '$apiBaseURL/services/$serviceId/reviews/my-review',
         options: Options(
           headers: {
             'Authorization': 'Bearer $token',
+            'Accept-Language': CacheHelper.getString(appLang) ?? 'en',
           },
         ),
       ),

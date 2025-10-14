@@ -7,6 +7,7 @@ import 'package:mahu_home_services_app/features/services/views/screens/service_p
 import 'package:mahu_home_services_app/features/services/views/screens/profile_screen.dart';
 import 'package:mahu_home_services_app/features/services/views/screens/service_provider_jobs.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:mahu_home_services_app/generated/l10n.dart';
 
 class ProviderLayoutScreen extends StatelessWidget {
   ProviderLayoutScreen({super.key});
@@ -67,14 +68,14 @@ class _CustomBottomNavBar extends StatelessWidget {
           _NavBarItem(
             icon: Icons.home_outlined,
             activeIcon: Icons.home,
-            label: 'Home',
+            label: S.of(context).providerLayoutScreenHomeLabel,
             isActive: currentIndex == 0,
             onTap: () => onTap(0),
           ),
           _NavBarItem(
             icon: Icons.work_outline,
             activeIcon: Icons.work,
-            label: 'Jobs',
+            label: S.of(context).providerLayoutScreenJobsLabel,
             isActive: currentIndex == 1,
             onTap: () {
               onTap(1);
@@ -84,14 +85,14 @@ class _CustomBottomNavBar extends StatelessWidget {
           _NavBarItem(
             icon: Icons.calendar_today_outlined,
             activeIcon: Icons.calendar_today,
-            label: 'Calendar',
+            label: S.of(context).providerLayoutScreenCalendarLabel,
             isActive: currentIndex == 2,
             onTap: () => onTap(2),
           ),
           _NavBarItem(
             icon: Icons.person_outline,
             activeIcon: Icons.person,
-            label: 'Profile',
+            label: S.of(context).providerLayoutScreenProfileLabel,
             isActive: currentIndex == 3,
             onTap: () => onTap(3),
           ),
@@ -145,7 +146,6 @@ class _NavBarItem extends StatelessWidget {
   }
 }
 
-// navigation_cubit.dart (same as before)
 class ProviderNavigationCubit extends Cubit<int> {
   ProviderNavigationCubit() : super(0);
   static ProviderNavigationCubit get(context) => BlocProvider.of(context);

@@ -16,6 +16,7 @@ class PlanServices {
           headers: {
             'Authorization': 'Bearer ${CacheHelper.getString('token')}',
             'Content-Type': 'application/json',
+            'Accept-Language': CacheHelper.getString(appLang) ?? 'en',
           },
         ),
       );
@@ -48,6 +49,7 @@ class PlanServices {
           headers: {
             'Authorization': 'Bearer ${CacheHelper.getString('token')}',
             'Content-Type': 'application/json',
+            'Accept-Language': CacheHelper.getString(appLang) ?? 'en',
           },
         ),
       );

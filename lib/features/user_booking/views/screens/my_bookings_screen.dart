@@ -11,6 +11,7 @@ import 'package:mahu_home_services_app/features/services/models/new_booking_mode
 import 'package:mahu_home_services_app/features/user_booking/cubit/user_booking_cubit.dart';
 import 'package:mahu_home_services_app/features/user_booking/services/review_services.dart';
 import 'package:mahu_home_services_app/features/user_booking/services/user_booking_services.dart';
+import 'package:mahu_home_services_app/generated/l10n.dart';
 
 class MyBookingsScreen extends StatefulWidget {
   const MyBookingsScreen({super.key});
@@ -22,13 +23,11 @@ class MyBookingsScreen extends StatefulWidget {
 class _MyBookingsScreenState extends State<MyBookingsScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  final List<String> _tabTitles = ['Upcoming', 'Previous'];
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: _tabTitles.length, vsync: this);
-    // Load bookings when screen initializes
+    _tabController = TabController(length: 2, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<UserBookingCubit>().getMyBookings();
     });
@@ -46,7 +45,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen>
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
         title: Text(
-          'My Bookings',
+          S.of(context).myBookingsScreenTitle,
           style: TextStyle(
             fontSize: 20.sp,
             fontWeight: FontWeight.bold,
@@ -71,7 +70,10 @@ class _MyBookingsScreenState extends State<MyBookingsScreen>
               indicatorWeight: 3,
               labelStyle:
                   TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
-              tabs: _tabTitles.map((title) => Tab(text: title)).toList(),
+              tabs: [
+                Tab(text: S.of(context).myBookingsScreenTabUpcoming),
+                Tab(text: S.of(context).myBookingsScreenTabPrevious),
+              ],
             ),
           ),
         ),
@@ -81,7 +83,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen>
           if (state is UserGetMyBookingsErrorState) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(state.failure.message),
+                content: Text(S.of(context).myBookingsScreenError(state.failure.message)),
                 backgroundColor: Colors.red,
               ),
             );
@@ -103,9 +105,9 @@ class _MyBookingsScreenState extends State<MyBookingsScreen>
               controller: _tabController,
               children: [
                 _buildBookingsList(upcomingBookings.cast<BookingNewModel>(),
-                    isEmptyMessage: 'No upcoming bookings'),
+                    isEmptyMessage: S.of(context).myBookingsScreenNoUpcoming),
                 _buildBookingsList(previousBookings.cast<BookingNewModel>(),
-                    isEmptyMessage: 'No previous bookings'),
+                    isEmptyMessage: S.of(context).myBookingsScreenNoPrevious),
               ],
             );
           }
@@ -119,7 +121,6 @@ class _MyBookingsScreenState extends State<MyBookingsScreen>
   bool _isUpcomingBooking(BookingNewModel booking) {
     final now = DateTime.now();
 
-    // If booking is completed or cancelled => it's Previous
     if (booking.status?.toLowerCase() == 'completed' ||
         booking.status?.toLowerCase() == 'cancelled') {
       return false;
@@ -237,7 +238,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen>
           ),
           Gap(16.h),
           Text(
-            'Failed to load bookings',
+            S.of(context).myBookingsScreenLoadError,
             style: TextStyle(
               fontSize: 16.sp,
               color: Colors.grey.shade600,
@@ -255,7 +256,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen>
               ),
             ),
             child: Text(
-              'Try Again',
+              S.of(context).myBookingsScreenTryAgain,
               style: TextStyle(
                 fontSize: 14.sp,
                 color: Colors.white,
@@ -276,11 +277,9 @@ class BookingCard extends StatelessWidget {
 
   Future<void> _cancelBooking(
       BuildContext context, BookingNewModel booking) async {
-    // Store snackbar reference to ensure we can hide it
     ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
 
     try {
-      // Show loading indicator
       messenger.showSnackBar(
         SnackBar(
           content: Row(
@@ -290,41 +289,36 @@ class BookingCard extends StatelessWidget {
                 strokeWidth: 2,
               ),
               SizedBox(width: 16.w),
-              Text('Cancelling booking...'),
+              Text(S.of(context).myBookingsScreenCancelLoading),
             ],
           ),
           backgroundColor: Colors.orange,
-          duration: Duration(seconds: 10), // Reduced to 10 seconds for safety
+          duration: Duration(seconds: 10),
         ),
       );
 
-      // Get token from cache
       final token = CacheHelper.getString('token');
       if (token == null || token.isEmpty) {
         messenger.hideCurrentSnackBar();
         messenger.showSnackBar(
           SnackBar(
-            content: Text('User not authenticated'),
+            content: Text(S.of(context).myBookingsScreenNotAuthenticated),
             backgroundColor: Colors.red,
           ),
         );
         return;
       }
 
-      // Call the cancel booking service
       final result =
           await UserBookingServices().cancelBooking(booking.id, token);
 
-      // Always hide the loading snackbar first
       messenger.hideCurrentSnackBar();
 
       result.fold(
         (failure) {
-          // Handle failure
-
           messenger.showSnackBar(
-            const SnackBar(
-              content: Text('Failed to cancel booking please try later'),
+            SnackBar(
+              content: Text(S.of(context).myBookingsScreenCancelError),
               backgroundColor: Colors.red,
               duration: Duration(seconds: 3),
             ),
@@ -332,24 +326,21 @@ class BookingCard extends StatelessWidget {
         },
         (success) {
           if (success) {
-            // Handle success - booking was cancelled
             print('Booking cancelled successfully');
             messenger.showSnackBar(
               SnackBar(
-                content: Text('Booking cancelled successfully'),
+                content: Text(S.of(context).myBookingsScreenCancelSuccess),
                 backgroundColor: Colors.green,
                 duration: Duration(seconds: 2),
               ),
             );
 
-            // Refresh the bookings list
             context.read<UserBookingCubit>().getMyBookings();
           } else {
-            // Handle case where API returned success: false
             print('API returned success: false');
             messenger.showSnackBar(
-              const SnackBar(
-                content: Text('Booking cancellation failed. Please try again.'),
+              SnackBar(
+                content: Text(S.of(context).myBookingsScreenCancelError),
                 backgroundColor: Colors.red,
                 duration: Duration(seconds: 3),
               ),
@@ -358,12 +349,10 @@ class BookingCard extends StatelessWidget {
         },
       );
     } catch (e) {
-      // Ensure loading snackbar is hidden in case of error
       messenger.hideCurrentSnackBar();
       if (kDebugMode) {
         print('Error cancelling booking: $e');
       }
-      
     }
   }
 
@@ -371,12 +360,11 @@ class BookingCard extends StatelessWidget {
     final token = CacheHelper.getString('token');
     if (token == null || token.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please login to add a review')),
+        SnackBar(content: Text(S.of(context).myBookingsScreenReviewLoginError)),
       );
       return;
     }
 
-    // Check if user already reviewed this service
     final result = await _reviewServices.getMyReviewForService(
       booking.service.id,
       token,
@@ -384,13 +372,12 @@ class BookingCard extends StatelessWidget {
 
     result.fold(
       (failure) {
-        // Proceed to add review if check fails
         _showReviewDialog(context, booking, token);
       },
       (reviewData) {
         if (reviewData != null && reviewData['hasReviewed'] == true) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('You have already reviewed this service')),
+            SnackBar(content: Text(S.of(context).myBookingsScreenReviewExistsError)),
           );
         } else {
           _showReviewDialog(context, booking, token);
@@ -399,127 +386,124 @@ class BookingCard extends StatelessWidget {
     );
   }
 
-
   void _showReviewDialog(
-    BuildContext context, BookingNewModel booking, String token) {
-  int selectedRating = 0;
-  TextEditingController feedbackController = TextEditingController();
+      BuildContext context, BookingNewModel booking, String token) {
+    int selectedRating = 0;
+    TextEditingController feedbackController = TextEditingController();
 
-  showDialog(
-    context: context,
-    builder: (context) {
-      return StatefulBuilder(
-        builder: (context, setState) {
-          return AlertDialog(
-            backgroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16.r),
-            ),
-            title: Text(
-              'Add Review',
-              style: TextStyle(
-                fontSize: 18.sp,
-                fontWeight: FontWeight.bold,
-                color: Colors.blue, // Title in blue
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              backgroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16.r),
               ),
-            ),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'How would you rate ${booking.service.name}?',
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      color: Colors.blue, // Text in blue
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  Gap(16.h),
-                  // Star Rating
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(5, (index) {
-                      return GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            selectedRating = index + 1;
-                          });
-                        },
-                        child: Icon(
-                          index < selectedRating
-                              ? Icons.star
-                              : Icons.star_border,
-                          size: 32.w,
-                          color: Colors.amber,
-                        ),
-                      );
-                    }),
-                  ),
-                  Gap(16.h),
-                  // Feedback
-                  TextField(
-                    controller: feedbackController,
-                    decoration: InputDecoration(
-                      labelText: 'Your feedback (optional)',
-                      labelStyle: TextStyle(color: Colors.blue),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12.r),
-                        borderSide: BorderSide(color: Colors.blue, width: 1.5),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12.r),
-                        borderSide: BorderSide(color: Colors.blue, width: 2),
-                      ),
-                      contentPadding: EdgeInsets.all(12.w),
-                    ),
-                    maxLines: 3,
-                    maxLength: 500,
-                  ),
-                ],
-              ),
-            ),
-            actionsPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text(
-                  'Cancel',
-                  style: TextStyle(color: Colors.blue),
+              title: Text(
+                S.of(context).myBookingsScreenReviewTitle,
+                style: TextStyle(
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blue,
                 ),
               ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.r),
-                  ),
-                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
-                ),
-                onPressed: selectedRating > 0
-                    ? () async {
-                        Navigator.pop(context);
-                        await _submitReview(
-                          context,
-                          booking.service.id,
-                          selectedRating,
-                          feedbackController.text,
-                          token,
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      S.of(context).myBookingsScreenReviewPrompt(booking.service.name ?? S.of(context).myBookingsScreenUnknownService),
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        color: Colors.blue,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    Gap(16.h),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(5, (index) {
+                        return GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              selectedRating = index + 1;
+                            });
+                          },
+                          child: Icon(
+                            index < selectedRating
+                                ? Icons.star
+                                : Icons.star_border,
+                            size: 32.w,
+                            color: Colors.amber,
+                          ),
                         );
-                      }
-                    : null,
-                child: Text(
-                  'Submit Review',
-                  style: TextStyle(color: Colors.white),
+                      }),
+                    ),
+                    Gap(16.h),
+                    TextField(
+                      controller: feedbackController,
+                      decoration: InputDecoration(
+                        labelText: S.of(context).myBookingsScreenReviewFeedbackLabel,
+                        labelStyle: TextStyle(color: Colors.blue),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12.r),
+                          borderSide: BorderSide(color: Colors.blue, width: 1.5),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12.r),
+                          borderSide: BorderSide(color: Colors.blue, width: 2),
+                        ),
+                        contentPadding: EdgeInsets.all(12.w),
+                      ),
+                      maxLines: 3,
+                      maxLength: 500,
+                    ),
+                  ],
                 ),
               ),
-            ],
-          );
-        },
-      );
-    },
-  );
-}
+              actionsPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(
+                    S.of(context).myBookingsScreenReviewCancel,
+                    style: TextStyle(color: Colors.blue),
+                  ),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+                  ),
+                  onPressed: selectedRating > 0
+                      ? () async {
+                          Navigator.pop(context);
+                          await _submitReview(
+                            context,
+                            booking.service.id,
+                            selectedRating,
+                            feedbackController.text,
+                            token,
+                          );
+                        }
+                      : null,
+                  child: Text(
+                    S.of(context).myBookingsScreenReviewSubmit,
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
 
   Future<void> _submitReview(
     BuildContext context,
@@ -539,7 +523,7 @@ class BookingCard extends StatelessWidget {
               strokeWidth: 2,
             ),
             SizedBox(width: 16.w),
-            Text('Submitting review...'),
+            Text(S.of(context).myBookingsScreenReviewSubmitting),
           ],
         ),
         backgroundColor: Colors.blue,
@@ -560,7 +544,7 @@ class BookingCard extends StatelessWidget {
       (failure) {
         messenger.showSnackBar(
           SnackBar(
-            content: Text('Failed to submit review: ${failure.message}'),
+            content: Text(S.of(context).myBookingsScreenReviewError(failure.message)),
             backgroundColor: Colors.red,
           ),
         );
@@ -569,14 +553,14 @@ class BookingCard extends StatelessWidget {
         if (success) {
           messenger.showSnackBar(
             SnackBar(
-              content: Text('Review submitted successfully!'),
+              content: Text(S.of(context).myBookingsScreenReviewSuccess),
               backgroundColor: Colors.green,
             ),
           );
         } else {
           messenger.showSnackBar(
             SnackBar(
-              content: Text('Failed to submit review'),
+              content: Text(S.of(context).myBookingsScreenReviewErrorGeneric),
               backgroundColor: Colors.red,
             ),
           );
@@ -587,7 +571,7 @@ class BookingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final serviceName = booking.service.name ?? 'Unknown Service';
+    final serviceName = booking.service.name ?? S.of(context).myBookingsScreenUnknownService;
     final date = booking.schedule!.startDate;
     final status = booking.status?.toLowerCase() ?? 'pending';
     final price = booking.price ?? 0.0;
@@ -637,7 +621,6 @@ class BookingCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header row with service name and status
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -672,7 +655,7 @@ class BookingCard extends StatelessWidget {
                       ),
                       Gap(4.w),
                       Text(
-                        status.toUpperCase(),
+                        S.of(context).myBookingsScreenStatus(status.toUpperCase()),
                         style: TextStyle(
                           fontSize: 12.sp,
                           fontWeight: FontWeight.w600,
@@ -685,8 +668,6 @@ class BookingCard extends StatelessWidget {
               ],
             ),
             Gap(12.h),
-
-            // Date and time information
             Row(
               children: [
                 _buildInfoItem(
@@ -701,8 +682,6 @@ class BookingCard extends StatelessWidget {
               ],
             ),
             Gap(8.h),
-
-            // Day name
             Text(
               dayName,
               style: TextStyle(
@@ -712,19 +691,14 @@ class BookingCard extends StatelessWidget {
               ),
             ),
             Gap(12.h),
-
-            // Divider
             Divider(
               height: 1,
               color: Colors.grey.shade200,
             ),
             Gap(12.h),
-
-            // Footer with price and actions
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // Price
                 Text(
                   '\$${price.toStringAsFixed(2)}',
                   style: TextStyle(
@@ -733,7 +707,6 @@ class BookingCard extends StatelessWidget {
                     color: AppColors.primary,
                   ),
                 ),
-
                 Row(
                   children: [
                     if (status == 'completed')
@@ -748,7 +721,7 @@ class BookingCard extends StatelessWidget {
                               horizontal: 12.w, vertical: 8.h),
                         ),
                         child: Text(
-                          'Add Review',
+                          S.of(context).myBookingsScreenAddReview,
                           style: TextStyle(
                             fontSize: 12.sp,
                             color: Colors.white,
@@ -770,7 +743,7 @@ class BookingCard extends StatelessWidget {
                               horizontal: 12.w, vertical: 8.h),
                         ),
                         child: Text(
-                          'Cancel',
+                          S.of(context).myBookingsScreenCancelButton,
                           style: TextStyle(
                             fontSize: 12.sp,
                             color: Colors.red,
@@ -791,7 +764,7 @@ class BookingCard extends StatelessWidget {
                             horizontal: 16.w, vertical: 8.h),
                       ),
                       child: Text(
-                        'Details',
+                        S.of(context).myBookingsScreenDetailsButton,
                         style: TextStyle(
                           fontSize: 12.sp,
                           color: Colors.white,
@@ -833,18 +806,18 @@ class BookingCard extends StatelessWidget {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(
-          'Cancel Booking?',
+          S.of(context).myBookingsScreenCancelDialogTitle,
           style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold),
         ),
         content: Text(
-          'Are you sure you want to cancel your booking for ${booking.service?.name}?',
+          S.of(context).myBookingsScreenCancelDialogContent(booking.service?.name ?? S.of(context).myBookingsScreenUnknownService),
           style: TextStyle(fontSize: 14.sp),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(
-              'Keep Booking',
+              S.of(context).myBookingsScreenKeepBooking,
               style: TextStyle(fontSize: 14.sp),
             ),
           ),
@@ -857,7 +830,7 @@ class BookingCard extends StatelessWidget {
               backgroundColor: Colors.red,
             ),
             child: Text(
-              'Cancel Booking',
+              S.of(context).myBookingsScreenCancelBooking,
               style: TextStyle(fontSize: 14.sp, color: Colors.white),
             ),
           ),
@@ -957,34 +930,31 @@ class _BookingDetailsSheetState extends State<BookingDetailsSheet> {
           ),
           Gap(20.h),
           Text(
-            'Booking Details',
+            S.of(context).myBookingsScreenDetailsTitle,
             style: TextStyle(
               fontSize: 20.sp,
               fontWeight: FontWeight.bold,
             ),
           ),
           Gap(16.h),
-          
-          // Booking Details
-          _buildDetailRow('Service', widget.booking.service.name),
-          _buildDetailRow('Status', widget.booking.status.toUpperCase()),
-          _buildDetailRow('Date',
+          _buildDetailRow(S.of(context).myBookingsScreenDetailsService, widget.booking.service.name ?? S.of(context).myBookingsScreenUnknownService),
+          _buildDetailRow(S.of(context).myBookingsScreenDetailsStatus, S.of(context).myBookingsScreenStatus(widget.booking.status.toUpperCase())),
+          _buildDetailRow(S.of(context).myBookingsScreenDetailsDate,
               DateFormat('MMM dd, yyyy').format(widget.booking.schedule.startDate)),
           _buildDetailRow(
-            'Start Time',
+            S.of(context).myBookingsScreenDetailsStartTime,
             widget.booking.schedule.startTime,
           ),
           _buildDetailRow(
-            'End Time',
+            S.of(context).myBookingsScreenDetailsEndTime,
             widget.booking.schedule.endTime,
           ),
-          _buildDetailRow('Duration', '${widget.booking.duration / 60} hours'),
-          _buildDetailRow('Total', '\$${widget.booking.price.toStringAsFixed(2)}'),
-          
+          _buildDetailRow(S.of(context).myBookingsScreenDetailsDuration, '${widget.booking.duration / 60} ${S.of(context).myBookingsScreenHours}'),
+          _buildDetailRow(S.of(context).myBookingsScreenDetailsTotal, '\$${widget.booking.price.toStringAsFixed(2)}'),
           if (widget.booking.address.street.isNotEmpty) ...[
             Gap(12.h),
             Text(
-              'Address',
+              S.of(context).myBookingsScreenDetailsAddress,
               style: TextStyle(
                 fontSize: 16.sp,
                 fontWeight: FontWeight.bold,
@@ -997,7 +967,6 @@ class _BookingDetailsSheetState extends State<BookingDetailsSheet> {
               style: TextStyle(fontSize: 14.sp, color: Colors.grey.shade600),
             ),
           ],
-          
           Gap(24.h),
           SizedBox(
             width: double.infinity,
@@ -1011,7 +980,7 @@ class _BookingDetailsSheetState extends State<BookingDetailsSheet> {
                 padding: EdgeInsets.symmetric(vertical: 16.h),
               ),
               child: Text(
-                'Close',
+                S.of(context).myBookingsScreenDetailsClose,
                 style: TextStyle(fontSize: 16.sp, color: Colors.white),
               ),
             ),
@@ -1023,10 +992,10 @@ class _BookingDetailsSheetState extends State<BookingDetailsSheet> {
   }
 
   Widget _buildReviewItem(dynamic review) {
-    final userName = review['userName'] ?? 'Anonymous';
+    final userName = review['userName'] ?? S.of(context).myBookingsScreenAnonymous;
     final rating = (review['rating'] ?? 0).toDouble();
     final feedback = review['feedback'] ?? '';
-    final createdAt = review['createdAt'] != null 
+    final createdAt = review['createdAt'] != null
         ? DateFormat('MMM dd, yyyy').format(DateTime.parse(review['createdAt']))
         : '';
 
@@ -1041,7 +1010,6 @@ class _BookingDetailsSheetState extends State<BookingDetailsSheet> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // User and Rating
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -1055,10 +1023,7 @@ class _BookingDetailsSheetState extends State<BookingDetailsSheet> {
               _buildStarRating(rating, size: 16),
             ],
           ),
-          
           Gap(8.h),
-          
-          // Feedback
           if (feedback.isNotEmpty)
             Text(
               feedback,
@@ -1067,10 +1032,7 @@ class _BookingDetailsSheetState extends State<BookingDetailsSheet> {
                 color: Colors.grey.shade700,
               ),
             ),
-          
           Gap(8.h),
-          
-          // Date
           if (createdAt.isNotEmpty)
             Text(
               createdAt,
@@ -1109,7 +1071,7 @@ class _BookingDetailsSheetState extends State<BookingDetailsSheet> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'All Reviews ($_totalReviews)',
+                S.of(context).myBookingsScreenAllReviews(_totalReviews),
                 style: TextStyle(
                   fontSize: 18.sp,
                   fontWeight: FontWeight.bold,
@@ -1130,7 +1092,7 @@ class _BookingDetailsSheetState extends State<BookingDetailsSheet> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () => Navigator.pop(context),
-                  child: Text('Close'),
+                  child: Text(S.of(context).myBookingsScreenDetailsClose),
                 ),
               ),
             ],

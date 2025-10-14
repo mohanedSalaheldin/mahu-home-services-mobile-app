@@ -1,7 +1,9 @@
 import 'dart:io';
 import 'package:dartz/dartz.dart';
+import 'package:mahu_home_services_app/core/constants/app_const.dart';
 import 'package:mahu_home_services_app/core/errors/failures.dart';
 import 'package:mahu_home_services_app/core/models/use_model.dart';
+import 'package:mahu_home_services_app/core/utils/helpers/cache_helper.dart';
 import 'package:mahu_home_services_app/core/utils/helpers/request_hundler.dart';
 import 'package:mahu_home_services_app/core/utils/helpers/upload_media_helper.dart';
 import 'package:mahu_home_services_app/features/auth/client_auth/views/screens/client_register_screen.dart';
@@ -17,19 +19,24 @@ class AuthServices {
     required String refrenceId,
   }) {
     return RequestHundler.handleRequest<UserModel>(
-      request: () => RequestHundler.dio.post('/auth/register', data: {
-        "email": email,
-        "phone": phone,
-        "password": password,
-        "firstName": firstName,
-        "lastName": lastName,
-        "role": "user",
-        "verificationType": otpMethod,
-        "businessRegistration": refrenceId,
-      }),
+      request: (options) => RequestHundler.dio.post(
+        '/auth/register',
+        data: {
+          "email": email,
+          "phone": phone,
+          "password": password,
+          "firstName": firstName,
+          "lastName": lastName,
+          "role": "user",
+          "verificationType": otpMethod,
+          "businessRegistration": refrenceId,
+        },
+        options: options,
+      ),
       onSuccess: (data) {
         return UserModel.fromJson(data['user']);
       },
+      headers: {"Accept-Language": CacheHelper.getString(appLang) ?? 'en'},
     );
   }
 
@@ -48,7 +55,7 @@ class AuthServices {
         await UploadMediaHelper.uploadImage(File(avatarPath)) ?? '';
 
     return RequestHundler.handleRequest<UserModel>(
-      request: () async {
+      request: (options) async {
         var data = {
           "email": email,
           "phone": phone,
@@ -70,28 +77,32 @@ class AuthServices {
       onSuccess: (data) {
         return UserModel.fromJson(data['user']);
       },
+      headers: {"Accept-Language": CacheHelper.getString(appLang) ?? 'en'},
     );
   }
 
   Future<Either<Failure, LoginResponse>> login({
     required String emailOrPhone,
     required String password,
+    required String fcmToken,
   }) {
     return RequestHundler.handleRequest<LoginResponse>(
-      request: () {
-        var data2 = {
+      request: (options) {
+        var authCredentials = {
           'emailOrPhone': emailOrPhone,
           "password": password,
+          "fcmToken": fcmToken,
         };
-        print(data2);
+        print(authCredentials);
         return RequestHundler.dio.post(
           '/auth/login',
-          data: data2,
+          data: authCredentials,
         );
       },
       onSuccess: (data) {
         return LoginResponse.fromJson(data);
       },
+      headers: {"Accept-Language": CacheHelper.getString(appLang) ?? 'en'},
     );
   }
 
@@ -101,31 +112,36 @@ class AuthServices {
     required String newPassword,
   }) {
     return RequestHundler.handleRequest<Unit>(
-      request: () => RequestHundler.dio.put('/auth/reset-password', data: {
+      request: (options) =>
+          RequestHundler.dio.put('/auth/reset-password', data: {
         "email": email,
         "otp": otp,
         "newPassword": newPassword,
       }),
       onSuccess: (_) => unit,
+      headers: {"Accept-Language": CacheHelper.getString(appLang) ?? 'en'},
     );
   }
 
   Future<Either<Failure, Unit>> forgotPassword({required String email}) {
     return RequestHundler.handleRequest<Unit>(
-      request: () => RequestHundler.dio.post('/auth/forgot-password', data: {
+      request: (options) =>
+          RequestHundler.dio.post('/auth/forgot-password', data: {
         "email": email,
       }),
       onSuccess: (_) => unit,
+      headers: {"Accept-Language": CacheHelper.getString(appLang) ?? 'en'},
     );
   }
 
   Future<Either<Failure, Unit>> resendOTP({required String email}) {
     return RequestHundler.handleRequest<Unit>(
-      request: () => RequestHundler.dio.post('/auth/resend-otp', data: {
+      request: (options) => RequestHundler.dio.post('/auth/resend-otp', data: {
         'emailOrPhone': email,
         "type": "email",
       }),
       onSuccess: (_) => unit,
+      headers: {"Accept-Language": CacheHelper.getString(appLang) ?? 'en'},
     );
   }
 
@@ -135,12 +151,17 @@ class AuthServices {
     required String otp,
   }) {
     return RequestHundler.handleRequest<Unit>(
-      request: () =>
-          RequestHundler.dio.post('/auth/verify-${channal.name}', data: {
-        channal.name: value,
-        "otp": otp,
-      }),
+      request: (options) => RequestHundler.dio.post(
+        
+        '/auth/verify-${channal.name}',
+        data: {
+          channal.name: value,
+          "otp": otp,
+        },
+        options: options,
+      ),
       onSuccess: (_) => unit,
+      headers: {"Accept-Language": CacheHelper.getString(appLang) ?? 'en'},
     );
   }
 }

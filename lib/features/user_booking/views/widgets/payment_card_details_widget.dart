@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
+import 'package:mahu_home_services_app/generated/l10n.dart';
 
 class PaymentCardDetailsWidget extends StatelessWidget {
   const PaymentCardDetailsWidget({
@@ -29,7 +30,7 @@ class PaymentCardDetailsWidget extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              '4556 ****  **** 7654',
+              _getCardNumber(),
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
@@ -42,7 +43,7 @@ class PaymentCardDetailsWidget extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Card Holder Name',
+                      S.of(context).paymentCardDetailsWidgetCardHolderLabel,
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w300,
@@ -51,7 +52,7 @@ class PaymentCardDetailsWidget extends StatelessWidget {
                     ),
                     Gap(10.h),
                     Text(
-                      'Hosam Ali',
+                      _getCardHolderName(),
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
@@ -65,7 +66,7 @@ class PaymentCardDetailsWidget extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Expiry Date',
+                      S.of(context).paymentCardDetailsWidgetExpiryDateLabel,
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w300,
@@ -74,7 +75,7 @@ class PaymentCardDetailsWidget extends StatelessWidget {
                     ),
                     Gap(10.h),
                     Text(
-                      '14/2/28',
+                      _getExpiryDate(),
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
@@ -89,5 +90,20 @@ class PaymentCardDetailsWidget extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _getCardNumber() {
+    // Placeholder: Replace with actual card number logic (e.g., from payment method data)
+    return '4556 **** **** 7654';
+  }
+
+  String _getCardHolderName() {
+    // Placeholder: Replace with actual cardholder name logic (e.g., from user profile)
+    return 'Hosam Ali';
+  }
+
+  String _getExpiryDate() {
+    // Placeholder: Replace with actual expiry date logic (e.g., from payment method data)
+    return '14/2/28';
   }
 }

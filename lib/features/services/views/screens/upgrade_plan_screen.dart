@@ -109,7 +109,7 @@ class _UpgradePlanScreenState extends State<UpgradePlanScreen> {
               textAlign: TextAlign.center,
             ),
           ),
-          
+
           // Plans list
           Expanded(
             child: ListView.builder(
@@ -129,7 +129,7 @@ class _UpgradePlanScreenState extends State<UpgradePlanScreen> {
               },
             ),
           ),
-          
+
           // Bottom action button
           if (_selectedPlanIndex != null)
             Padding(
@@ -167,7 +167,7 @@ class _UpgradePlanScreenState extends State<UpgradePlanScreen> {
 
   Future<void> _subscribeToPlan(String planId) async {
     setState(() => _isProcessing = true);
-    
+
     try {
       final result = await _planServices.subscribeToPlan(
         userId: widget.userId,
@@ -238,7 +238,7 @@ class _PlanCard extends StatelessWidget {
                 children: [
                   Text(
                     plan.name,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: AppColors.primary,
@@ -254,7 +254,7 @@ class _PlanCard extends StatelessWidget {
                         color: AppColors.primary,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Text(
+                      child: const Text(
                         'Selected',
                         style: TextStyle(
                           fontSize: 12,
@@ -275,7 +275,7 @@ class _PlanCard extends StatelessWidget {
               SizedBox(height: 16.h),
               Text(
                 '\$${plan.price.toStringAsFixed(2)}',
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
                   color: AppColors.primary,
@@ -292,7 +292,7 @@ class _PlanCard extends StatelessWidget {
               SizedBox(height: 20.h),
               const Divider(),
               SizedBox(height: 16.h),
-              Text(
+              const Text(
                 'Plan Features:',
                 style: TextStyle(
                   fontSize: 16,
@@ -301,29 +301,31 @@ class _PlanCard extends StatelessWidget {
               ),
               SizedBox(height: 12.h),
               Column(
-                children: plan.features.map((feature) => Padding(
-                  padding: EdgeInsets.only(bottom: 12.h),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(
-                        Icons.check_circle_rounded,
-                        size: 18,
-                        color: AppColors.primary,
-                      ),
-                      SizedBox(width: 12.w),
-                      Expanded(
-                        child: Text(
-                          feature,
-                          style: TextStyle(
-                            fontSize: 14,
-                            height: 1.4,
+                children: plan.features
+                    .map((feature) => Padding(
+                          padding: EdgeInsets.only(bottom: 12.h),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Icon(
+                                Icons.check_circle_rounded,
+                                size: 18,
+                                color: AppColors.primary,
+                              ),
+                              SizedBox(width: 12.w),
+                              Expanded(
+                                child: Text(
+                                  feature,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    height: 1.4,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                      ),
-                    ],
-                  ),
-                )).toList(),
+                        ))
+                    .toList(),
               ),
             ],
           ),
@@ -365,7 +367,7 @@ class _SubscribeButton extends StatelessWidget {
                   strokeWidth: 2,
                 ),
               )
-            : Text(
+            : const Text(
                 'Subscribe Now',
                 style: TextStyle(
                   fontSize: 16,
@@ -398,7 +400,7 @@ class SubscriptionConfirmationDialog extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'Confirm Subscription',
               style: TextStyle(
                 fontSize: 20,
@@ -416,7 +418,7 @@ class SubscriptionConfirmationDialog extends StatelessWidget {
             SizedBox(height: 8.h),
             Text(
               plan.name,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: AppColors.primary,
@@ -485,7 +487,7 @@ class SubscriptionConfirmationDialog extends StatelessWidget {
           ),
           Text(
             value,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
             ),

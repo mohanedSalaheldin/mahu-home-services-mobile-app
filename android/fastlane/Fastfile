@@ -10,7 +10,7 @@ platform :android do
   lane :upload_to_firebase do
     sh "firebase appdistribution:distribute E:/MAHU/mahu_home_services_app/build/app/outputs/flutter-apk/app-release.apk \
       --app=1:775064187411:android:0c5b33fcef749a1fdf45e6 \
-      --release-notes=\"feat: APK Build 1.0.15\" \
+      --release-notes=\"localization and options\" \
       --groups=\"mahu_team\""
   end
 

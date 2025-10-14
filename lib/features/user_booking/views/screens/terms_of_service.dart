@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
+import 'package:intl/intl.dart';
+import 'package:mahu_home_services_app/generated/l10n.dart';
 
 class TermsOfServiceScreen extends StatelessWidget {
   const TermsOfServiceScreen({super.key});
@@ -11,7 +13,7 @@ class TermsOfServiceScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Terms of Service',
+          S.of(context).termsOfServiceScreenTitle,
           style: TextStyle(
             fontSize: 20.sp,
             fontWeight: FontWeight.bold,
@@ -24,7 +26,6 @@ class TermsOfServiceScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header
             Center(
               child: Column(
                 children: [
@@ -35,15 +36,16 @@ class TermsOfServiceScreen extends StatelessWidget {
                   ),
                   Gap(16.h),
                   Text(
-                    'Terms of Service',
-                    style: TextStyle(
+                    S.of(context).termsOfServiceScreenTitle,
+                    style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   Gap(8.h),
                   Text(
-                    'Last updated: ${_getCurrentDate()}',
+                    S.of(context).termsOfServiceScreenLastUpdated(
+                        _getCurrentDate(context)),
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.grey.shade600,
@@ -53,10 +55,8 @@ class TermsOfServiceScreen extends StatelessWidget {
               ),
             ),
             Gap(32.h),
-
-            // Agreement
             Text(
-              'Please read these Terms of Service carefully before using our services.',
+              S.of(context).termsOfServiceScreenIntro,
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
@@ -64,87 +64,43 @@ class TermsOfServiceScreen extends StatelessWidget {
               ),
             ),
             Gap(24.h),
-
-            // Terms Sections
             _buildTermSection(
-              title: '1. Acceptance of Terms',
-              content: '''
-By accessing or using Mahu Home Services, you agree to be bound by these Terms of Service and our Privacy Policy. If you do not agree to these terms, please do not use our services.
-''',
+              title: S.of(context).termsOfServiceScreenSection1Title,
+              content: S.of(context).termsOfServiceScreenSection1Content,
             ),
-
             _buildTermSection(
-              title: '2. Service Description',
-              content: '''
-Mahu Home Services connects users with service providers for various home services including cleaning, repair, painting, and electrical services. We act as an intermediary platform.
-''',
+              title: S.of(context).termsOfServiceScreenSection2Title,
+              content: S.of(context).termsOfServiceScreenSection2Content,
             ),
-
             _buildTermSection(
-              title: '3. User Accounts',
-              content: '''
-You must create an account to use our services. You are responsible for:
-- Maintaining account security
-- Providing accurate information
-- All activities under your account
-- Notifying us of unauthorized access
-''',
+              title: S.of(context).termsOfServiceScreenSection3Title,
+              content: S.of(context).termsOfServiceScreenSection3Content,
             ),
-
             _buildTermSection(
-              title: '4. Booking and Payments',
-              content: '''
-- Bookings are subject to provider availability
-- Payments are processed through secure channels
-- Cancellation policies vary by service type
-- Refunds are subject to our refund policy
-''',
+              title: S.of(context).termsOfServiceScreenSection4Title,
+              content: S.of(context).termsOfServiceScreenSection4Content,
             ),
-
             _buildTermSection(
-              title: '5. User Conduct',
-              content: '''
-You agree not to:
-- Use the service for illegal purposes
-- Harass service providers or other users
-- Post false or misleading information
-- Attempt to circumvent the platform
-- Damage the reputation of the service
-''',
+              title: S.of(context).termsOfServiceScreenSection5Title,
+              content: S.of(context).termsOfServiceScreenSection5Content,
             ),
-
             _buildTermSection(
-              title: '6. Limitation of Liability',
-              content: '''
-Mahu Home Services is not liable for:
-- Quality of services provided by third parties
-- Damages or losses during service provision
-- Disputes between users and service providers
-- Technical issues beyond our control
-''',
+              title: S.of(context).termsOfServiceScreenSection6Title,
+              content: S.of(context).termsOfServiceScreenSection6Content,
             ),
-
             _buildTermSection(
-              title: '7. Termination',
-              content: '''
-We may terminate or suspend your account at our discretion if you violate these terms. You may also terminate your account at any time.
-''',
+              title: S.of(context).termsOfServiceScreenSection7Title,
+              content: S.of(context).termsOfServiceScreenSection7Content,
             ),
-
             _buildTermSection(
-              title: '8. Changes to Terms',
-              content: '''
-We may modify these terms at any time. Continued use of the service constitutes acceptance of modified terms.
-''',
+              title: S.of(context).termsOfServiceScreenSection8Title,
+              content: S.of(context).termsOfServiceScreenSection8Content,
             ),
-
             _buildTermSection(
-              title: '9. Governing Law',
-              content: '''
-These terms are governed by the laws of [Your Country/State]. Any disputes shall be resolved in the courts of [Your Jurisdiction].
-''',
+              title: S.of(context).termsOfServiceScreenSection9Title,
+              content: S.of(context).termsOfServiceScreenSection9Content(
+                  _getJurisdiction(context)),
             ),
-
             Gap(24.h),
             Container(
               padding: EdgeInsets.all(16.w),
@@ -153,8 +109,8 @@ These terms are governed by the laws of [Your Country/State]. Any disputes shall
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
-                'By using Mahu Home Services, you acknowledge that you have read, understood, and agree to be bound by these Terms of Service.',
-                style: TextStyle(
+                S.of(context).termsOfServiceScreenAcknowledgment,
+                style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                   color: AppColors.primary,
@@ -174,7 +130,7 @@ These terms are governed by the laws of [Your Country/State]. Any disputes shall
       children: [
         Text(
           title,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
             color: AppColors.primary,
@@ -194,7 +150,14 @@ These terms are governed by the laws of [Your Country/State]. Any disputes shall
     );
   }
 
-  String _getCurrentDate() {
-    return 'December 15, 2024';
+  String _getCurrentDate(BuildContext context) {
+    return DateFormat(
+            'MMMM dd, yyyy', Localizations.localeOf(context).languageCode)
+        .format(DateTime(2024, 12, 15));
+  }
+
+  String _getJurisdiction(BuildContext context) {
+    // Placeholder: Replace with actual logic to determine jurisdiction
+    return S.of(context).termsOfServiceScreenDefaultJurisdiction;
   }
 }

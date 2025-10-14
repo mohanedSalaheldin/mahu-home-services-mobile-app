@@ -12,6 +12,7 @@ import 'package:mahu_home_services_app/features/auth/client_auth/views/widgets/c
 import 'package:mahu_home_services_app/features/auth/client_auth/views/widgets/custom_text_field.dart';
 import 'package:mahu_home_services_app/features/auth/client_auth/views/widgets/o_t_p_form_filed.dart';
 import 'package:mahu_home_services_app/features/landing/views/widgets/app_filled_button.dart';
+import 'package:mahu_home_services_app/generated/l10n.dart';
 
 class NewPasswordScreen extends StatefulWidget {
   const NewPasswordScreen({super.key, required this.userEmail});
@@ -29,10 +30,12 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
   final TextEditingController otpController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool termsAgreed = false;
+
   @override
   void dispose() {
     passwordController.dispose();
     confirmPasswordController.dispose();
+    otpController.dispose();
     super.dispose();
   }
 
@@ -40,7 +43,7 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('New Password'),
+        title: Text(S.of(context).newPasswordScreenTitle),
       ),
       body: BlocConsumer<AuthCubit, AuthState>(
         listener: (context, state) {
@@ -48,16 +51,17 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
             navigateTo(context, const LoginScreen());
           } else if (state is ResetPasswordFailedState) {
             showCustomSnackBar(
-                context: context,
-                message: state.failure.msg,
-                type: SnackBarType.failure);
+              context: context,
+              message: state.failure.msg,
+              type: SnackBarType.failure,
+            );
           }
         },
         builder: (context, state) {
           if (state is ResetPasswordLoadingState) {
             return const Center(
               child: CircularProgressIndicator(
-                color: Colors.blue
+                color: Colors.blue,
               ),
             );
           }
@@ -69,7 +73,8 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                 child: Column(
                   children: [
                     Text(
-                      'We have sent verification \n code to ${widget.userEmail}',
+                      S.of(context).newPasswordScreenVerificationMessage(
+                          widget.userEmail),
                       style: TextStyle(
                         fontWeight: FontWeight.w300,
                         fontSize: 13,
@@ -81,8 +86,8 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                     Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        "OTP",
-                        style: TextStyle(
+                        S.of(context).newPasswordScreenOtpLabel,
+                        style: const TextStyle(
                           fontWeight: FontWeight.w500,
                           fontSize: 16,
                           color: Colors.black,
@@ -93,8 +98,8 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                     OTPFormFiled(otpController: otpController),
                     Gap(10.h),
                     CustomTextField(
-                      label: 'Password',
-                      hint: 'Enter Password',
+                      label: S.of(context).newPasswordScreenPasswordLabel,
+                      hint: S.of(context).newPasswordScreenPasswordHint,
                       keyboardType: TextInputType.visiblePassword,
                       controller: passwordController,
                       isPassword: true,
@@ -102,8 +107,9 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                     ),
                     Gap(10.h),
                     CustomTextField(
-                      label: 'Confirm Password',
-                      hint: 'Enter Password',
+                      label:
+                          S.of(context).newPasswordScreenConfirmPasswordLabel,
+                      hint: S.of(context).newPasswordScreenConfirmPasswordHint,
                       keyboardType: TextInputType.visiblePassword,
                       controller: confirmPasswordController,
                       isPassword: true,
@@ -122,7 +128,7 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                           );
                         }
                       },
-                      text: 'Save Changes',
+                      text: S.of(context).newPasswordScreenSaveChangesButton,
                     ),
                   ],
                 ),

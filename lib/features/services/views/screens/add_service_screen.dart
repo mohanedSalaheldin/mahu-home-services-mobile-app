@@ -17,6 +17,7 @@ import 'package:mahu_home_services_app/features/services/models/service_model.da
 import 'package:mahu_home_services_app/features/services/views/widgets/custom_dropdown.dart';
 import 'package:mahu_home_services_app/features/services/views/widgets/image_picker_container.dart';
 import 'package:mahu_home_services_app/features/services/views/widgets/toggle_button_group.dart';
+import 'package:mahu_home_services_app/generated/l10n.dart';
 
 class AddServiceScreen extends StatefulWidget {
   const AddServiceScreen({super.key});
@@ -30,6 +31,11 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
   final TextEditingController _serviceNameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _basePriceController = TextEditingController();
+  final List<Map<String, dynamic>> _options = [];
+  final TextEditingController _optionNameController = TextEditingController();
+  final TextEditingController _optionPriceController = TextEditingController();
+  final TextEditingController _optionDescriptionController =
+      TextEditingController();
 
   XFile? _selectedImage;
   final ImagePicker _picker = ImagePicker();
@@ -51,36 +57,9 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
   int _endTimeMinute = 0;
   bool _endTimeAmPm = false; // true = AM, false = PM
 
-  // Explanations for service types
-  final Map<String, String> _serviceTypeExplanations = {
-    'one-time':
-        'One-time service is performed once and completed. Ideal for specific Service needs like move-in/move-out Service.',
-    'recurring':
-        'Recurring service repeats at regular intervals. Perfect for regular maintenance like weekly or monthly Service.',
-  };
-
-  final Map<String, String> _subTypeExplanations = {
-    'normal':
-        'Standard Service covering basic tasks like dusting, vacuuming, and surface wiping.',
-    'deep':
-        'Thorough Service including hard-to-reach areas, grout Service, and detailed attention to all surfaces.',
-    'weekly':
-        'Regular weekly maintenance Service to keep your space consistently clean.',
-    'monthly':
-        'Comprehensive monthly Service with deeper attention to detail than weekly service.',
-  };
-
-  final Map<String, String> _pricingModelExamples = {
-    'fixed': 'Example: \$150 for a complete deep Service service',
-    'hourly': 'Example: \$40/hour (typically 2-4 hours depending on home size)',
-    'weekly': 'Example: \$120 per week for regular maintenance',
-    'monthly': 'Example: \$400 per month for comprehensive service',
-  };
-
   @override
   void initState() {
     super.initState();
-    // Initialize with all days selected for recurring service
     if (_isServiceTypeRecurring) {
       _selectedDays.addAll([
         'monday',
@@ -111,6 +90,29 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
     });
   }
 
+  void _addOption() {
+    final name = _optionNameController.text.trim();
+    final price = _optionPriceController.text.trim();
+    final description = _optionDescriptionController.text.trim();
+
+    if (name.isNotEmpty && price.isNotEmpty) {
+      setState(() {
+        _options.add({
+          'name': name,
+          'price': double.parse(price),
+          'description': description,
+          'pricingModel': 'fixed',
+          'appliesTo': 'one-time',
+          'active': true,
+        });
+      });
+
+      _optionNameController.clear();
+      _optionPriceController.clear();
+      _optionDescriptionController.clear();
+    }
+  }
+
   String _formatTime(int hour, int minute, bool isAm) {
     final displayHour = isAm ? hour : (hour == 12 ? 12 : hour + 12);
     return '${displayHour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')}';
@@ -118,7 +120,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
 
   String _getDisplayTime(int hour, int minute, bool isAm) {
     final displayHour = hour == 0 ? 12 : (hour > 12 ? hour - 12 : hour);
-    return '${displayHour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')} ${isAm ? 'AM' : 'PM'}';
+    return '${displayHour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')} ${isAm ? S.of(context).addServiceScreenAmLabel : S.of(context).addServiceScreenPmLabel}';
   }
 
   void _removeTimeSlot(int index) {
@@ -141,10 +143,8 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
     setState(() {
       _isServiceTypeRecurring = isRecurring;
 
-      // Reset service subtype based on service type
       if (isRecurring) {
         _serviceSubType = 'weekly';
-        // Select all days for recurring service
         _selectedDays.clear();
         _selectedDays.addAll([
           'monday',
@@ -157,42 +157,60 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
         ]);
       } else {
         _serviceSubType = 'normal';
-        // Clear selected days for one-time service
         _selectedDays.clear();
       }
     });
   }
 
-  // Get pricing model based on service type
   String get _pricingModel {
     if (_isServiceTypeRecurring) {
-      return _serviceSubType; // 'weekly' or 'monthly'
+      return _serviceSubType;
     } else {
-      return 'fixed'; // One-time services are always fixed price
+      return 'fixed';
     }
   }
 
-  // Get pricing label based on service type
   String get _pricingLabel {
     if (_isServiceTypeRecurring) {
       return _serviceSubType == 'weekly'
-          ? 'Weekly Price (\$)'
-          : 'Monthly Price (\$)';
+          ? S.of(context).addServiceScreenWeeklyPriceLabel
+          : S.of(context).addServiceScreenMonthlyPriceLabel;
     } else {
-      return 'Fixed Price (\$)';
+      return S.of(context).addServiceScreenFixedPriceLabel;
     }
   }
 
-  // Get pricing example based on service type
   String get _pricingExample {
     if (_isServiceTypeRecurring) {
-      return _pricingModelExamples[_serviceSubType]!;
+      return _serviceSubType == 'weekly'
+          ? S.of(context).addServiceScreenPricingWeeklyExample
+          : S.of(context).addServiceScreenPricingMonthlyExample;
     } else {
-      return _pricingModelExamples['fixed']!;
+      return S.of(context).addServiceScreenPricingFixedExample;
     }
   }
 
-  // Update time with 30-minute increments
+  String get _serviceTypeExplanation {
+    return _isServiceTypeRecurring
+        ? S.of(context).addServiceScreenServiceTypeRecurringExplanation
+        : S.of(context).addServiceScreenServiceTypeOneTimeExplanation;
+  }
+
+  String get _subTypeExplanation {
+    switch (_serviceSubType) {
+      case 'normal':
+        return S.of(context).addServiceScreenSubTypeNormalExplanation;
+      case 'deep':
+        return S.of(context).addServiceScreenSubTypeDeepExplanation;
+      case 'weekly':
+        return S.of(context).addServiceScreenSubTypeWeeklyExplanation;
+      case 'monthly':
+        return S.of(context).addServiceScreenSubTypeMonthlyExplanation;
+      default:
+        return '';
+    }
+  }
+
   void _updateStartTime(int hour, int minute, bool amPm) {
     setState(() {
       _startTimeHour = hour;
@@ -214,7 +232,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: const BackButton(),
-        title: const Text("Add a Service"),
+        title: Text(S.of(context).addServiceScreenTitle),
         centerTitle: true,
         elevation: 0,
       ),
@@ -223,7 +241,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
           if (state is ServiceCreationSuccessState) {
             showCustomSnackBar(
               context: context,
-              message: 'Added Successfully',
+              message: S.of(context).addServiceScreenSuccessMessage,
               type: SnackBarType.success,
             );
             Future.delayed(const Duration(milliseconds: 300), () {
@@ -247,34 +265,30 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Service Image
                     ImagePickerContainer(
                       onTap: _pickImage,
                       selectedImage: _selectedImage,
                     ),
                     Gap(16.h),
-
-                    // Service Name
                     CustomTextField(
-                      label: 'Service Name',
-                      hint: 'e.g., Deep Service, Weekly Maintenance',
+                      label: S.of(context).addServiceScreenServiceNameLabel,
+                      hint: S.of(context).addServiceScreenServiceNameHint,
                       controller: _serviceNameController,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter a service name';
+                          return S.of(context).addServiceScreenServiceNameError;
                         }
                         return null;
                       },
                     ),
                     Gap(16.h),
-
-                    // Description
-                    const AppFieledLabelText(label: 'Description'),
+                    AppFieledLabelText(
+                        label: S.of(context).addServiceScreenDescriptionLabel),
                     TextFormField(
                       controller: _descriptionController,
                       maxLines: 5,
                       decoration: InputDecoration(
-                        hintText: 'Describe your service in detail...',
+                        hintText: S.of(context).addServiceScreenDescriptionHint,
                         hintStyle: TextStyle(
                           color: Colors.black.withOpacity(0.5),
                           fontSize: 14,
@@ -289,31 +303,33 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter a description';
+                          return S
+                              .of(context)
+                              .addServiceScreenDescriptionEmptyError;
                         }
                         if (value.length < 30) {
-                          return 'Description should be at least 30 characters';
+                          return S
+                              .of(context)
+                              .addServiceScreenDescriptionLengthError;
                         }
                         return null;
                       },
                     ),
                     Gap(16.h),
-
-                    // Service Type Section
-                    _buildSectionHeader('Service Type'),
+                    _buildSectionHeader(
+                        S.of(context).addServiceScreenServiceTypeSection),
                     ToggleButtonGroup(
-                      leftLabel: "Recurring",
-                      rightLabel: "One Time",
+                      leftLabel:
+                          S.of(context).addServiceScreenServiceTypeRecurring,
+                      rightLabel:
+                          S.of(context).addServiceScreenServiceTypeOneTime,
                       isLeftSelected: _isServiceTypeRecurring,
                       onChanged: _updateServiceType,
                     ),
-                    _buildInfoText(_serviceTypeExplanations[
-                        _isServiceTypeRecurring ? 'recurring' : 'one-time']!),
+                    _buildInfoText(_serviceTypeExplanation),
                     Gap(16.h),
-
-                    // Service Sub-Type
                     CustomDropdown<String>(
-                      label: "Service Type",
+                      label: S.of(context).addServiceScreenServiceTypeLabel,
                       items: (_isServiceTypeRecurring
                               ? ['weekly', 'monthly']
                               : ['normal', 'deep'])
@@ -323,13 +339,21 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                                   (() {
                                     switch (item) {
                                       case 'normal':
-                                        return 'Standard Service';
+                                        return S
+                                            .of(context)
+                                            .addServiceScreenSubTypeNormal;
                                       case 'deep':
-                                        return 'Deep Service';
+                                        return S
+                                            .of(context)
+                                            .addServiceScreenSubTypeDeep;
                                       case 'weekly':
-                                        return 'Weekly Service';
+                                        return S
+                                            .of(context)
+                                            .addServiceScreenSubTypeWeekly;
                                       case 'monthly':
-                                        return 'Monthly Service';
+                                        return S
+                                            .of(context)
+                                            .addServiceScreenSubTypeMonthly;
                                       default:
                                         return item;
                                     }
@@ -341,15 +365,12 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                       onChanged: (val) => setState(
                           () => _serviceSubType = val ?? _serviceSubType),
                     ),
-                    _buildInfoText(_subTypeExplanations[_serviceSubType]!),
+                    _buildInfoText(_subTypeExplanation),
                     Gap(16.h),
-
-                    // Pricing Section
-                    _buildSectionHeader('Pricing'),
+                    _buildSectionHeader(
+                        S.of(context).addServiceScreenPricingSection),
                     _buildInfoText(_pricingExample),
                     Gap(8.h),
-
-                    // Price Input
                     CustomTextField(
                       label: _pricingLabel,
                       hint: _pricingLabel,
@@ -357,26 +378,26 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                       keyboardType: TextInputType.number,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter a price';
+                          return S.of(context).addServiceScreenPriceEmptyError;
                         }
                         if (double.tryParse(value) == null) {
-                          return 'Please enter a valid number';
+                          return S
+                              .of(context)
+                              .addServiceScreenPriceInvalidError;
                         }
                         return null;
                       },
                     ),
                     Gap(16.h),
-
-                    // Duration Section (for both service types)
-                    _buildSectionHeader('Service Duration'),
+                    _buildSectionHeader(
+                        S.of(context).addServiceScreenDurationSection),
                     _buildDurationStepper(),
                     Gap(16.h),
-
-                    // Availability Section
-                    _buildSectionHeader('Availability'),
-
-                    // Available Days
-                    const AppFieledLabelText(label: 'Available Days'),
+                    _buildSectionHeader(
+                        S.of(context).addServiceScreenAvailabilitySection),
+                    AppFieledLabelText(
+                        label:
+                            S.of(context).addServiceScreenAvailableDaysLabel),
                     _isServiceTypeRecurring
                         ? _buildRecurringDaysInfo()
                         : WeekdaySelector(
@@ -384,24 +405,24 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                             onToggle: _toggleDaySelection,
                           ),
                     Gap(16.h),
-
-                    // Time Slots
-                    const AppFieledLabelText(label: 'Available Time Slots'),
+                    AppFieledLabelText(
+                        label: S.of(context).addServiceScreenTimeSlotsLabel),
                     _buildTimeSlotStepper(),
                     if (_timeSlots.isEmpty)
                       Padding(
                         padding: EdgeInsets.only(top: 8.h),
                         child: Text(
-                          'Please add at least one time slot',
-                          style: TextStyle(
+                          S.of(context).addServiceScreenTimeSlotsError,
+                          style: const TextStyle(
                             color: Colors.red,
                             fontSize: 12,
                           ),
                         ),
                       ),
                     Gap(24.h),
-
-                    // Submit Button
+                    Gap(16.h),
+                    _buildSectionHeader(S.of(context).serviceOptions),
+                    _buildServiceOptionItem(context),
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
@@ -417,26 +438,26 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                             if (_selectedDays.isEmpty &&
                                 !_isServiceTypeRecurring) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content: Text(
-                                        'Please select at least one available day')),
+                                SnackBar(
+                                    content: Text(S
+                                        .of(context)
+                                        .addServiceScreenAvailableDaysError)),
                               );
                               return;
                             }
                             if (_timeSlots.isEmpty) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content: Text(
-                                        'Please add at least one time slot')),
+                                SnackBar(
+                                    content: Text(S
+                                        .of(context)
+                                        .addServiceScreenTimeSlotsError)),
                               );
                               return;
                             }
 
-                            // Calculate total duration in minutes
                             final totalDuration =
                                 (_duration * 60) + _durationMinutes;
 
-                            // Create service model
                             final service = ServiceModel(
                                 id: '',
                                 name: _serviceNameController.text,
@@ -468,6 +489,13 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                                       ),
                                     )
                                     .toList(),
+                                options: _options
+                                    .map((o) => ServiceOption(
+                                          name: o['name'],
+                                          price: o['price'],
+                                          description: o['description'],
+                                        ))
+                                    .toList(),
                                 v: 1,
                                 businessName: '',
                                 firstName: '',
@@ -477,13 +505,12 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                                 averageRating: 0.0,
                                 reviews: []);
 
-                            // Call cubit to create service
                             ServiceCubit.get(context).createService(service);
                           }
                         },
                         child: Text(
-                          'Publish Service',
-                          style: TextStyle(
+                          S.of(context).addServiceScreenPublishButton,
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
@@ -501,12 +528,184 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
     );
   }
 
+  Column _buildServiceOptionItem(BuildContext context) {
+    final s = S.of(context); // لتسهيل الوصول للترجمات
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // ===== بطاقة الإدخال =====
+        Container(
+          padding: EdgeInsets.all(12.w),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              // ===== صف الاسم والسعر =====
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _optionNameController,
+                      decoration: InputDecoration(
+                        hintText: s.optionName, // ✅ الترجمة
+                        filled: true,
+                        fillColor: AppColors.greyBack,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 8.w),
+                  Expanded(
+                    child: TextField(
+                      controller: _optionPriceController,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        hintText: s.extraPrice, // ✅ الترجمة
+                        filled: true,
+                        fillColor: AppColors.greyBack,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              SizedBox(height: 10.h),
+
+              // ===== حقل الوصف =====
+              TextField(
+                controller: _optionDescriptionController,
+                maxLines: 2,
+                decoration: InputDecoration(
+                  hintText: s.optionDescriptionOptional, // ✅ الترجمة
+                  filled: true,
+                  fillColor: AppColors.greyBack,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
+
+              SizedBox(height: 14.h),
+
+              // ===== زر الإضافة =====
+              Align(
+                alignment: Alignment.centerRight,
+                child: ElevatedButton.icon(
+                  onPressed: _addOption,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  icon:
+                      const Icon(Icons.add_circle_outline, color: Colors.white),
+                  label: Text(
+                    s.addOption, // ✅ الترجمة
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        Gap(20.h),
+
+        // ===== عرض الخيارات =====
+        if (_options.isNotEmpty)
+          Column(
+            children: _options.asMap().entries.map((entry) {
+              final index = entry.key;
+              final option = entry.value;
+
+              return Container(
+                margin: EdgeInsets.only(bottom: 10.h),
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: Colors.grey[300]!),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.04),
+                      blurRadius: 5,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // ===== الاسم والسعر =====
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "${option['name']} (+${option['price']})",
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                          onPressed: () =>
+                              setState(() => _options.removeAt(index)),
+                        ),
+                      ],
+                    ),
+                    // ===== الوصف =====
+                    if (option['description'] != null &&
+                        option['description'].toString().trim().isNotEmpty)
+                      Padding(
+                        padding: EdgeInsets.only(top: 4.h),
+                        child: Text(
+                          option['description'],
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+      ],
+    );
+  }
+
   Widget _buildSectionHeader(String title) {
     return Padding(
       padding: EdgeInsets.only(bottom: 8.h),
       child: Text(
         title,
-        style: TextStyle(
+        style: const TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.bold,
           color: Colors.black87,
@@ -542,7 +741,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
           Gap(8.w),
           Expanded(
             child: Text(
-              'Recurring services are available all days of the week',
+              S.of(context).addServiceScreenRecurringDaysInfo,
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey[700],
@@ -565,7 +764,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Estimated Service Duration',
+            S.of(context).addServiceScreenEstimatedDurationLabel,
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
@@ -577,7 +776,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
             children: [
               Expanded(
                 child: _buildDurationStepperItem(
-                  'Hours',
+                  S.of(context).addServiceScreenHoursLabel,
                   _duration,
                   (value) => setState(() => _duration = value),
                   1,
@@ -587,7 +786,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
               Gap(16.w),
               Expanded(
                 child: _buildDurationStepperItem(
-                  'Minutes',
+                  S.of(context).addServiceScreenMinutesLabel,
                   _durationMinutes,
                   (value) => setState(() => _durationMinutes = value),
                   0,
@@ -599,8 +798,9 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
           ),
           Gap(8.h),
           Text(
-            'Total Duration: ${_duration}h ${_durationMinutes > 0 ? '${_durationMinutes}m' : ''}',
-            style: TextStyle(
+            S.of(context).addServiceScreenTotalDuration(
+                _duration, _durationMinutes > 0 ? '${_durationMinutes}m' : ''),
+            style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
               color: AppColors.primary,
@@ -618,7 +818,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
       children: [
         Text(
           label,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
           ),
@@ -634,7 +834,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               IconButton(
-                icon: Icon(Icons.remove, size: 20),
+                icon: const Icon(Icons.remove, size: 20),
                 onPressed: value > min ? () => onChanged(value - step) : null,
                 style: IconButton.styleFrom(
                   backgroundColor: value > min
@@ -644,13 +844,13 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
               ),
               Text(
                 value.toString(),
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               IconButton(
-                icon: Icon(Icons.add, size: 20),
+                icon: const Icon(Icons.add, size: 20),
                 onPressed: value < max ? () => onChanged(value + step) : null,
                 style: IconButton.styleFrom(
                   backgroundColor: value < max
@@ -677,13 +877,15 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
           ),
           child: Column(
             children: [
-              // Start Time
-              _buildTimeStepper('Start Time', _startTimeHour, _startTimeMinute,
-                  _startTimeAmPm, _updateStartTime),
+              _buildTimeStepper(
+                  S.of(context).addServiceScreenStartTimeLabel,
+                  _startTimeHour,
+                  _startTimeMinute,
+                  _startTimeAmPm,
+                  _updateStartTime),
               Gap(20.h),
-              // End Time
-              _buildTimeStepper('End Time', _endTimeHour, _endTimeMinute,
-                  _endTimeAmPm, _updateEndTime),
+              _buildTimeStepper(S.of(context).addServiceScreenEndTimeLabel,
+                  _endTimeHour, _endTimeMinute, _endTimeAmPm, _updateEndTime),
               Gap(16.h),
               SizedBox(
                 width: double.infinity,
@@ -698,23 +900,21 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  icon: Icon(Icons.add, size: 20),
-                  label: Text('Add Time Slot',
-                      style: TextStyle(fontWeight: FontWeight.w600)),
+                  icon: const Icon(Icons.add, size: 20),
+                  label: Text(S.of(context).addServiceScreenAddTimeSlotButton,
+                      style: const TextStyle(fontWeight: FontWeight.w600)),
                 ),
               ),
             ],
           ),
         ),
         Gap(16.h),
-
-        // Existing time slots
         if (_timeSlots.isNotEmpty)
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Added Time Slots:',
+                S.of(context).addServiceScreenAddedTimeSlotsLabel,
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
                   fontSize: 16,
@@ -737,7 +937,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                       BoxShadow(
                         color: Colors.black.withOpacity(0.05),
                         blurRadius: 4,
-                        offset: Offset(0, 2),
+                        offset: const Offset(0, 2),
                       ),
                     ],
                   ),
@@ -746,12 +946,12 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                     children: [
                       Row(
                         children: [
-                          Icon(Icons.access_time,
+                          const Icon(Icons.access_time,
                               size: 18, color: AppColors.primary),
                           Gap(8.w),
                           Text(
                             '${slot['startTime']} - ${slot['endTime']}',
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w500,
                             ),
@@ -759,14 +959,14 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                         ],
                       ),
                       IconButton(
-                        icon: Icon(Icons.delete_outline,
+                        icon: const Icon(Icons.delete_outline,
                             color: Colors.red, size: 20),
                         onPressed: () => _removeTimeSlot(index),
                       ),
                     ],
                   ),
                 );
-              }).toList(),
+              }),
             ],
           ),
       ],
@@ -790,7 +990,6 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // العنوان (Start Time / End Time)
           Text(
             label,
             style: TextStyle(
@@ -800,22 +999,20 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
             ),
           ),
           Gap(16.h),
-
-          // 👇 Hour + Minute في نفس الصف
           Row(
             children: [
               Expanded(
                 child: Column(
                   children: [
                     _buildTimeUnitStepper(
-                      'Hour',
+                      S.of(context).addServiceScreenHourLabel,
                       hour,
                       (value) => onUpdate(value, minute, isAm),
                       1,
                       12,
                     ),
                     Gap(6.h),
-                    Text('Hour',
+                    Text(S.of(context).addServiceScreenHourLabel,
                         style:
                             TextStyle(fontSize: 12, color: Colors.grey[600])),
                   ],
@@ -826,7 +1023,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                 child: Column(
                   children: [
                     _buildTimeUnitStepper(
-                      'Minute',
+                      S.of(context).addServiceScreenMinuteLabel,
                       minute,
                       (value) => onUpdate(hour, value, isAm),
                       0,
@@ -834,7 +1031,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                       30,
                     ),
                     Gap(6.h),
-                    Text('Minute',
+                    Text(S.of(context).addServiceScreenMinuteLabel,
                         style:
                             TextStyle(fontSize: 12, color: Colors.grey[600])),
                   ],
@@ -842,10 +1039,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
               ),
             ],
           ),
-
           Gap(20.h),
-
-          // 👇 AM / PM تحتهم
           Container(
             height: 40.h,
             decoration: BoxDecoration(
@@ -861,14 +1055,14 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                     child: Container(
                       decoration: BoxDecoration(
                         color: isAm ? AppColors.primary : Colors.transparent,
-                        borderRadius: BorderRadius.only(
+                        borderRadius: const BorderRadius.only(
                           topLeft: Radius.circular(8),
                           bottomLeft: Radius.circular(8),
                         ),
                       ),
                       alignment: Alignment.center,
                       child: Text(
-                        'AM',
+                        S.of(context).addServiceScreenAmLabel,
                         style: TextStyle(
                           color: isAm ? Colors.white : Colors.grey[600],
                           fontWeight: FontWeight.w600,
@@ -883,14 +1077,14 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                     child: Container(
                       decoration: BoxDecoration(
                         color: !isAm ? AppColors.primary : Colors.transparent,
-                        borderRadius: BorderRadius.only(
+                        borderRadius: const BorderRadius.only(
                           topRight: Radius.circular(8),
                           bottomRight: Radius.circular(8),
                         ),
                       ),
                       alignment: Alignment.center,
                       child: Text(
-                        'PM',
+                        S.of(context).addServiceScreenPmLabel,
                         style: TextStyle(
                           color: !isAm ? Colors.white : Colors.grey[600],
                           fontWeight: FontWeight.w600,
@@ -902,14 +1096,12 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
               ],
             ),
           ),
-
           Gap(12.h),
-
-          // الوقت المختار Preview
           Center(
             child: Text(
-              'Selected: ${_getDisplayTime(hour, minute, isAm)}',
-              style: TextStyle(
+              S.of(context).addServiceScreenSelectedTime(
+                  _getDisplayTime(hour, minute, isAm)),
+              style: const TextStyle(
                 fontWeight: FontWeight.w600,
                 color: AppColors.primary,
               ),
@@ -933,10 +1125,10 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           IconButton(
-            icon: Icon(Icons.remove, size: 16),
+            icon: const Icon(Icons.remove, size: 16),
             onPressed: value > min ? () => onChanged(value - step) : null,
             style: IconButton.styleFrom(
-              padding: EdgeInsets.all(4),
+              padding: const EdgeInsets.all(4),
               backgroundColor: value > min
                   ? AppColors.primary.withOpacity(0.1)
                   : Colors.grey[200],
@@ -944,16 +1136,16 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
           ),
           Text(
             value.toString().padLeft(2, '0'),
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
             ),
           ),
           IconButton(
-            icon: Icon(Icons.add, size: 16),
+            icon: const Icon(Icons.add, size: 16),
             onPressed: value < max ? () => onChanged(value + step) : null,
             style: IconButton.styleFrom(
-              padding: EdgeInsets.all(4),
+              padding: const EdgeInsets.all(4),
               backgroundColor: value < max
                   ? AppColors.primary.withOpacity(0.1)
                   : Colors.grey[200],
@@ -974,6 +1166,27 @@ class WeekdaySelector extends StatelessWidget {
     required this.selectedDays,
     required this.onToggle,
   });
+
+  String _getDayName(BuildContext context, String day) {
+    switch (day) {
+      case 'monday':
+        return S.of(context).addServiceScreenDayMonday;
+      case 'tuesday':
+        return S.of(context).addServiceScreenDayTuesday;
+      case 'wednesday':
+        return S.of(context).addServiceScreenDayWednesday;
+      case 'thursday':
+        return S.of(context).addServiceScreenDayThursday;
+      case 'friday':
+        return S.of(context).addServiceScreenDayFriday;
+      case 'saturday':
+        return S.of(context).addServiceScreenDaySaturday;
+      case 'sunday':
+        return S.of(context).addServiceScreenDaySunday;
+      default:
+        return day;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -997,7 +1210,7 @@ class WeekdaySelector extends StatelessWidget {
               .map(
                 (day) => FilterChip(
                   label: Text(
-                    day[0].toUpperCase() + day.substring(1),
+                    _getDayName(context, day),
                     style: TextStyle(
                       fontSize: 13,
                       color: selectedDays.contains(day)
@@ -1021,8 +1234,8 @@ class WeekdaySelector extends StatelessWidget {
           Padding(
             padding: EdgeInsets.only(top: 8.h),
             child: Text(
-              'Please select at least one day',
-              style: TextStyle(
+              S.of(context).addServiceScreenAvailableDaysError,
+              style: const TextStyle(
                 color: Colors.red,
                 fontSize: 12,
               ),

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
+import 'package:intl/intl.dart';
+import 'package:mahu_home_services_app/generated/l10n.dart';
 
 class ServiceSummaryCard extends StatelessWidget {
   const ServiceSummaryCard({
@@ -26,24 +28,24 @@ class ServiceSummaryCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Home Cleaning',
-              style: TextStyle(
+              _getLocalizedServiceName(context),
+              style: const TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
               ),
             ),
             RichText(
               text: TextSpan(
-                text: '300AED',
-                style: TextStyle(
+                text: _getLocalizedPrice(context),
+                style: const TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                   color: Colors.black,
                 ),
                 children: <TextSpan>[
                   TextSpan(
-                    text: '/hour',
-                    style: TextStyle(
+                    text: S.of(context).serviceSummaryCardPerHour,
+                    style: const TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w400,
                     ),
@@ -62,8 +64,8 @@ class ServiceSummaryCard extends StatelessWidget {
               size: 18,
             ),
             Text(
-              '4.5',
-              style: TextStyle(
+              _getLocalizedRating(context),
+              style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
               ),
@@ -72,5 +74,28 @@ class ServiceSummaryCard extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  String _getLocalizedServiceName(BuildContext context) {
+    // Placeholder: Replace with actual logic to fetch service name
+    return S.of(context).serviceSummaryCardHomeCleaningName;
+  }
+
+  String _getLocalizedPrice(BuildContext context) {
+    // Placeholder: Replace with actual logic to fetch price
+    const double price = 300; // Hardcoded for now
+    return NumberFormat.currency(
+      locale: Localizations.localeOf(context).languageCode,
+      symbol: S.of(context).serviceSummaryCardCurrencySymbol,
+      decimalDigits: 0,
+    ).format(price);
+  }
+
+  String _getLocalizedRating(BuildContext context) {
+    // Placeholder: Replace with actual logic to fetch rating
+    const double rating = 4.5; // Hardcoded for now
+    return NumberFormat.decimalPattern(
+      Localizations.localeOf(context).languageCode,
+    ).format(rating);
   }
 }

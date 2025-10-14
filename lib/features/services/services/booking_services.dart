@@ -1,5 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
+import 'package:mahu_home_services_app/core/constants/app_const.dart';
 import 'package:mahu_home_services_app/core/errors/failures.dart';
 import 'package:mahu_home_services_app/core/utils/helpers/request_hundler.dart';
 import 'package:mahu_home_services_app/core/utils/helpers/cache_helper.dart';
@@ -11,17 +12,19 @@ class BookingServices {
     String token = CacheHelper.getString('token') ?? '';
 
     return RequestHundler.handleRequest<List<BookingModel>>(
-      request: () => RequestHundler.dio.get('/providers/me/bookings',
+      request: (options) => RequestHundler.dio.get('/providers/me/bookings',
           data: {},
           options: Options(headers: {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer $token',
+            "Accept-Language": CacheHelper.getString(appLang) ?? 'en',
           })),
       onSuccess: (data) {
         return (data['data'] as List)
             .map((book) => BookingModel.fromJson(book))
             .toList();
       },
+      headers: {"Accept-Language": CacheHelper.getString(appLang) ?? 'en'},
     );
   }
 
@@ -29,7 +32,7 @@ class BookingServices {
     String token = CacheHelper.getString('token') ?? '';
 
     return RequestHundler.handleRequest<List<BookingNewModel>>(
-      request: () => RequestHundler.dio.get(
+      request: (options) => RequestHundler.dio.get(
         '/users/me/bookings',
         queryParameters: {
           'previous': 'true',
@@ -37,13 +40,17 @@ class BookingServices {
         options: Options(headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
+          "Accept-Language": CacheHelper.getString(appLang) ?? 'en',
         }),
       ),
       onSuccess: (data) {
         // { success: true, count: x, pagination: {...}, data: [ bookings ] }
         final bookingsJson = data['data'] as List;
-        return bookingsJson.map((book) => BookingNewModel.fromJson(book)).toList();
+        return bookingsJson
+            .map((book) => BookingNewModel.fromJson(book))
+            .toList();
       },
+      headers: {"Accept-Language": CacheHelper.getString(appLang) ?? 'en'},
     );
   }
 
@@ -52,15 +59,17 @@ class BookingServices {
     String token = CacheHelper.getString('token') ?? '';
 
     return RequestHundler.handleRequest<Unit>(
-      request: () => RequestHundler.dio.put('/bookings/$bookingID/status',
-          data: {"status": status},
-          options: Options(headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer $token',
-          })),
+      request: (options) =>
+          RequestHundler.dio.put('/bookings/$bookingID/status',
+              data: {"status": status},
+              options: Options(headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer $token',
+              })),
       onSuccess: (data) {
         return unit;
       },
+      headers: {"Accept-Language": CacheHelper.getString(appLang) ?? 'en'},
     );
   }
 }
