@@ -250,6 +250,8 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                                 ),
                               ],
                             ),
+                            Gap(16.h),
+                            _buildLocationSection(),
                             Gap(24.h),
                             _buildAvailableTimeSection(),
                             Gap(16.h),
@@ -282,6 +284,35 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
       default:
         return S.of(context).serviceDetailsScreenServiceTypeDefault;
     }
+  }
+
+  Widget _buildLocationSection() {
+    if (widget.service.place == null || widget.service.place.isEmpty) {
+      return SizedBox.shrink(); // Return an empty widget if no place of service is available
+    }
+
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 8.h),
+      child: Row(
+        children: [
+          Icon(
+            Icons.location_on,
+            color: AppColors.primary,
+            size: 20.w,
+          ),
+          SizedBox(width: 8.w),
+          Expanded(
+            child: Text(
+              widget.service.place!,
+              style: TextStyle(
+                fontSize: 14.sp,
+                color: Colors.grey.shade800,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildAvailableTimeSection() {
@@ -384,7 +415,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                 ),
               ),
               Text(
-                '\$${widget.service.basePrice.toInt()}',
+                '${widget.service.currency} ${widget.service.basePrice.toInt()}',
                 style: const TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,

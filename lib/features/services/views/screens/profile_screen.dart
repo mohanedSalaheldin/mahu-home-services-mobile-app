@@ -7,7 +7,7 @@ import 'package:mahu_home_services_app/core/constants/colors.dart';
 import 'package:mahu_home_services_app/core/utils/helpers/cache_helper.dart';
 import 'package:mahu_home_services_app/core/utils/helpers/localization_helper.dart';
 import 'package:mahu_home_services_app/core/utils/navigation_utils.dart';
-import 'package:mahu_home_services_app/features/auth/client_auth/views/screens/login_screen.dart';
+// import 'package:mahu_home_services_app/features/auth/client_auth/views/screens/login_screen.dart';
 import 'package:mahu_home_services_app/features/landing/views/screens/choose_rule_screen.dart';
 import 'package:mahu_home_services_app/features/services/cubit/services_cubit.dart';
 import 'package:mahu_home_services_app/features/services/cubit/services_state.dart';
@@ -18,7 +18,7 @@ import 'package:mahu_home_services_app/features/services/services/subscription_s
 import 'package:mahu_home_services_app/features/services/views/screens/editprofile_screen.dart';
 import 'package:mahu_home_services_app/features/services/views/screens/upgrade_plan_screen.dart';
 import 'package:mahu_home_services_app/generated/l10n.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+// import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -30,7 +30,7 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   final SubscriptionServices _subscriptionServices = SubscriptionServices();
   Subscription? _currentSubscription;
-  bool _isLoadingSubscription = true;
+  // Reserved for future loading indicator
 
   @override
   void initState() {
@@ -47,14 +47,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final result = await _subscriptionServices.getUserSubscription(userId);
     result.fold(
       (failure) {
-        // ScaffoldMessenger.of(context).showSnackBar(
-        //   SnackBar(content: Text(failure.message)),
-        // );
+        // if no active subscription or failed, clear loading so UI updates
+        setState(() {
+          _currentSubscription = null;
+        });
       },
       (subscription) {
         setState(() {
           _currentSubscription = subscription;
-          _isLoadingSubscription = false;
         });
       },
     );
@@ -101,8 +101,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   // Gap(24.h),
                   _buildSettingsSection(user),
                   Gap(32.h),
-                  // _buildUpgradeButton(user.id),
-                  // Gap(40.h),
+                  _buildUpgradeButton(user.id),
+                  Gap(40.h),
                 ],
               ),
             ),
@@ -318,87 +318,183 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                   Gap(12.h),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        padding: EdgeInsets.symmetric(vertical: 16.h),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                      ),
-                      onPressed: () {
-                        final userId = context.read<ServiceCubit>().profile.id;
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => UpgradePlanScreen(userId: userId),
-                          ),
-                        ).then((_) => _loadUserSubscription());
-                      },
-                      child: Text(
-                        S.of(context).profileScreenSubscribeButton,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
+                  // SizedBox(
+                  //   width: double.infinity,
+                  //   child: ElevatedButton(
+                  //     style: ElevatedButton.styleFrom(
+                  //       backgroundColor: AppColors.primary,
+                  //       padding: EdgeInsets.symmetric(vertical: 16.h),
+                  //       shape: RoundedRectangleBorder(
+                  //         borderRadius: BorderRadius.circular(8.0),
+                  //       ),
+                  //     ),
+                  //     onPressed: () {
+                  //       final userId = context.read<ServiceCubit>().profile.id;
+                  //       Navigator.push(
+                  //         context,
+                  //         MaterialPageRoute(
+                  //           builder: (_) => UpgradePlanScreen(userId: userId),
+                  //         ),
+                  //       ).then((_) => _loadUserSubscription());
+                  //     },
+                  //     child: Text(
+                  //       S.of(context).profileScreenSubscribeButton,
+                  //       style: const TextStyle(
+                  //         fontSize: 16,
+                  //         fontWeight: FontWeight.bold,
+                  //         color: Colors.white,
+                  //       ),
+                  //     ),
+                  //   ),
+                  // ),
+                
                 ],
               )
             : Container(
                 padding: EdgeInsets.all(16.0.w),
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade50,
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(12.0),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.04),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
+                        // plan icon / logo placeholder
                         Container(
-                          width: 40.w,
-                          height: 40.w,
+                          width: 56.w,
+                          height: 56.w,
                           decoration: BoxDecoration(
-                            color: AppColors.primary.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(8.0),
+                            color: AppColors.primary.withOpacity(0.08),
+                            borderRadius: BorderRadius.circular(12),
                           ),
                           child: const Icon(
                             Icons.workspace_premium,
                             color: AppColors.primary,
+                            size: 28,
                           ),
                         ),
                         Gap(12.w),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              _currentSubscription!.plan.name,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                _currentSubscription!.plan.name,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            ),
-                            Text(
-                              S.of(context).profileScreenSubscriptionPrice(
-                                  _currentSubscription!.plan.price
-                                      .toStringAsFixed(2),
-                                  _currentSubscription!.plan.duration
-                                      .toString()),
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey.shade600,
+                              SizedBox(height: 6.h),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      _currentSubscription!.plan.description,
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.grey.shade600,
+                                      ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  SizedBox(width: 8.w),
+                                  // Plan active badge
+                                  Container(
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: 8.w, vertical: 6.h),
+                                    decoration: BoxDecoration(
+                                      color: _currentSubscription!.plan.isActive
+                                          ? Colors.green.withOpacity(0.12)
+                                          : Colors.grey.withOpacity(0.12),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      _currentSubscription!.plan.isActive
+                                          ? 'Plan Active'
+                                          : 'Plan Inactive',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: _currentSubscription!
+                                                .plan.isActive
+                                            ? Colors.green
+                                            : Colors.grey.shade700,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
+                        ),
+                        Gap(8.w),
+                        // Right side constrained column for provider badge + price
+                        SizedBox(
+                          width: 120.w,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 10.w, vertical: 6.h),
+                                decoration: BoxDecoration(
+                                  color: (context.read<ServiceCubit>().profile
+                                                  .isVerified ==
+                                              true)
+                                      ? Colors.blue.withOpacity(0.12)
+                                      : Colors.grey.withOpacity(0.06),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  (context.read<ServiceCubit>().profile.isVerified ==
+                                          true)
+                                      ? 'Verified Provider'
+                                      : 'Unverified Provider',
+                                  style: TextStyle(
+                                    color: (context.read<ServiceCubit>().profile
+                                                    .isVerified ==
+                                                true)
+                                        ? Colors.blue
+                                        : Colors.grey.shade700,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: 8.h),
+                              Text(
+                                '\$${_currentSubscription!.plan.price.toStringAsFixed(2)}',
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.primary,
+                                ),
+                              ),
+                              Text(
+                                '${_currentSubscription!.plan.duration} mo',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.grey.shade600,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
-                    Gap(16.h),
+
+                    Gap(14.h),
+
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -417,13 +513,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   .format(_currentSubscription!.startDate),
                               style: const TextStyle(
                                 fontSize: 14,
-                                fontWeight: FontWeight.w500,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ],
                         ),
                         Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
                             Text(
                               S.of(context).profileScreenSubscriptionEndDate,
@@ -437,21 +533,142 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   .format(_currentSubscription!.endDate),
                               style: const TextStyle(
                                 fontSize: 14,
-                                fontWeight: FontWeight.w500,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ],
                         ),
                       ],
                     ),
+
                     Gap(12.h),
+
+                    // Remaining days + status
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Builder(builder: (context) {
+                          final today = DateTime.now();
+                          final remaining = _currentSubscription!.endDate
+                              .difference(today)
+                              .inDays;
+                          return Row(
+                            children: [
+                                Wrap(
+                                  spacing: 12.w,
+                                  runSpacing: 8.h,
+                                  crossAxisAlignment: WrapCrossAlignment.center,
+                                  children: [
+                                    Container(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: 10.w, vertical: 6.h),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.primary.withOpacity(0.08),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Text(
+                                        remaining >= 0
+                                            ? '$remaining days left'
+                                            : 'Expired',
+                                        style: TextStyle(
+                                            color: AppColors.primary,
+                                            fontWeight: FontWeight.w600),
+                                      ),
+                                    ),
+
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(Icons.build_circle,
+                                            size: 18, color: Colors.grey),
+                                        SizedBox(width: 6.w),
+                                        Text(
+                                          '${_currentSubscription!.plan.maxServices} services',
+                                          style: TextStyle(
+                                              color: Colors.grey.shade700),
+                                        ),
+                                      ],
+                                    ),
+
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(Icons.book_online,
+                                            size: 18, color: Colors.grey),
+                                        SizedBox(width: 6.w),
+                                        Text(
+                                          '${_currentSubscription!.plan.maxBookings} bookings',
+                                          style: TextStyle(
+                                              color: Colors.grey.shade700),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ],
+                          );
+                        }),
+
+                        // status badge
+                        Container(
+                          padding:
+                              EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                          decoration: BoxDecoration(
+                            color: _getStatusColor(_currentSubscription!.status)
+                                .withOpacity(0.12),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            _currentSubscription!.status,
+                            style: TextStyle(
+                              color: _getStatusColor(_currentSubscription!.status),
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    Gap(14.h),
+                    const Divider(),
+                    Gap(12.h),
+
+                    // Features
                     Text(
-                      S.of(context).profileScreenSubscriptionStatus(
-                          _currentSubscription!.status),
+                      'Included Features',
                       style: TextStyle(
-                        fontSize: 14,
-                        color: _getStatusColor(_currentSubscription!.status),
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey.shade800,
                       ),
+                    ),
+                    Gap(10.h),
+                    Column(
+                      children:
+                          _currentSubscription!.plan.features.map((f) {
+                        return Padding(
+                          padding: EdgeInsets.symmetric(vertical: 6.h),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.check_circle,
+                                color: AppColors.primary,
+                                size: 18,
+                              ),
+                              SizedBox(width: 10.w),
+                              Expanded(
+                                child: Text(
+                                  f,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey.shade700,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
                     ),
                   ],
                 ),

@@ -79,11 +79,23 @@ class _UpgradePlanScreenState extends State<UpgradePlanScreen> {
   @override
   void initState() {
     super.initState();
-    _initializePlans();
+    _loadPlans();
   }
 
-  void _initializePlans() {
-    _plans = _plansData.map((plan) => Plan.fromJson(plan)).toList();
+  Future<void> _loadPlans() async {
+    setState(() => _isProcessing = true);
+    final result = await _planServices.getPlans();
+    result.fold(
+      (failure) {
+        // fallback to local plans on failure
+        _plans = _plansData.map((plan) => Plan.fromJson(plan)).toList();
+      },
+      (plansList) {
+        _plans = plansList;
+      },
+    );
+
+    if (mounted) setState(() => _isProcessing = false);
   }
 
   @override
@@ -129,6 +141,9 @@ class _UpgradePlanScreenState extends State<UpgradePlanScreen> {
               },
             ),
           ),
+
+            if (_isProcessing && _plans.isEmpty)
+              const Center(child: CircularProgressIndicator()),
 
           // Bottom action button
           if (_selectedPlanIndex != null)
@@ -233,65 +248,78 @@ class _PlanCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Header: name & price
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          plan.name,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 6.h),
+                        Text(
+                          plan.description,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(width: 12.w),
                   Text(
-                    plan.name,
+                    '\$${plan.price.toStringAsFixed(2)}',
                     style: const TextStyle(
-                      fontSize: 20,
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: AppColors.primary,
                     ),
                   ),
-                  if (isSelected)
-                    Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 10.w,
-                        vertical: 4.h,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Text(
-                        'Selected',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
                 ],
               ),
-              SizedBox(height: 8.h),
+
+              SizedBox(height: 12.h),
+
               Text(
-                plan.description,
+                'per ${plan.duration ?? 1} month${(plan.duration ?? 1) > 1 ? 's' : ''}',
                 style: TextStyle(
                   fontSize: 14,
                   color: Colors.grey.shade600,
                 ),
               ),
-              SizedBox(height: 16.h),
-              Text(
-                '\$${plan.price.toStringAsFixed(2)}',
-                style: const TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.primary,
-                ),
+
+              SizedBox(height: 12.h),
+
+              // Badges row
+              Wrap(
+                spacing: 8.w,
+                runSpacing: 8.h,
+                children: [
+                  if (plan.periodInDays != null)
+                    _InfoBadge(label: '${plan.periodInDays}d', color: Colors.teal),
+                  if (plan.multicountriesAllowed == true)
+                    _InfoBadge(label: 'Multi-country', color: Colors.indigo),
+                  if (plan.onlinePaymentAllowed == true)
+                    _InfoBadge(label: 'Online Payment', color: Colors.orange),
+                  if (plan.subscriptionsCount != null)
+                    _InfoBadge(label: '${plan.subscriptionsCount} subs', color: Colors.blueGrey),
+                  if (plan.daysUntilExpiration != null)
+                    _InfoBadge(label: '${plan.daysUntilExpiration} days left', color: Colors.redAccent),
+                ],
               ),
-              SizedBox(height: 4.h),
-              Text(
-                'per ${plan.duration} month${plan.duration > 1 ? 's' : ''}',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey.shade600,
-                ),
-              ),
-              SizedBox(height: 20.h),
+
+              SizedBox(height: 12.h),
               const Divider(),
-              SizedBox(height: 16.h),
+              SizedBox(height: 12.h),
+
               const Text(
                 'Plan Features:',
                 style: TextStyle(
@@ -300,36 +328,58 @@ class _PlanCard extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 12.h),
+
               Column(
                 children: plan.features
-                    .map((feature) => Padding(
-                          padding: EdgeInsets.only(bottom: 12.h),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Icon(
-                                Icons.check_circle_rounded,
-                                size: 18,
-                                color: AppColors.primary,
-                              ),
-                              SizedBox(width: 12.w),
-                              Expanded(
-                                child: Text(
-                                  feature,
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    height: 1.4,
+                        .map((feature) => Padding(
+                              padding: EdgeInsets.only(bottom: 10.h),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Icon(
+                                    Icons.check,
+                                    size: 16,
+                                    color: AppColors.primary,
                                   ),
-                                ),
+                                  SizedBox(width: 10.w),
+                                  Expanded(
+                                    child: Text(
+                                      feature,
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        height: 1.4,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
-                        ))
-                    .toList(),
+                            ))
+                        .toList(),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _InfoBadge extends StatelessWidget {
+  final String label;
+  final Color color;
+  const _InfoBadge({required this.label, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(fontSize: 12, color: color, fontWeight: FontWeight.w600),
       ),
     );
   }

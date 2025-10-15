@@ -31,6 +31,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
   final TextEditingController _serviceNameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _basePriceController = TextEditingController();
+  final TextEditingController _placeController = TextEditingController();
   final List<Map<String, dynamic>> _options = [];
   final TextEditingController _optionNameController = TextEditingController();
   final TextEditingController _optionPriceController = TextEditingController();
@@ -316,6 +317,18 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                       },
                     ),
                     Gap(16.h),
+                    CustomTextField(
+                      label: 'Place',
+                      hint: 'Place of your service eg. Giza , Dubai',
+                      controller: _placeController,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Place is required';
+                        }
+                        return null;
+                      },
+                    ),
+                    Gap(16.h),
                     _buildSectionHeader(
                         S.of(context).addServiceScreenServiceTypeSection),
                     ToggleButtonGroup(
@@ -461,6 +474,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                             final service = ServiceModel(
                                 id: '',
                                 name: _serviceNameController.text,
+                place: _placeController.text.trim(),
                                 description: _descriptionController.text,
                                 category: CacheHelper.getString(
                                         "serviceProviderCategory") ??

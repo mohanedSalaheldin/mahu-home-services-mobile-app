@@ -12,7 +12,7 @@ class SubscriptionServices {
       String userId) async {
     try {
       Response response = await RequestHundler.dio.get(
-        '$apiBaseURL/subscription/users/$userId',
+        '$apiBaseURL/subscriptions/users/$userId',
         options: Options(
           headers: {
             'Authorization': 'Bearer ${CacheHelper.getString('token')}',

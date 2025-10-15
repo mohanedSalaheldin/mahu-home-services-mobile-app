@@ -808,7 +808,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
               ),
               Text(
                 S.of(context).bookingDetailsScreenPrice(
-                    widget.booking.price.toStringAsFixed(2)),
+                    '${(widget.booking.service?.currency != null && widget.booking.service!.currency.isNotEmpty ? widget.booking.service!.currency : 'AED')} ${widget.booking.price.toStringAsFixed(2)}'),
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
@@ -851,7 +851,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
               ),
               Text(
                 S.of(context).bookingDetailsScreenPrice(
-                    widget.booking.price.toStringAsFixed(2)),
+                    '${(widget.booking.service?.currency != null && widget.booking.service!.currency.isNotEmpty ? widget.booking.service!.currency : 'AED')} ${widget.booking.price.toStringAsFixed(2)}'),
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,

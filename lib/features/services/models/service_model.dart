@@ -23,8 +23,10 @@ class ServiceModel {
   final String? lastName;
   final String? avatar;
   final String? businessName;
+  final String place; // new field: place where service is provided
   final List<Review> reviews;
   final int v;
+  final String currency;
 
   /// NEW FIELD
   final List<ServiceOption> options;
@@ -32,6 +34,7 @@ class ServiceModel {
   ServiceModel({
     required this.id,
     required this.name,
+    this.place = '',
     required this.totalReviews,
     required this.averageRating,
     required this.description,
@@ -39,6 +42,7 @@ class ServiceModel {
     required this.serviceType,
     required this.subType,
     required this.basePrice,
+    this.currency = 'AED',
     required this.pricingModel,
     required this.reviews,
     required this.duration,
@@ -60,6 +64,7 @@ class ServiceModel {
   ServiceModel copyWith({
     bool? active,
     List<ServiceOption>? options,
+    String? currency,
   }) {
     return ServiceModel(
       id: id,
@@ -69,6 +74,7 @@ class ServiceModel {
       serviceType: serviceType,
       subType: subType,
       basePrice: basePrice,
+      currency: currency ?? this.currency,
       pricingModel: pricingModel,
       duration: duration,
       image: image,
@@ -122,11 +128,13 @@ class ServiceModel {
     return ServiceModel(
       id: json['_id'] ?? '',
       name: json['name'] ?? '',
+      place: json['place'] ?? '',
       description: json['description'] ?? '',
       category: json['category'] ?? 'cleaning',
       serviceType: json['serviceType'] ?? 'one-time',
       subType: json['subType'] ?? 'normal',
       basePrice: (json['basePrice'] ?? 0).toDouble(),
+  currency: (json['currency'] ?? 'AED') as String,
       pricingModel: json['pricingModel'] ?? 'fixed',
       duration: json['duration'] ?? 1,
       image: json['image'] ?? '',

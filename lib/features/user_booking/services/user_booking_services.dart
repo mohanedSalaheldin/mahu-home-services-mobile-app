@@ -25,8 +25,15 @@ class UserBookingServices {
         ),
       ),
       onSuccess: (data) {
-        return (data['data'] as List)
-            .map((service) => ServiceModel.fromJson(service))
+        List<dynamic> servicesJson = [];
+        if (data is Map<String, dynamic> && data['data'] is List<dynamic>) {
+          servicesJson = List<dynamic>.from(data['data']);
+        } else if (data is List<dynamic>) {
+          servicesJson = data;
+        }
+
+        return servicesJson
+            .map((service) => ServiceModel.fromJson(service as Map<String, dynamic>))
             .toList();
       },
       headers: {
@@ -40,7 +47,7 @@ class UserBookingServices {
     // Get services for a specific provider
     return RequestHundler.handleRequest<List<ServiceModel>>(
       request: (options) => RequestHundler.dio.get(
-        '/services/list/$referenceId',
+        '/services/list',
         data: {},
         options: Options(
           headers: {
@@ -50,8 +57,15 @@ class UserBookingServices {
         ),
       ),
       onSuccess: (data) {
-        return (data['data'] as List)
-            .map((service) => ServiceModel.fromJson(service))
+        List<dynamic> servicesJson = [];
+        if (data is Map<String, dynamic> && data['data'] is List<dynamic>) {
+          servicesJson = List<dynamic>.from(data['data']);
+        } else if (data is List<dynamic>) {
+          servicesJson = data;
+        }
+
+        return servicesJson
+            .map((service) => ServiceModel.fromJson(service as Map<String, dynamic>))
             .toList();
       },
       headers: {
@@ -77,14 +91,13 @@ class UserBookingServices {
       onSuccess: (data) {
         print('API Response: $data'); // Debug print
 
-        // Handle different response formats
+        // Handle different response formats safely
         if (data is Map<String, dynamic>) {
-          // Check if response has 'success' field
           if (data.containsKey('success')) {
-            final success = data['success'] as bool?;
-            return success ?? false;
+            final successVal = data['success'];
+            if (successVal is bool) return successVal;
+            if (successVal is String) return successVal.toLowerCase() == 'true';
           }
-          // If no 'success' field but response exists, assume success
           return true;
         }
 
@@ -141,17 +154,17 @@ class UserBookingServices {
         }),
       ),
       onSuccess: (data) {
-        // Handle the API response structure
-        if (data is Map<String, dynamic> && data.containsKey('data')) {
-          final bookingsJson = data['data'] as List;
-          return bookingsJson
-              .map((book) => BookingNewModel.fromJson(book))
-              .toList();
-        } else if (data is List) {
-          // Handle case where response is directly a list
-          return data.map((book) => BookingNewModel.fromJson(book)).toList();
+        // Handle the API response structure safely
+        List<dynamic> bookingsJson = [];
+        if (data is Map<String, dynamic> && data['data'] is List<dynamic>) {
+          bookingsJson = List<dynamic>.from(data['data']);
+        } else if (data is List<dynamic>) {
+          bookingsJson = data;
         }
-        return [];
+
+        return bookingsJson
+            .map((book) => BookingNewModel.fromJson(book as Map<String, dynamic>))
+            .toList();
       },
       headers: {
         'Accept-Language': CacheHelper.getString(appLang) ?? 'en',
@@ -228,9 +241,15 @@ class UserBookingServices {
       ),
       onSuccess: (data) {
         // { success: true, count: x, data: [ services ] }
-        final servicesJson = data['data'] as List;
+        List<dynamic> servicesJson = [];
+        if (data is Map<String, dynamic> && data['data'] is List<dynamic>) {
+          servicesJson = List<dynamic>.from(data['data']);
+        } else if (data is List<dynamic>) {
+          servicesJson = data;
+        }
+
         return servicesJson
-            .map((service) => ServiceModel.fromJson(service))
+            .map((service) => ServiceModel.fromJson(service as Map<String, dynamic>))
             .toList();
       },
       headers: {
@@ -255,8 +274,21 @@ class UserBookingServices {
       ),
       onSuccess: (data) {
         // { success: true, data: { isFavorited: true/false } }
-        final isFavorited = data['data']['isFavorited'] as bool;
-        return isFavorited;
+        if (data is Map<String, dynamic>) {
+          final inner = data['data'];
+          if (inner is Map<String, dynamic>) {
+            final val = inner['isFavorited'];
+            if (val is bool) return val;
+            if (val is String) return val.toLowerCase() == 'true';
+          }
+
+          // sometimes server returns isFavorited at top-level
+          final topVal = data['isFavorited'];
+          if (topVal is bool) return topVal;
+          if (topVal is String) return topVal.toLowerCase() == 'true';
+        }
+
+        return false;
       },
       headers: {
         'Accept-Language': CacheHelper.getString(appLang) ?? 'en',
@@ -289,15 +321,21 @@ class UserBookingServices {
       ),
       onSuccess: (data) {
         // { success: true, count: x, pagination: {...}, data: [ services ] }
-        final servicesJson = data['data'] as List;
+        List<dynamic> servicesJson = [];
+        if (data is Map<String, dynamic> && data['data'] is List<dynamic>) {
+          servicesJson = List<dynamic>.from(data['data']);
+        } else if (data is List<dynamic>) {
+          servicesJson = data;
+        }
+
         final services = servicesJson
-            .map((service) => ServiceModel.fromJson(service))
+            .map((service) => ServiceModel.fromJson(service as Map<String, dynamic>))
             .toList();
 
         return {
           'services': services,
-          'count': data['count'],
-          'pagination': data['pagination'],
+          'count': data is Map<String, dynamic> ? data['count'] : null,
+          'pagination': data is Map<String, dynamic> ? data['pagination'] : null,
         };
       },
       headers: {

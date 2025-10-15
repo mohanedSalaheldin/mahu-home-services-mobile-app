@@ -21,10 +21,16 @@ class PlanServices {
         ),
       );
 
-      List<Plan> plans = (response.data as List)
-          .map((planJson) => Plan.fromJson(planJson))
-          .toList();
+      // API returns an object: { success: true, count: X, data: [ ... ] }
+      final respData = response.data;
+      List<dynamic> dataList = [];
+      if (respData is Map<String, dynamic> && respData['data'] is List) {
+        dataList = List<dynamic>.from(respData['data']);
+      } else if (respData is List) {
+        dataList = respData;
+      }
 
+      final plans = dataList.map((p) => Plan.fromJson(p as Map<String, dynamic>)).toList();
       return Right(plans);
     } on DioException catch (e) {
       return Left(Failure('Failed to get plans: ${e.message}'));
@@ -40,7 +46,7 @@ class PlanServices {
   }) async {
     try {
       await RequestHundler.dio.post(
-        '$apiBaseURL/subscription',
+        '$apiBaseURL/subscriptions',
         data: {
           'userId': userId,
           'planId': planId,

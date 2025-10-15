@@ -66,6 +66,7 @@ class AuthCubit extends Cubit<AuthState> {
     required String businessName,
     required String otpMethod,
     required String businessCategory,
+    required String country,
   }) async {
     emit(RegisterLoadingState());
     Either<Failure, UserModel> res = await _authServices.registerAsProvider(
@@ -78,6 +79,7 @@ class AuthCubit extends Cubit<AuthState> {
       businessName: businessName,
       otpMethod: otpMethod,
       businessCategory: businessCategory,
+      country: country,
     );
     res.fold(
       (failure) {

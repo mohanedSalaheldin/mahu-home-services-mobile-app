@@ -36,14 +36,14 @@ class DetailSection extends StatelessWidget {
           label: S.of(context).detailSectionPricingModelLabel,
           value: service.pricingModel,
         ),
-        DetailRow(
-          label: service.serviceType == "recurring"
-              ? S.of(context).detailSectionPriceRecurringLabel
-              : S.of(context).detailSectionPriceHourlyLabel,
-          value: S
-              .of(context)
-              .detailSectionPriceValue(service.basePrice.toStringAsFixed(2)),
-        ),
+    DetailRow(
+      label: service.serviceType == "recurring"
+        ? S.of(context).detailSectionPriceRecurringLabel
+        : S.of(context).detailSectionPriceHourlyLabel,
+      value: S
+        .of(context)
+              .detailSectionPriceValue('${service.currency} ${service.basePrice.toStringAsFixed(2)}'),
+    ),
         DetailRow(
           label: S.of(context).detailSectionDurationLabel,
           value: S.of(context).detailSectionDurationValue(service.duration),

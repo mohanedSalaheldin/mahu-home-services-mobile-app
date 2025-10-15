@@ -58,6 +58,13 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
     'electrical'
   ];
   String? selectedCategory;
+  // Countries provider can offer services in
+  final List<Map<String, String>> providerCountries = [
+    {'label': 'Egypt', 'code': 'EGY'},
+    {'label': 'UAE', 'code': 'UAE'},
+    {'label': 'Sudan', 'code': 'SUD'},
+  ];
+  String? selectedCountryCode; // 'EGY' | 'UAE' | 'SUD'
 
   Future<void> _pickImage() async {
     final picked = await _picker.pickImage(source: ImageSource.gallery);
@@ -258,6 +265,39 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
                     ),
 
                     Gap(10.h),
+                    DropdownButtonFormField<String>(
+                      decoration: InputDecoration(
+                        labelText: 'Country',
+                        labelStyle: const TextStyle(color: Colors.blue),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide:
+                              const BorderSide(color: Colors.blue, width: 1.5),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide:
+                              const BorderSide(color: Colors.blue, width: 2),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      value: selectedCountryCode,
+                      items: providerCountries
+                          .map((c) => DropdownMenuItem(
+                                value: c['code'],
+                                child: Text(c['label'] ?? c['code']!),
+                              ))
+                          .toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          selectedCountryCode = value;
+                        });
+                      },
+                      validator: (value) => value == null || value.isEmpty
+                          ? 'Please select a country'
+                          : null,
+                    ),
+
+                    Gap(10.h),
                     CustomTextField(
                       label: S.of(context).providerRegisterPasswordLabel,
                       hint: S.of(context).providerRegisterPasswordHint,
@@ -386,6 +426,7 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
                             avatarPath: _selectedImage?.path ?? '',
                             businessName: businessNameController.text,
                             businessCategory: selectedCategory ?? '',
+                            country: selectedCountryCode ?? 'EGY',
                             otpMethod: _otpChannel.name,
                           );
                           print("Form is valid");

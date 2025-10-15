@@ -48,19 +48,46 @@ class ReviewServices {
       onSuccess: (data) {
         print('Full API response: $data');
 
-        // Handle the nested structure
-        if (data is Map<String, dynamic> &&
-            data.containsKey('data') &&
-            data['data'] is Map<String, dynamic>) {
-          return data['data'] as Map<String, dynamic>;
+        // If API returned a wrapper with `data` as a List (common pattern),
+        // transform it into the expected Map shape used by the UI:
+        // { 'reviews': List, 'averageRating': double, 'totalReviews': int }
+        if (data is Map<String, dynamic>) {
+          // case: { success: true, count: 8, data: [ ... ] }
+          if (data.containsKey('data') && data['data'] is List<dynamic>) {
+            final List<dynamic> reviewsList = List<dynamic>.from(data['data']);
+            final int total = data['count'] is int ? data['count'] as int : reviewsList.length;
+            final double avg = (data['averageRating'] != null)
+                ? (double.tryParse(data['averageRating'].toString()) ?? 0.0)
+                : 0.0;
+
+            return {
+              'reviews': reviewsList,
+              'averageRating': avg,
+              'totalReviews': total,
+            };
+          }
+
+          // case: API already returns the expected object with 'reviews'
+          if (data.containsKey('reviews') && data['reviews'] is List<dynamic>) {
+            return data;
+          }
         }
 
-        // Fallback: try to handle if it's already the data object
-        if (data is Map<String, dynamic> && data.containsKey('reviews')) {
-          return data;
+        // If response is a plain List (unlikely through current handler but handle anyway)
+        if (data is List<dynamic>) {
+          return {
+            'reviews': data,
+            'averageRating': 0.0,
+            'totalReviews': data.length,
+          };
         }
 
-        return {}; // Return empty map
+        // Last resort: return empty shape
+        return {
+          'reviews': <dynamic>[],
+          'averageRating': 0.0,
+          'totalReviews': 0,
+        };
       },
     );
   }

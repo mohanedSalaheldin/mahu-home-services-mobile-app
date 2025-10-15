@@ -6,7 +6,6 @@ import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
 import 'package:mahu_home_services_app/core/constants/colors.dart';
 import 'package:mahu_home_services_app/core/utils/helpers/cache_helper.dart';
-import 'package:mahu_home_services_app/features/services/models/booking_model.dart';
 import 'package:mahu_home_services_app/features/services/models/new_booking_model.dart';
 import 'package:mahu_home_services_app/features/user_booking/cubit/user_booking_cubit.dart';
 import 'package:mahu_home_services_app/features/user_booking/services/review_services.dart';
@@ -120,15 +119,13 @@ class _MyBookingsScreenState extends State<MyBookingsScreen>
 
   bool _isUpcomingBooking(BookingNewModel booking) {
     final now = DateTime.now();
-
-    if (booking.status?.toLowerCase() == 'completed' ||
-        booking.status?.toLowerCase() == 'cancelled') {
+    if (booking.status.toLowerCase() == 'completed' ||
+        booking.status.toLowerCase() == 'cancelled') {
       return false;
     }
 
-    final bookingDate = booking.schedule?.startDate;
-    return bookingDate != null &&
-        (bookingDate.isAfter(now) || bookingDate.isAtSameMomentAs(now));
+  final bookingDate = booking.schedule.startDate;
+  return (bookingDate.isAfter(now) || bookingDate.isAtSameMomentAs(now));
   }
 
   Widget _buildBookingsList(List<BookingNewModel> bookings,
@@ -414,7 +411,7 @@ class BookingCard extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      S.of(context).myBookingsScreenReviewPrompt(booking.service.name ?? S.of(context).myBookingsScreenUnknownService),
+                      S.of(context).myBookingsScreenReviewPrompt(booking.service.name),
                       style: TextStyle(
                         fontSize: 14.sp,
                         color: Colors.blue,
@@ -571,10 +568,10 @@ class BookingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final serviceName = booking.service.name ?? S.of(context).myBookingsScreenUnknownService;
-    final date = booking.schedule!.startDate;
-    final status = booking.status?.toLowerCase() ?? 'pending';
-    final price = booking.price ?? 0.0;
+  final serviceName = booking.service.name;
+  final date = booking.schedule.startDate;
+  final status = booking.status.toLowerCase();
+  final price = booking.price;
     final time = DateFormat('HH:mm').format(date);
     final dayName = DateFormat('EEEE').format(date);
     final formattedDate = DateFormat('MMM dd, yyyy').format(date);
@@ -700,7 +697,7 @@ class BookingCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  '\$${price.toStringAsFixed(2)}',
+                  '${(booking.service.currency.isNotEmpty ? booking.service.currency : 'AED')} ${price.toStringAsFixed(2)}',
                   style: TextStyle(
                     fontSize: 18.sp,
                     fontWeight: FontWeight.bold,
@@ -810,7 +807,7 @@ class BookingCard extends StatelessWidget {
           style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold),
         ),
         content: Text(
-          S.of(context).myBookingsScreenCancelDialogContent(booking.service?.name ?? S.of(context).myBookingsScreenUnknownService),
+          S.of(context).myBookingsScreenCancelDialogContent(booking.service.name),
           style: TextStyle(fontSize: 14.sp),
         ),
         actions: [
@@ -937,10 +934,10 @@ class _BookingDetailsSheetState extends State<BookingDetailsSheet> {
             ),
           ),
           Gap(16.h),
-          _buildDetailRow(S.of(context).myBookingsScreenDetailsService, widget.booking.service.name ?? S.of(context).myBookingsScreenUnknownService),
-          _buildDetailRow(S.of(context).myBookingsScreenDetailsStatus, S.of(context).myBookingsScreenStatus(widget.booking.status.toUpperCase())),
-          _buildDetailRow(S.of(context).myBookingsScreenDetailsDate,
-              DateFormat('MMM dd, yyyy').format(widget.booking.schedule.startDate)),
+      _buildDetailRow(S.of(context).myBookingsScreenDetailsService, widget.booking.service.name),
+      _buildDetailRow(S.of(context).myBookingsScreenDetailsStatus, S.of(context).myBookingsScreenStatus(widget.booking.status.toUpperCase())),
+      _buildDetailRow(S.of(context).myBookingsScreenDetailsDate,
+        DateFormat('MMM dd, yyyy').format(widget.booking.schedule.startDate)),
           _buildDetailRow(
             S.of(context).myBookingsScreenDetailsStartTime,
             widget.booking.schedule.startTime,
@@ -950,7 +947,7 @@ class _BookingDetailsSheetState extends State<BookingDetailsSheet> {
             widget.booking.schedule.endTime,
           ),
           _buildDetailRow(S.of(context).myBookingsScreenDetailsDuration, '${widget.booking.duration / 60} ${S.of(context).myBookingsScreenHours}'),
-          _buildDetailRow(S.of(context).myBookingsScreenDetailsTotal, '\$${widget.booking.price.toStringAsFixed(2)}'),
+          _buildDetailRow(S.of(context).myBookingsScreenDetailsTotal, '${(widget.booking.service.currency.isNotEmpty ? widget.booking.service.currency : 'AED')} ${widget.booking.price.toStringAsFixed(2)}'),
           if (widget.booking.address.street.isNotEmpty) ...[
             Gap(12.h),
             Text(
@@ -1059,48 +1056,7 @@ class _BookingDetailsSheetState extends State<BookingDetailsSheet> {
     );
   }
 
-  void _showAllReviewsDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        insetPadding: EdgeInsets.all(20.w),
-        child: Container(
-          padding: EdgeInsets.all(20.w),
-          constraints: BoxConstraints(maxHeight: 500.h),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                S.of(context).myBookingsScreenAllReviews(_totalReviews),
-                style: TextStyle(
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Gap(16.h),
-              Expanded(
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: _reviews.length,
-                  itemBuilder: (context, index) {
-                    return _buildReviewItem(_reviews[index]);
-                  },
-                ),
-              ),
-              Gap(16.h),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: Text(S.of(context).myBookingsScreenDetailsClose),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  // Removed unused full-reviews dialog to reduce unused code warnings
 
   Widget _buildDetailRow(String label, String value) {
     return Padding(

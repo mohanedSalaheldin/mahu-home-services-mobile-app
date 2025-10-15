@@ -562,8 +562,8 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                           _calculateTotalPrice();
                         });
                       },
-                      title: Text(
-                          '${option.name} (+${option.price.toStringAsFixed(2)})'),
+          title: Text(
+            '${option.name} (+${(widget.service.currency.isNotEmpty ? widget.service.currency : 'AED')} ${option.price.toStringAsFixed(2)})'),
                       subtitle: Text(option.description),
                     );
                   }).toList(),
@@ -1130,11 +1130,11 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
           ),
           Gap(12.h),
           if (widget.service.pricingModel == 'hourly') ...[
-            _buildPriceRow(
-              S.of(context).bookingFormScreenHourlyRateLabel,
-              S.of(context).bookingFormScreenHourlyRateValue(
-                  widget.service.basePrice.toStringAsFixed(2)),
-            ),
+              _buildPriceRow(
+                S.of(context).bookingFormScreenHourlyRateLabel,
+                S.of(context).bookingFormScreenHourlyRateValue(
+                    '${(widget.service.currency.isNotEmpty ? widget.service.currency : 'AED')} ${widget.service.basePrice.toStringAsFixed(2)}'),
+              ),
             _buildPriceRow(
               S.of(context).bookingFormScreenDurationLabel,
               S.of(context).bookingFormScreenDurationValue(_selectedDuration),
@@ -1150,15 +1150,15 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                 color: Colors.grey.shade700,
               ),
             ),
-            ...selectedOptionDetails.map((option) => _buildPriceRow(
+                ...selectedOptionDetails.map((option) => _buildPriceRow(
                   option['name'],
                   S.of(context).bookingFormScreenTotalPriceValue(
-                      option['price'].toStringAsFixed(2)),
+                      '${(widget.service.currency.isNotEmpty ? widget.service.currency : 'AED')} ${option['price'].toStringAsFixed(2)}'),
                 )),
             _buildPriceRow(
               S.of(context).bookingFormScreenExtraFeesTotalLabel,
               S.of(context).bookingFormScreenTotalPriceValue(
-                  optionsTotal.toStringAsFixed(2)),
+                  '${(widget.service.currency.isNotEmpty ? widget.service.currency : 'AED')} ${optionsTotal.toStringAsFixed(2)}'),
               isTotal: true,
             ),
           ],
@@ -1166,7 +1166,7 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
           _buildPriceRow(
             S.of(context).bookingFormScreenTotalPriceLabel,
             S.of(context).bookingFormScreenTotalPriceValue(
-                _totalPrice.toStringAsFixed(2)),
+                '${(widget.service.currency.isNotEmpty ? widget.service.currency : 'AED')} ${_totalPrice.toStringAsFixed(2)}'),
             isTotal: true,
           ),
           if (widget.service.pricingModel == 'fixed') ...[

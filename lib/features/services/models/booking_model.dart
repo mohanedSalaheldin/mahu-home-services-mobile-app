@@ -48,14 +48,48 @@ class BookingModel {
   factory BookingModel.fromJson(Map<String, dynamic> json) {
     return BookingModel(
       id: (json['id'] ?? json['_id']) as String,
-      user: AppUser.fromJson(json['user'] as Map<String, dynamic>),
-      service: Service.fromJson(json['service'] as Map<String, dynamic>),
+      user: json['user'] is Map<String, dynamic>
+          ? AppUser.fromJson(json['user'] as Map<String, dynamic>)
+          : AppUser.fromJson({
+              '_id': json['user'] ?? '',
+              'profile': {},
+              'email': '',
+              'phone': '',
+              'role': 'user',
+              'services': [],
+              'isVerified': false,
+              'createdAt': DateTime.now().toIso8601String(),
+              'updatedAt': DateTime.now().toIso8601String(),
+            }),
+      service: json['service'] is Map<String, dynamic>
+          ? Service.fromJson(json['service'] as Map<String, dynamic>)
+          : Service.fromJson({
+              '_id': json['service'] ?? '',
+              'name': '',
+              'description': '',
+              'category': 'cleaning',
+              'serviceType': 'one-time',
+              'subType': 'normal',
+              'basePrice': 0,
+              'pricingModel': 'fixed',
+              'duration': 1,
+              'image': '',
+              'active': false,
+              'provider': json['provider'] ?? '',
+              'isApproved': false,
+              'availableDays': [],
+              'availableSlots': [],
+              'createdAt': DateTime.now().toIso8601String(),
+              '__v': 0,
+              'averageRating': 0,
+              'reviews': [],
+              'totalReviews': 0,
+            }),
       provider: json['provider'] as String,
       serviceType: json['serviceType'] as String,
-      schedule: json['schedule'] != null
-          ? Schedule.fromJson(json['schedule'] as Map<String, dynamic>)
-          : Schedule(
-              id: '', excludedDates: []), // Provide default empty schedule
+    schedule: json['schedule'] is Map<String, dynamic>
+      ? Schedule.fromJson(json['schedule'] as Map<String, dynamic>)
+      : Schedule(id: '', excludedDates: []),
       details: json['details'] as String?,
       status: json['status'] as String,
       duration: (json['duration'] as num).toInt(),
@@ -72,8 +106,18 @@ class BookingModel {
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
       v: (json['__v'] as num?)?.toInt(),
-      address: Address.fromJson(json['address'] as Map<String, dynamic>),
-      option: Option.fromJson(json['options'] as Map<String, dynamic>),
+      address: json['address'] is Map<String, dynamic>
+          ? Address.fromJson(json['address'] as Map<String, dynamic>)
+          : Address.fromJson({
+              'street': '',
+              'city': '',
+              'state': '',
+              'zipCode': '',
+              'coordinates': [],
+            }),
+      option: json['options'] is Map<String, dynamic>
+          ? Option.fromJson(json['options'] as Map<String, dynamic>)
+          : Option(hasTools: false),
     );
   }
   Map<String, dynamic> toJson() {
@@ -204,10 +248,16 @@ class AppUser {
   factory AppUser.fromJson(Map<String, dynamic> json) {
     return AppUser(
       id: (json['id'] ?? json['_id']) as String,
-      profile: UserProfile.fromJson(json['profile'] as Map<String, dynamic>),
-      email: json['email'] as String,
-      phone: json['phone'] as String,
-      role: json['role'] as String,
+      profile: json['profile'] is Map<String, dynamic>
+          ? UserProfile.fromJson(json['profile'] as Map<String, dynamic>)
+          : UserProfile.fromJson({
+              'firstName': '',
+              'lastName': '',
+              'avatar': null,
+            }),
+      email: json['email'] as String? ?? '',
+      phone: json['phone'] as String? ?? '',
+      role: json['role'] as String? ?? 'user',
       businessName: json['businessName'] as String?,
       businessRegistration: json['businessRegistration'] as String?,
       services: (json['services'] as List<dynamic>? ?? const [])
@@ -215,8 +265,8 @@ class AppUser {
           .toList(),
       isVerified: json['isVerified'] as bool? ?? false,
       serviceProviderCategory: json['serviceProviderCategory'] as String?,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
+      createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ?? DateTime.now(),
+      updatedAt: DateTime.tryParse(json['updatedAt'] as String? ?? '') ?? DateTime.now(),
       v: (json['__v'] as num?)?.toInt(),
     );
   }
@@ -290,6 +340,7 @@ class Service {
   final double averageRating;
   final List<Review> reviews;
   final int totalReviews;
+  final String currency;
 
   Service({
     required this.id,
@@ -312,6 +363,7 @@ class Service {
     required this.averageRating,
     required this.reviews,
     required this.totalReviews,
+    this.currency = 'AED',
   });
 
   factory Service.fromJson(Map<String, dynamic> json) {
@@ -332,9 +384,11 @@ class Service {
       availableDays: (json['availableDays'] as List<dynamic>? ?? const [])
           .map((e) => e.toString())
           .toList(),
-      availableSlots: (json['availableSlots'] as List<dynamic>? ?? const [])
-          .map((e) => AvailableSlot.fromJson(e as Map<String, dynamic>))
-          .toList(),
+    availableSlots: (json['availableSlots'] as List<dynamic>? ?? const [])
+      .map((e) => e is Map<String, dynamic>
+        ? AvailableSlot.fromJson(e)
+        : AvailableSlot.fromJson({'startTime': '', 'endTime': '', '_id': ''}))
+      .toList(),
       createdAt: DateTime.parse(json['createdAt'] as String),
       v: (json['__v'] as num?)?.toInt(),
       averageRating: (json['averageRating'] as num?)?.toDouble() ?? 0.0,
@@ -342,6 +396,7 @@ class Service {
           .map((e) => Review.fromJson(e as Map<String, dynamic>))
           .toList(),
       totalReviews: (json['totalReviews'] as num?)?.toInt() ?? 0,
+      currency: json['currency'] as String? ?? json['currencyCode'] as String? ?? 'AED',
     );
   }
 
@@ -367,6 +422,7 @@ class Service {
       'averageRating': averageRating,
       'reviews': reviews.map((e) => e.toJson()).toList(),
       'totalReviews': totalReviews,
+      'currency': currency,
       'id': id,
     };
   }

@@ -1,7 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:intl/intl.dart';
 import 'package:mahu_home_services_app/features/services/models/service_model.dart';
 import 'package:mahu_home_services_app/features/user_booking/views/screens/service_details_screen.dart';
 import 'package:mahu_home_services_app/generated/l10n.dart';
@@ -177,12 +176,10 @@ class ServiceCard extends StatelessWidget {
   }
 
   String _getLocalizedPrice(BuildContext context, double price) {
-    // Use NumberFormat for currency formatting based on locale
-    return NumberFormat.currency(
-      locale: Localizations.localeOf(context).languageCode,
-      symbol: S.of(context).serviceCardCurrencySymbol,
-      decimalDigits: 0,
-    ).format(price);
+    // Use the service's currency if provided, otherwise default to AED
+    final code = (service.currency.isNotEmpty) ? service.currency : 'AED';
+    // Simple formatting: show currency code then amount without decimals
+    return '$code ${price.toStringAsFixed(0)}';
   }
 }
 

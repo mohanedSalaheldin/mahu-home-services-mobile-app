@@ -1,5 +1,5 @@
 // booking_model.dart
-import 'package:flutter/foundation.dart';
+// 'foundation' import removed - not needed here
 
 class BookingNewModel {
   final String id;
@@ -109,13 +109,15 @@ class BookingNewModel {
 class Service {
   final String id;
   final String name;
+  final String currency;
 
-  Service({required this.id, required this.name});
+  Service({required this.id, required this.name, this.currency = 'AED'});
 
   factory Service.fromJson(Map<String, dynamic> json) {
     return Service(
       id: json['_id'] ?? json['id'] ?? '',
       name: json['name'] ?? 'Unknown Service',
+      currency: json['currency'] ?? json['currencyCode'] ?? 'AED',
     );
   }
 }

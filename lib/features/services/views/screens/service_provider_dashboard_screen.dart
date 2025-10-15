@@ -683,7 +683,7 @@ class ServiceListItem extends StatelessWidget {
                           ),
                           const Spacer(),
                           Text(
-                            '\$${service.basePrice.toStringAsFixed(2)}',
+                            '${_currencyPrefix(service.currency)}${service.basePrice.toStringAsFixed(2)}',
                             style: TextStyle(
                               fontSize: 15.sp,
                               fontWeight: FontWeight.w700,
@@ -721,6 +721,22 @@ class ServiceListItem extends StatelessWidget {
         return S.of(context).serviceProviderDashboardScreenPricingSquareFoot;
       default:
         return '';
+    }
+  }
+
+  String _currencyPrefix(String? code) {
+    final c = (code ?? 'AED').toUpperCase();
+    switch (c) {
+      case 'AED':
+        return 'AED ';
+      case 'USD':
+        return '\$';
+      case 'EGP':
+        return 'EGP ';
+      case 'SAR':
+        return 'SAR ';
+      default:
+        return '$c ';
     }
   }
 }

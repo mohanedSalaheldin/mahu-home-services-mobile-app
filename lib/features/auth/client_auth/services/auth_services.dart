@@ -50,6 +50,7 @@ class AuthServices {
     required String businessName,
     required String otpMethod,
     required String businessCategory,
+    required String country,
   }) async {
     String imageUrl =
         await UploadMediaHelper.uploadImage(File(avatarPath)) ?? '';
@@ -66,6 +67,7 @@ class AuthServices {
           "role": "provider",
           "businessName": businessName,
           "serviceProviderCategory": businessCategory,
+          "country": country,
           "verificationType": otpMethod,
         };
         print(data);

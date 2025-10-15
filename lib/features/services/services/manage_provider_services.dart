@@ -41,6 +41,7 @@ class ManageProviderServices {
         data: {
           "name": service.name,
           "description": service.description,
+          "place": service.place,
           "category": service.category,
           "serviceType": service.serviceType,
           "subType": service.subType,
